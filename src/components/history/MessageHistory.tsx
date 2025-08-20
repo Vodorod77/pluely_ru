@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { MessageSquareText, ChevronUp, ChevronDown } from "lucide-react";
 import {
   Popover,
@@ -15,53 +14,53 @@ interface MessageHistoryProps {
   conversationHistory: ChatMessage[];
   currentConversationId: string | null;
   onStartNewConversation: () => void;
+  messageHistoryOpen: boolean;
+  setMessageHistoryOpen: (open: boolean) => void;
 }
 
 export const MessageHistory = ({
   conversationHistory,
-  currentConversationId,
   onStartNewConversation,
+  messageHistoryOpen,
+  setMessageHistoryOpen,
 }: MessageHistoryProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  // Don't show the button if there's no conversation history
-  if (!currentConversationId || conversationHistory.length === 0) {
-    return null;
-  }
-
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={messageHistoryOpen} onOpenChange={setMessageHistoryOpen}>
       <PopoverTrigger asChild>
         <Button
           size="icon"
-          variant="ghost"
+          variant="outline"
           aria-label="View Current Conversation"
-          className="relative cursor-pointer"
+          className="relative cursor-pointer w-12 h-7 px-2 flex gap-1 items-center justify-center"
         >
-          <MessageSquareText className="h-5 w-5" />
-          <div className="absolute -top-0 -right-0 bg-primary-foreground text-primary rounded-full h-4 w-4 flex border border-primary items-center justify-center text-[10px] font-medium">
+          <div className="flex items-center justify-center text-xs font-medium">
             {conversationHistory.length}
           </div>
+          <MessageSquareText className="h-5 w-5" />
         </Button>
       </PopoverTrigger>
 
       <PopoverContent
         align="end"
         side="bottom"
-        className="select-none w-96 p-0 border overflow-hidden border-input/50"
-        sideOffset={8}
+        className="select-none w-screen p-0 mt-3 border overflow-hidden border-input/50"
       >
         <div className="border-b border-input/50 p-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Current Conversation
-            </h2>
+            <div className="flex items-center flex-col">
+              <h2 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                Current Conversation
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {conversationHistory.length} messages in this conversation
+              </p>
+            </div>
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
                 onClick={() => {
                   onStartNewConversation();
-                  setIsOpen(false);
+                  setMessageHistoryOpen(false);
                 }}
                 className="text-xs"
               >
@@ -70,10 +69,10 @@ export const MessageHistory = ({
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => setIsOpen(false)}
+                onClick={() => setMessageHistoryOpen(false)}
                 className="text-xs"
               >
-                {isOpen ? (
+                {messageHistoryOpen ? (
                   <ChevronUp className="h-4 w-4" />
                 ) : (
                   <ChevronDown className="h-4 w-4" />
@@ -81,40 +80,55 @@ export const MessageHistory = ({
               </Button>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            {conversationHistory.length} messages in this conversation
-          </p>
         </div>
 
-        <ScrollArea className="h-[calc(100vh-10rem)] max-h-80">
+        <ScrollArea className="h-[calc(100vh-10rem)]">
           <div className="p-4 space-y-4">
-            {conversationHistory.map((message) => (
-              <div
-                key={message.id}
-                className={`p-3 rounded-lg ${
-                  message.role === "user"
-                    ? "bg-primary/10 border-l-4 border-primary"
-                    : "bg-muted/50"
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-medium text-muted-foreground uppercase">
-                    {message.role === "user" ? "You" : "AI"}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(message.timestamp).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
+            {conversationHistory
+              .sort((a, b) => b?.timestamp - a?.timestamp)
+              .map((message) => (
+                <div
+                  key={message.id}
+                  className={`p-3 rounded-lg ${
+                    message.role === "user"
+                      ? "bg-primary/10 border-l-4 border-primary"
+                      : "bg-muted/50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-medium text-muted-foreground uppercase">
+                      {message.role === "user" ? "You" : "AI"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(message.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </div>
+                  <div className="text-sm select-auto break-words whitespace-pre-wrap">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        pre: ({ node, ...props }) => (
+                          <pre
+                            {...props}
+                            className="whitespace-pre-wrap break-words"
+                          />
+                        ),
+                        code: ({ node, ...props }) => (
+                          <code
+                            {...props}
+                            className="whitespace-pre-wrap break-words"
+                          />
+                        ),
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  </div>
                 </div>
-                <div className="text-sm">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {message.content}
-                  </ReactMarkdown>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </ScrollArea>
       </PopoverContent>

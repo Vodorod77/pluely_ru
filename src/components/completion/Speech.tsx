@@ -20,9 +20,6 @@ export const Speech = ({
     userSpeakingThreshold: 0.6,
     startOnLoad: true,
     onSpeechEnd: async (audio) => {
-      console.log("User stopped talking");
-      console.log("Audio data:", audio);
-
       try {
         setIsTranscribing(true);
         const settings = getSettings();

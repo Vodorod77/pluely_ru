@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { providers } from "@/config";
 import {
   getSettings,
   fileToBase64,
@@ -8,6 +7,7 @@ import {
   saveConversation,
   getConversation,
   generateConversationTitle,
+  getProviderById,
 } from "@/lib";
 import {
   AttachedFile,
@@ -28,6 +28,7 @@ export const useCompletion = () => {
   });
   const [micOpen, setMicOpen] = useState(false);
   const [enableVAD, setEnableVAD] = useState(false);
+  const [messageHistoryOpen, setMessageHistoryOpen] = useState(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -86,9 +87,7 @@ export const useCompletion = () => {
         return;
       }
 
-      const provider = providers.find(
-        (p) => p.id === settings.selectedProvider
-      );
+      const provider = getProviderById(settings.selectedProvider);
       if (!provider) {
         setState((prev) => ({
           ...prev,
@@ -360,5 +359,7 @@ export const useCompletion = () => {
     conversationHistory: state.conversationHistory,
     loadConversation,
     startNewConversation,
+    messageHistoryOpen,
+    setMessageHistoryOpen,
   };
 };

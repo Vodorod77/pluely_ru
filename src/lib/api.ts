@@ -1,3 +1,5 @@
+import { loadCustomProvidersFromStorage } from "./storage";
+import { providers } from "@/config";
 // get nested value from object
 const getNestedValue = (obj: any, path: string): any => {
   return path.split(".").reduce((current, key) => {
@@ -10,6 +12,18 @@ const getNestedValue = (obj: any, path: string): any => {
     }
     return current?.[key];
   }, obj);
+};
+
+// get provider by id (includes custom providers)
+export const getProviderById = (providerId: string) => {
+  // First check custom providers
+  const customProviders = loadCustomProvidersFromStorage();
+  const customProvider = customProviders.find((p) => p.id === providerId);
+  if (customProvider) {
+    return customProvider;
+  }
+
+  return providers.find((p: any) => p.id === providerId);
 };
 
 // fetch models from provider API
@@ -32,8 +46,14 @@ export async function fetchModels(
     headers["Authorization"] = `Bearer ${apiKey}`;
   } else if (provider.authType === "x-api-key") {
     headers["x-api-key"] = apiKey;
-  } else {
-    // for gemini, append query param
+  } else if (provider.authType === "x-goog-api-key") {
+    headers["x-goog-api-key"] = apiKey;
+  } else if (
+    provider.authType === "custom-header" &&
+    provider.customHeaderName
+  ) {
+    headers[provider.customHeaderName] = apiKey;
+  } else if (provider.authType === "query" && provider.authParam) {
     url += `?${provider.authParam}=${apiKey}`;
   }
 
@@ -174,6 +194,11 @@ export const streamCompletion = async (
       headers["x-api-key"] = apiKey;
     } else if (provider.authType === "x-goog-api-key") {
       headers["x-goog-api-key"] = apiKey;
+    } else if (
+      provider.authType === "custom-header" &&
+      provider.customHeaderName
+    ) {
+      headers[provider.customHeaderName] = apiKey;
     } else if (provider.authType === "query" && provider.authParam) {
       url += `?${provider.authParam}=${apiKey}`;
     }
@@ -208,7 +233,11 @@ export const streamCompletion = async (
       }
     }
 
-    if (provider.id !== "gemini") {
+    // Only enable streaming for providers that support it
+    if (
+      provider.id !== "gemini" &&
+      (!provider.isCustom || provider.supportsStreaming)
+    ) {
       requestBody.stream = true;
     }
 
@@ -224,6 +253,17 @@ export const streamCompletion = async (
       throw new Error(
         `API Error: ${response.status} ${response.statusText}\n${errorText}`
       );
+    }
+
+    // Handle non-streaming custom providers
+    if (provider.isCustom && !provider.supportsStreaming) {
+      const responseData = await response.json();
+      const content =
+        getNestedValue(responseData, provider.response.contentPath) || "";
+      if (content) {
+        onChunk(content);
+      }
+      return;
     }
 
     const reader = response.body?.getReader();
@@ -261,6 +301,23 @@ export const streamCompletion = async (
               }
             } else if (provider.id === "gemini") {
               content = parsed.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            } else if (provider.isCustom) {
+              // Handle custom providers
+              if (provider.supportsStreaming) {
+                // For streaming, try to extract delta content first, then fall back to full content
+                const deltaPath = provider.response.contentPath.replace(
+                  "message.content",
+                  "delta.content"
+                );
+                content =
+                  getNestedValue(parsed, deltaPath) ||
+                  getNestedValue(parsed, provider.response.contentPath) ||
+                  "";
+              } else {
+                // For non-streaming custom providers, extract full content
+                content =
+                  getNestedValue(parsed, provider.response.contentPath) || "";
+              }
             }
 
             if (content) {

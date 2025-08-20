@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useWindowResize } from "@/hooks";
 import { SettingsIcon } from "lucide-react";
 import {
   Popover,
@@ -7,24 +8,28 @@ import {
   Button,
   ScrollArea,
 } from "@/components";
-import { providers } from "@/config";
 import { ProviderSelection } from "./ProviderSelection";
 import { ApiKeyInput } from "./ApiKeyInput";
 import { ModelSelection } from "./ModelSelection";
 import { Disclaimer } from "./Disclaimer";
 import { SystemPrompt } from "./SystemPrompt";
 import { Speech } from "./Speech";
+import { CustomProviderComponent } from "../custom-provider";
 import {
   loadSettingsFromStorage,
   saveSettingsToStorage,
   fetchModels,
+  getProviderById,
 } from "@/lib";
 import { SettingsState } from "@/types";
-
+import { useCustomProvider } from "@/hooks";
 export const Settings = () => {
   const [settings, setSettings] = useState<SettingsState>(
     loadSettingsFromStorage
   );
+  const { resizeWindow } = useWindowResize();
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [refreshProviders, setRefreshProviders] = useState(0);
 
   // Save to localStorage whenever settings change
   useEffect(() => {
@@ -38,7 +43,7 @@ export const Settings = () => {
   const handleApiKeySubmit = async () => {
     if (!settings.apiKey.trim()) return;
 
-    const provider = providers.find((p) => p.id === settings.selectedProvider);
+    const provider = getProviderById(settings.selectedProvider);
     if (!provider) return;
 
     // Mark API key as submitted first
@@ -49,8 +54,8 @@ export const Settings = () => {
       availableModels: [],
     });
 
-    // Try to fetch models if provider supports it
-    if (provider.models) {
+    // Try to fetch models if provider supports it (custom providers don't have models endpoint)
+    if (provider.models && !provider.isCustom) {
       updateSettings({ isLoadingModels: true });
 
       try {
@@ -65,7 +70,6 @@ export const Settings = () => {
             : "",
         });
       } catch (error) {
-        console.error("Failed to fetch models:", error);
         updateSettings({
           isLoadingModels: false,
           modelsFetchError:
@@ -73,6 +77,15 @@ export const Settings = () => {
           availableModels: [],
         });
       }
+    } else if (
+      provider.isCustom &&
+      provider.defaultModel &&
+      !settings.customModel
+    ) {
+      // For custom providers, auto-fill the default model if none is set
+      updateSettings({
+        customModel: provider.defaultModel,
+      });
     }
   };
 
@@ -114,17 +127,33 @@ export const Settings = () => {
     }
   };
 
-  const currentProvider = providers.find(
-    (p) => p.id === settings.selectedProvider
-  );
+  const currentProvider = getProviderById(settings.selectedProvider);
+
+  const handleProviderAdded = () => {
+    setRefreshProviders((prev) => prev + 1);
+  };
+
+  const customProviders = useCustomProvider(handleProviderAdded);
+
+  useEffect(() => {
+    resizeWindow(isPopoverOpen);
+  }, [isPopoverOpen, resizeWindow]);
+
+  // Auto-close on focus loss disabled to prevent interruptions during form interactions
+  // Settings should be closed manually via the toggle button for better UX
+  // useWindowFocus({
+  //   onFocusLost: () => {
+  //     setIsPopoverOpen(false);
+  //   },
+  // });
 
   return (
-    <Popover>
+    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
       <PopoverTrigger asChild>
         <Button
           size="icon"
           aria-label="Open Settings"
-          className="cursor-pointer"
+          className="cursor-pointer [data-state=open]:bg-[red]"
           title="Open Settings"
         >
           <SettingsIcon className="h-4 w-4" />
@@ -151,21 +180,30 @@ export const Settings = () => {
               </p>
             </div>
 
+            {/* Custom Providers Configuration */}
+            <CustomProviderComponent {...customProviders} />
+
             {/* AI Provider Selection */}
             <ProviderSelection
               value={settings.selectedProvider}
-              onChange={(value) =>
+              onChange={(value) => {
+                const selectedProvider = getProviderById(value);
+                const defaultModel = selectedProvider?.isCustom
+                  ? selectedProvider.defaultModel || ""
+                  : "";
+
                 updateSettings({
                   selectedProvider: value,
                   apiKey: "",
                   isApiKeySubmitted: false,
                   selectedModel: "",
-                  customModel: "",
+                  customModel: defaultModel,
                   availableModels: [],
                   isLoadingModels: false,
                   modelsFetchError: null,
-                })
-              }
+                });
+              }}
+              refreshKey={refreshProviders}
             />
 
             {/* API Key Configuration */}

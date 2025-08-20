@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Label,
   Select,
@@ -7,16 +8,25 @@ import {
   SelectValue,
 } from "@/components";
 import { providers } from "@/config";
+import { loadCustomProvidersFromStorage } from "@/lib";
+import { CustomProvider } from "@/types";
 
 interface ProviderSelectionProps {
   value: string;
   onChange: (value: string) => void;
+  refreshKey?: number;
 }
 
 export const ProviderSelection = ({
   value,
   onChange,
+  refreshKey,
 }: ProviderSelectionProps) => {
+  const [customProviders, setCustomProviders] = useState<CustomProvider[]>([]);
+
+  useEffect(() => {
+    setCustomProviders(loadCustomProvidersFromStorage());
+  }, [refreshKey]);
   return (
     <div className="space-y-2">
       <div>
@@ -31,15 +41,34 @@ export const ProviderSelection = ({
           <SelectValue placeholder="Choose your AI provider" />
         </SelectTrigger>
         <SelectContent>
-          {providers.map((provider) => (
-            <SelectItem
-              key={provider.id}
-              value={provider.id}
-              className="cursor-pointer hover:bg-accent/50"
-            >
-              <span className="font-medium">{provider.name}</span>
-            </SelectItem>
-          ))}
+          {providers
+            .filter((provider) => provider.id !== "custom")
+            .map((provider) => (
+              <SelectItem
+                key={provider.id}
+                value={provider.id}
+                className="cursor-pointer hover:bg-accent/50"
+              >
+                <span className="font-medium">{provider.name}</span>
+              </SelectItem>
+            ))}
+
+          {customProviders.length > 0 && (
+            <>
+              <div className="px-2 py-1 text-xs font-semibold text-muted-foreground border-t mt-2 pt-2">
+                Custom Providers
+              </div>
+              {customProviders.map((provider) => (
+                <SelectItem
+                  key={provider.id}
+                  value={provider.id}
+                  className="cursor-pointer hover:bg-accent/50"
+                >
+                  <span className="font-medium">{provider.name}</span>
+                </SelectItem>
+              ))}
+            </>
+          )}
         </SelectContent>
       </Select>
     </div>

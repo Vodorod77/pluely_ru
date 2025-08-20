@@ -8,11 +8,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components";
-
+import { getProviderById } from "@/lib";
 import { ModelSelectionProps } from "@/types";
 
-const getPlaceholder = (provider: string) => {
-  switch (provider) {
+const getPlaceholder = (providerId: string) => {
+  const provider = getProviderById(providerId);
+
+  if (provider?.isCustom && provider.defaultModel) {
+    return provider.defaultModel;
+  }
+
+  switch (providerId) {
     case "claude":
       return "claude-3-sonnet-20240229";
     case "gemini":
@@ -37,6 +43,13 @@ export const ModelSelection = ({
 }: ModelSelectionProps) => {
   const hasAvailableModels = availableModels.length > 0;
   const shouldShowSelect = hasAvailableModels && !modelsFetchError;
+  const currentProvider = getProviderById(provider);
+
+  // For custom providers, use the default model as initial value if customModel is empty
+  const displayValue =
+    currentProvider?.isCustom && !customModel && currentProvider.defaultModel
+      ? currentProvider.defaultModel
+      : customModel;
 
   return (
     <div className="space-y-3">
@@ -90,7 +103,7 @@ export const ModelSelection = ({
         <div className="space-y-2">
           <Input
             placeholder={getPlaceholder(provider)}
-            value={customModel}
+            value={displayValue}
             onChange={(e) => onCustomModelChange(e.target.value)}
             disabled={disabled || isLoadingModels}
             className="w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"

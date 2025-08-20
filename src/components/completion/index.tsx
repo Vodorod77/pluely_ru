@@ -1,12 +1,4 @@
-import {
-  MicIcon,
-  PaperclipIcon,
-  Loader2,
-  XIcon,
-  CopyIcon,
-  MessageCircle,
-  X,
-} from "lucide-react";
+import { MicIcon, PaperclipIcon, Loader2, XIcon, CopyIcon } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -15,8 +7,9 @@ import {
   ScrollArea,
   Input,
 } from "@/components";
-import { useCompletion } from "@/hooks";
-import { useRef } from "react";
+import { useCompletion, useWindowFocus } from "@/hooks";
+import { useWindowResize } from "@/hooks";
+import { useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Speech } from "./Speech";
@@ -45,9 +38,13 @@ export const Completion = () => {
     currentConversationId,
     conversationHistory,
     startNewConversation,
+    messageHistoryOpen,
+    setMessageHistoryOpen,
   } = useCompletion();
 
+  const { resizeWindow } = useWindowResize();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -72,6 +69,32 @@ export const Completion = () => {
   };
 
   const isPopoverOpen = isLoading || response !== "" || error !== null;
+
+  useEffect(() => {
+    resizeWindow(isPopoverOpen || micOpen || messageHistoryOpen);
+  }, [isPopoverOpen, micOpen, messageHistoryOpen, resizeWindow]);
+
+  // Auto scroll to bottom when response updates
+  useEffect(() => {
+    if (response && scrollAreaRef.current) {
+      const scrollElement = scrollAreaRef.current.querySelector(
+        "[data-radix-scroll-area-viewport]"
+      );
+      if (scrollElement) {
+        scrollElement.scrollTo({
+          top: scrollElement.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+    }
+  }, [response]);
+
+  useWindowFocus({
+    onFocusLost: () => {
+      setMicOpen(false);
+      setMessageHistoryOpen(false);
+    },
+  });
 
   return (
     <>
@@ -124,7 +147,7 @@ export const Completion = () => {
             }
           }}
         >
-          <PopoverTrigger asChild>
+          <PopoverTrigger asChild className="!border-none">
             <div className="relative select-none">
               <Input
                 placeholder="Ask me anything..."
@@ -134,7 +157,7 @@ export const Completion = () => {
                 disabled={isLoading}
                 className={`${
                   currentConversationId && conversationHistory.length > 0
-                    ? "pr-24"
+                    ? "pr-14"
                     : "pr-12"
                 }`}
               />
@@ -144,17 +167,13 @@ export const Completion = () => {
                 conversationHistory.length > 0 &&
                 !isLoading && (
                   <div className="absolute select-none right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                    <div
-                      className="cursor-pointer flex items-center gap-1 rounded-xl px-2 py-1 transition-colors bg-muted/50 border border-primary/20 hover:border-primary/60"
-                      title={`${conversationHistory.length} messages in this conversation, clear conversation`}
-                      onClick={startNewConversation}
-                    >
-                      <MessageCircle className="h-4 w-4 text-primary" />
-                      <span className="text-sm text-primary font-medium">
-                        {conversationHistory.length}
-                      </span>
-                      <X className="h-3 w-3" />
-                    </div>
+                    <MessageHistory
+                      conversationHistory={conversationHistory}
+                      currentConversationId={currentConversationId}
+                      onStartNewConversation={startNewConversation}
+                      messageHistoryOpen={messageHistoryOpen}
+                      setMessageHistoryOpen={setMessageHistoryOpen}
+                    />
                   </div>
                 )}
 
@@ -175,13 +194,8 @@ export const Completion = () => {
             sideOffset={8}
           >
             <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
-              <h3 className="font-semibold text-sm">AI Response</h3>
-              <div className="flex items-center gap-2">
-                <MessageHistory
-                  conversationHistory={conversationHistory}
-                  currentConversationId={currentConversationId}
-                  onStartNewConversation={startNewConversation}
-                />
+              <h3 className="font-semibold text-sm select-none">AI Response</h3>
+              <div className="flex items-center gap-2 select-none">
                 <Button
                   size="icon"
                   variant="ghost"
@@ -212,7 +226,7 @@ export const Completion = () => {
               </div>
             </div>
 
-            <ScrollArea className="h-[calc(100vh-8rem)]">
+            <ScrollArea ref={scrollAreaRef} className="h-[calc(100vh-7rem)]">
               <div className="p-4">
                 {error && (
                   <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
@@ -221,13 +235,29 @@ export const Completion = () => {
                 )}
 
                 {response && (
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      pre: ({ node, ...props }) => (
+                        <pre
+                          {...props}
+                          className="whitespace-pre-wrap break-words"
+                        />
+                      ),
+                      code: ({ node, ...props }) => (
+                        <code
+                          {...props}
+                          className="whitespace-pre-wrap break-words"
+                        />
+                      ),
+                    }}
+                  >
                     {response}
                   </ReactMarkdown>
                 )}
 
                 {isLoading && (
-                  <div className="flex items-center gap-2 mt-4 text-muted-foreground animate-pulse">
+                  <div className="flex items-center gap-2 mt-4 text-muted-foreground animate-pulse select-none">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span className="text-sm">Generating response...</span>
                   </div>

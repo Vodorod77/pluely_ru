@@ -14,7 +14,16 @@ function Popover({
 function PopoverTrigger({
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Trigger>) {
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
+  return (
+    <PopoverPrimitive.Trigger
+      data-slot="popover-trigger"
+      {...props}
+      className={cn(
+        props.className,
+        "data-[state=open]:bg-primary-foreground data-[state=open]:text-primary data-[state=open]:border-primary/20 data-[state=open]:border-1 transition-all duration-300"
+      )}
+    />
+  );
 }
 
 function PopoverContent({

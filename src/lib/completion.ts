@@ -52,7 +52,74 @@ export const formatMessageForProvider = (
   }
 
   // format current user message based on provider
-  if (provider.id === "openai" || provider.id === "grok") {
+  if (provider.isCustom) {
+    // Handle custom providers based on their input structure
+    if (images.length === 0) {
+      // Use the custom provider's text example structure as a template
+      const textExample = provider.input.text.exampleStructure;
+      const messageContent =
+        systemPrompt && provider.id === "gemini"
+          ? `${systemPrompt}\n\n${text}`
+          : text;
+
+      // Create message based on the example structure
+      if (textExample.role) {
+        messages.push({
+          role: "user",
+          content: messageContent,
+          ...Object.keys(textExample).reduce((acc, key) => {
+            if (key !== "role" && key !== "content") {
+              acc[key] = textExample[key];
+            }
+            return acc;
+          }, {} as any),
+        });
+      } else if (textExample.parts) {
+        // Gemini-style format
+        messages.push({
+          role: "user",
+          parts: [{ text: messageContent }],
+        });
+      }
+    } else {
+      // Handle images for custom providers
+      const imageExample = provider.input.image.exampleStructure;
+      if (imageExample.content && Array.isArray(imageExample.content)) {
+        // OpenAI/Grok style with content array
+        const content: any[] = [{ type: "text", text }];
+        images.forEach((image) => {
+          if (provider.input.image.type === "url_or_base64") {
+            content.push({
+              type: "image_url",
+              image_url: { url: `data:${image.type};base64,${image.base64}` },
+            });
+          } else if (provider.input.image.type === "base64") {
+            content.push({
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: image.type,
+                data: image.base64,
+              },
+            });
+          }
+        });
+        messages.push({ role: "user", content });
+      } else if (imageExample.parts) {
+        // Gemini-style with parts
+        const parts: any[] = [{ text }];
+        images.forEach((image) => {
+          parts.push({
+            inline_data: {
+              mime_type: image.type,
+              data: image.base64,
+            },
+          });
+        });
+        messages.push({ role: "user", parts });
+      }
+    }
+  } else if (provider.id === "openai" || provider.id === "grok") {
     if (images.length === 0) {
       const content =
         systemPrompt && provider.id === "gemini"

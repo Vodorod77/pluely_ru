@@ -15,6 +15,7 @@ import {
 } from "@/components";
 import { loadChatHistory, deleteConversation } from "@/lib";
 import { ChatConversation } from "@/types";
+import { useWindowResize, useWindowFocus } from "@/hooks";
 
 interface ChatHistoryProps {
   onSelectConversation: (conversation: ChatConversation) => void;
@@ -32,6 +33,7 @@ export const ChatHistory = ({
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
   >(null);
+  const { resizeWindow } = useWindowResize();
 
   // Load conversations when component mounts or popover opens
   useEffect(() => {
@@ -89,6 +91,16 @@ export const ChatHistory = ({
     }
   };
 
+  useEffect(() => {
+    resizeWindow(isOpen);
+  }, [isOpen, resizeWindow]);
+
+  useWindowFocus({
+    onFocusLost: () => {
+      setIsOpen(false);
+    },
+  });
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
@@ -130,7 +142,7 @@ export const ChatHistory = ({
           </p>
         </div>
 
-        <ScrollArea className="h-[calc(100vh-8rem)] max-h-96">
+        <ScrollArea className="h-[calc(100vh-8.75rem)]">
           <div className="p-2">
             {conversations.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -143,7 +155,7 @@ export const ChatHistory = ({
                 </p>
               </div>
             ) : (
-              <div className="space-y-1">
+              <div className="space-y-1 pr-2">
                 {conversations.map((conversation) => (
                   <div
                     key={conversation.id}

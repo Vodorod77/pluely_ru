@@ -1,4 +1,4 @@
-import { SettingsState, ChatConversation } from "@/types";
+import { SettingsState, ChatConversation, CustomProvider } from "@/types";
 import { STORAGE_KEYS, DEFAULT_SYSTEM_PROMPT } from "@/config";
 
 const defaultSettings: SettingsState = {
@@ -100,4 +100,58 @@ export const generateConversationTitle = (firstMessage: string): string => {
   // Generate a title from the first message, truncated to 50 characters
   const cleaned = firstMessage.replace(/\n/g, " ").trim();
   return cleaned.length > 50 ? cleaned.substring(0, 47) + "..." : cleaned;
+};
+
+// Custom provider storage functions
+export const loadCustomProvidersFromStorage = (): CustomProvider[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS.CUSTOM_PROVIDERS);
+    const parsed = stored ? JSON.parse(stored) : [];
+    return parsed;
+  } catch (error) {
+    console.error("Failed to load custom providers from localStorage:", error);
+    return [];
+  }
+};
+
+export const saveCustomProvidersToStorage = (providers: CustomProvider[]) => {
+  try {
+    localStorage.setItem(
+      STORAGE_KEYS.CUSTOM_PROVIDERS,
+      JSON.stringify(providers)
+    );
+
+    // Verify it was saved correctly
+    const saved = localStorage.getItem(STORAGE_KEYS.CUSTOM_PROVIDERS);
+    return saved ? JSON.parse(saved) : [];
+  } catch (error) {
+    console.error("Failed to save custom providers to localStorage:", error);
+  }
+};
+
+export const addCustomProvider = (provider: CustomProvider) => {
+  const providers = loadCustomProvidersFromStorage();
+  const existingIndex = providers.findIndex((p) => p.id === provider.id);
+
+  if (existingIndex >= 0) {
+    providers[existingIndex] = provider;
+  } else {
+    providers.push(provider);
+  }
+
+  saveCustomProvidersToStorage(providers);
+};
+
+export const deleteCustomProvider = (providerId: string) => {
+  const providers = loadCustomProvidersFromStorage();
+
+  const filtered = providers.filter((p) => p.id !== providerId);
+  saveCustomProvidersToStorage(filtered);
+};
+
+export const getCustomProvider = (
+  providerId: string
+): CustomProvider | null => {
+  const providers = loadCustomProvidersFromStorage();
+  return providers.find((p) => p.id === providerId) || null;
 };

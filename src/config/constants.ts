@@ -3,6 +3,7 @@ export const STORAGE_KEYS = {
   SETTINGS: "settings",
   THEME: "theme",
   CHAT_HISTORY: "chat_history",
+  CUSTOM_PROVIDERS: "custom_providers",
 } as const;
 
 // Available AI providers
@@ -178,6 +179,31 @@ export const providers = [
       responsePath: "models",
       idKey: "name",
     },
+  },
+  {
+    id: "custom",
+    name: "Custom Provider",
+    baseUrl: "",
+    chatEndpoint: "",
+    authType: "bearer",
+    defaultModel: "",
+    response: {
+      contentPath: "",
+      usagePath: "",
+    },
+    input: {
+      text: {
+        placement: "",
+        exampleStructure: {},
+      },
+      image: {
+        type: "",
+        placement: "",
+        exampleStructure: {},
+      },
+    },
+    models: null,
+    isCustom: true,
   },
 ];
 
