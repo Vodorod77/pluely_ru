@@ -72,9 +72,15 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 ### 🔧 **AI Provider Setup**
 
-Get started with your preferred AI provider in seconds. Pluely supports all major LLM providers with dynamic model fetching:
+Get started with your preferred AI provider in seconds. Pluely supports all major LLM providers with dynamic model fetching, and you can also add custom providers:
 
 <div>
+
+#### **Custom provider Setup**
+
+<img src="images/custom-provider.GIF" alt="Custom provider Setup" width="600"/>
+
+_Add your custom provider and select the provider from AI providers in the AI Providers section, then enter your API key and AI model_
 
 #### **OpenAI Setup**
 
