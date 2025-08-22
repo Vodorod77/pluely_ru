@@ -24,6 +24,7 @@ import {
 import { SettingsState } from "@/types";
 import { useCustomProvider } from "@/hooks";
 import { ScreenshotConfigs } from "./ScreenshotConfigs";
+import { DeleteChats } from "./DeleteChats";
 export const Settings = () => {
   const [settings, setSettings] = useState<SettingsState>(
     loadSettingsFromStorage
@@ -256,6 +257,9 @@ export const Settings = () => {
                   isSubmitted={settings.isOpenAiApiKeySubmitted}
                 />
               )}
+
+            {/* Delete Chat History */}
+            <DeleteChats />
           </div>
 
           <div className="pb-4 flex items-center justify-center">

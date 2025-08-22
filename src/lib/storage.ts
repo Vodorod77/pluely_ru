@@ -108,6 +108,19 @@ export const deleteConversation = (conversationId: string) => {
   saveChatHistory(filtered);
 };
 
+export const deleteAllConversations = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEYS.CHAT_HISTORY);
+    return true;
+  } catch (error) {
+    console.error(
+      "Failed to delete all conversations from localStorage:",
+      error
+    );
+    return false;
+  }
+};
+
 export const generateConversationTitle = (firstMessage: string): string => {
   // Generate a title from the first message, truncated to 50 characters
   const cleaned = firstMessage.replace(/\n/g, " ").trim();
