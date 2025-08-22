@@ -19,6 +19,7 @@ export const Input = ({
   input,
   setInput,
   handleKeyPress,
+  handlePaste,
   currentConversationId,
   conversationHistory,
   startNewConversation,
@@ -46,6 +47,7 @@ export const Input = ({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
+              onPaste={handlePaste}
               disabled={isLoading}
               className={`${
                 currentConversationId && conversationHistory.length > 0

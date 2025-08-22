@@ -4,6 +4,7 @@ import {
   RefObject,
   KeyboardEvent,
   ChangeEvent,
+  ClipboardEvent,
 } from "react";
 import {
   AttachedFile,
@@ -101,6 +102,8 @@ export interface UseCompletionReturn {
   handleFileSelect: (e: ChangeEvent<HTMLInputElement>) => void;
   /** Event handler for keyboard interactions (Enter to submit) */
   handleKeyPress: (e: KeyboardEvent) => void;
+  /** Event handler for paste events to handle image pasting */
+  handlePaste: (e: ClipboardEvent) => Promise<void>;
 
   // UI helpers and computed values
   /** Whether any popover/modal should be open (computed from loading/response/error state) */

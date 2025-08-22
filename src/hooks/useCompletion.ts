@@ -19,6 +19,7 @@ import {
 } from "@/types";
 import { useWindowResize } from "./useWindow";
 import { useWindowFocus } from "@/hooks";
+import { MAX_FILES } from "@/config";
 
 export const useCompletion = () => {
   const [state, setState] = useState<CompletionState>({
@@ -522,6 +523,41 @@ export const useCompletion = () => {
     }
   };
 
+  const handlePaste = useCallback(
+    async (e: React.ClipboardEvent) => {
+      // Check if clipboard contains images
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      const hasImages = Array.from(items).some((item) =>
+        item.type.startsWith("image/")
+      );
+
+      // If we have images, prevent default text pasting and process images
+      if (hasImages) {
+        e.preventDefault();
+
+        const processedFiles: File[] = [];
+
+        Array.from(items).forEach((item) => {
+          if (
+            item.type.startsWith("image/") &&
+            state.attachedFiles.length + processedFiles.length < MAX_FILES
+          ) {
+            const file = item.getAsFile();
+            if (file) {
+              processedFiles.push(file);
+            }
+          }
+        });
+
+        // Process all files
+        await Promise.all(processedFiles.map((file) => addFile(file)));
+      }
+    },
+    [state.attachedFiles.length, addFile]
+  );
+
   const isPopoverOpen =
     state.isLoading || state.response !== "" || state.error !== null;
 
@@ -590,6 +626,7 @@ export const useCompletion = () => {
     handleScreenshotSubmit,
     handleFileSelect,
     handleKeyPress,
+    handlePaste,
     isPopoverOpen,
     scrollAreaRef,
     resizeWindow,
