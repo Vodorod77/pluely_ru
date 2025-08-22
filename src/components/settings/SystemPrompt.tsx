@@ -7,24 +7,26 @@ interface SystemPromptProps {
 
 export const SystemPrompt = ({ value, onChange }: SystemPromptProps) => {
   return (
-    <div className="space-y-2">
-      <div>
-        <Label className="text-sm font-semibold">System Prompt</Label>
+    <div className="space-y-3">
+      <div className="border-b border-input/50 pb-2">
+        <Label className="text-lg font-semibold">System Prompt</Label>
         <p className="text-xs text-muted-foreground leading-relaxed">
           Define the AI's behavior and personality. This message sets the
           context for all conversations.
         </p>
       </div>
 
-      <Textarea
-        placeholder="You are a helpful AI assistant. Be concise, accurate, and friendly in your responses..."
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="min-h-[100px] resize-none border-1 border-input/50 focus:border-primary/50 transition-colors"
-      />
-      <p className="text-xs text-muted-foreground/70">
-        💡 Tip: Be specific about tone, expertise level, and response format
-      </p>
+      <div className="space-y-2">
+        <Textarea
+          placeholder="You are a helpful AI assistant. Be concise, accurate, and friendly in your responses..."
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="min-h-[100px] resize-none border-1 border-input/50 focus:border-primary/50 transition-colors"
+        />
+        <p className="text-xs text-muted-foreground/70">
+          💡 Tip: Be specific about tone, expertise level, and response format
+        </p>
+      </div>
     </div>
   );
 };

@@ -53,7 +53,7 @@ export const ModelSelection = ({
 
   return (
     <div className="space-y-3">
-      <div>
+      <div className="border-b border-input/50 pb-2">
         <Label className="text-sm font-semibold flex items-center gap-2">
           AI Model
           {isLoadingModels && (
@@ -67,58 +67,60 @@ export const ModelSelection = ({
         </p>
       </div>
 
-      {/* Show error message if model fetching failed */}
-      {modelsFetchError && (
-        <div className="text-xs text-destructive bg-destructive/10 p-2 rounded border border-destructive/20">
-          ⚠️ {modelsFetchError}
-        </div>
-      )}
+      <div className="space-y-2">
+        {/* Show error message if model fetching failed */}
+        {modelsFetchError && (
+          <div className="text-xs text-destructive bg-destructive/10 p-2 rounded border border-destructive/20">
+            ⚠️ {modelsFetchError}
+          </div>
+        )}
 
-      {shouldShowSelect ? (
-        <Select
-          value={selectedModel}
-          onValueChange={onModelChange}
-          disabled={disabled || isLoadingModels}
-        >
-          <SelectTrigger className="w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors">
-            <SelectValue placeholder="Select your preferred model">
-              {selectedModel && <span>{selectedModel}</span>}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {availableModels.map((modelId) => (
-              <SelectItem
-                key={modelId}
-                value={modelId}
-                className="cursor-pointer hover:bg-accent/50"
-              >
-                <span className="font-medium">
-                  {modelId.replace("models/", "")}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      ) : (
-        <div className="space-y-2">
-          <Input
-            placeholder={getPlaceholder(provider)}
-            value={displayValue}
-            onChange={(e) => onCustomModelChange(e.target.value)}
+        {shouldShowSelect ? (
+          <Select
+            value={selectedModel}
+            onValueChange={onModelChange}
             disabled={disabled || isLoadingModels}
-            className="w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
-          />
-          <p className="text-xs text-muted-foreground/70">
-            💡 Tip: Check your provider's documentation for best available
-            models.
-            {provider === "openai" && modelsFetchError && (
-              <span className="block mt-1 text-destructive">
-                Unable to fetch models automatically. Please enter manually.
-              </span>
-            )}
-          </p>
-        </div>
-      )}
+          >
+            <SelectTrigger className="w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors">
+              <SelectValue placeholder="Select your preferred model">
+                {selectedModel && <span>{selectedModel}</span>}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {availableModels.map((modelId) => (
+                <SelectItem
+                  key={modelId}
+                  value={modelId}
+                  className="cursor-pointer hover:bg-accent/50"
+                >
+                  <span className="font-medium">
+                    {modelId.replace("models/", "")}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="space-y-2">
+            <Input
+              placeholder={getPlaceholder(provider)}
+              value={displayValue}
+              onChange={(e) => onCustomModelChange(e.target.value)}
+              disabled={disabled || isLoadingModels}
+              className="w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
+            />
+            <p className="text-xs text-muted-foreground/70">
+              💡 Tip: Check your provider's documentation for best available
+              models.
+              {provider === "openai" && modelsFetchError && (
+                <span className="block mt-1 text-destructive">
+                  Unable to fetch models automatically. Please enter manually.
+                </span>
+              )}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

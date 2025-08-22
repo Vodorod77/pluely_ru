@@ -23,8 +23,8 @@ export const ApiKeyInput = ({
   disabled,
 }: ApiKeyInputProps) => {
   return (
-    <div className="space-y-2">
-      <div>
+    <div className="space-y-3">
+      <div className="border-b border-input/50 pb-2">
         <Label className="text-sm font-semibold flex items-center gap-2">
           API Key
         </Label>
@@ -35,37 +35,39 @@ export const ApiKeyInput = ({
         </p>
       </div>
 
-      <div className="flex gap-2">
-        <Input
-          type="password"
-          placeholder="**********"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyPress={onKeyPress}
-          disabled={isSubmitted || disabled}
-          className="flex-1 h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
-        />
-        {!isSubmitted ? (
-          <Button
-            onClick={onSubmit}
-            disabled={!value.trim()}
-            size="icon"
-            className="shrink-0 h-11 w-11"
-            title="Submit API Key"
-          >
-            <KeyIcon className="h-4 w-4" />
-          </Button>
-        ) : (
-          <Button
-            onClick={onDelete}
-            size="icon"
-            variant="destructive"
-            className="shrink-0 h-11 w-11"
-            title="Remove API Key"
-          >
-            <TrashIcon className="h-4 w-4" />
-          </Button>
-        )}
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <Input
+            type="password"
+            placeholder="**********"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyPress={onKeyPress}
+            disabled={isSubmitted || disabled}
+            className="flex-1 h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
+          />
+          {!isSubmitted ? (
+            <Button
+              onClick={onSubmit}
+              disabled={!value.trim()}
+              size="icon"
+              className="shrink-0 h-11 w-11"
+              title="Submit API Key"
+            >
+              <KeyIcon className="h-4 w-4" />
+            </Button>
+          ) : (
+            <Button
+              onClick={onDelete}
+              size="icon"
+              variant="destructive"
+              className="shrink-0 h-11 w-11"
+              title="Remove API Key"
+            >
+              <TrashIcon className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

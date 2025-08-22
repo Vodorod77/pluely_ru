@@ -28,37 +28,23 @@ export const ProviderSelection = ({
     setCustomProviders(loadCustomProvidersFromStorage());
   }, [refreshKey]);
   return (
-    <div className="space-y-2">
-      <div>
+    <div className="space-y-3">
+      <div className="border-b border-input/50 pb-2">
         <Label className="text-sm font-semibold">AI Provider</Label>
         <p className="text-xs text-muted-foreground leading-relaxed">
           Select your preferred AI service provider to get started.
         </p>
       </div>
 
-      <Select value={value} onValueChange={onChange}>
-        <SelectTrigger className="w-full border-1 border-input/50 focus:border-primary/50 transition-colors">
-          <SelectValue placeholder="Choose your AI provider" />
-        </SelectTrigger>
-        <SelectContent>
-          {providers
-            .filter((provider) => provider.id !== "custom")
-            .map((provider) => (
-              <SelectItem
-                key={provider.id}
-                value={provider.id}
-                className="cursor-pointer hover:bg-accent/50"
-              >
-                <span className="font-medium">{provider.name}</span>
-              </SelectItem>
-            ))}
-
-          {customProviders.length > 0 && (
-            <>
-              <div className="px-2 py-1 text-xs font-semibold text-muted-foreground border-t mt-2 pt-2">
-                Custom Providers
-              </div>
-              {customProviders.map((provider) => (
+      <div className="space-y-2">
+        <Select value={value} onValueChange={onChange}>
+          <SelectTrigger className="w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors">
+            <SelectValue placeholder="Choose your AI provider" />
+          </SelectTrigger>
+          <SelectContent>
+            {providers
+              .filter((provider) => provider.id !== "custom")
+              .map((provider) => (
                 <SelectItem
                   key={provider.id}
                   value={provider.id}
@@ -67,10 +53,26 @@ export const ProviderSelection = ({
                   <span className="font-medium">{provider.name}</span>
                 </SelectItem>
               ))}
-            </>
-          )}
-        </SelectContent>
-      </Select>
+
+            {customProviders.length > 0 && (
+              <>
+                <div className="px-2 py-1 text-xs font-semibold text-muted-foreground border-t mt-2 pt-2">
+                  Custom Providers
+                </div>
+                {customProviders.map((provider) => (
+                  <SelectItem
+                    key={provider.id}
+                    value={provider.id}
+                    className="cursor-pointer hover:bg-accent/50"
+                  >
+                    <span className="font-medium">{provider.name}</span>
+                  </SelectItem>
+                ))}
+              </>
+            )}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 };
