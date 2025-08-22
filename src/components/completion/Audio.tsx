@@ -1,6 +1,6 @@
 import { MicIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger, Button } from "@/components";
-import { Speech } from "./Speech";
+import { AutoSpeechVAD } from "./AutoSpeechVad";
 import { UseCompletionReturn } from "@/types";
 
 export const Audio = ({
@@ -16,7 +16,7 @@ export const Audio = ({
     <Popover open={micOpen} onOpenChange={setMicOpen}>
       <PopoverTrigger asChild>
         {isOpenAIKeyAvailable() && enableVAD ? (
-          <Speech
+          <AutoSpeechVAD
             submit={submit}
             setState={setState}
             setEnableVAD={setEnableVAD}

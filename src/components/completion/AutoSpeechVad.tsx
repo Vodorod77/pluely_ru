@@ -5,13 +5,17 @@ import { LoaderCircleIcon, MicIcon, MicOffIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../ui/button";
 
-interface SpeechProps {
+interface AutoSpeechVADProps {
   submit: UseCompletionReturn["submit"];
   setState: UseCompletionReturn["setState"];
   setEnableVAD: UseCompletionReturn["setEnableVAD"];
 }
 
-export const Speech = ({ submit, setState, setEnableVAD }: SpeechProps) => {
+export const AutoSpeechVAD = ({
+  submit,
+  setState,
+  setEnableVAD,
+}: AutoSpeechVADProps) => {
   const [isTranscribing, setIsTranscribing] = useState(false);
 
   const vad = useMicVAD({
