@@ -6,9 +6,8 @@ import {
   Button,
   ScrollArea,
   Input as InputComponent,
+  Markdown,
 } from "@/components";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { MessageHistory } from "../history";
 import { UseCompletionReturn } from "@/types";
 
@@ -128,27 +127,7 @@ export const Input = ({
                 </div>
               )}
 
-              {response && (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    pre: ({ node, ...props }) => (
-                      <pre
-                        {...props}
-                        className="whitespace-pre-wrap break-words"
-                      />
-                    ),
-                    code: ({ node, ...props }) => (
-                      <code
-                        {...props}
-                        className="whitespace-pre-wrap break-words"
-                      />
-                    ),
-                  }}
-                >
-                  {response}
-                </ReactMarkdown>
-              )}
+              {response && <Markdown>{response}</Markdown>}
 
               {isLoading && (
                 <div className="flex items-center gap-2 mt-4 text-muted-foreground animate-pulse select-none">

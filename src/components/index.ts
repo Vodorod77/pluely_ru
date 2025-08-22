@@ -3,3 +3,4 @@ export * from "./settings";
 export * from "./history";
 export * from "./updater";
 export * from "./ui";
+export * from "./Markdown";

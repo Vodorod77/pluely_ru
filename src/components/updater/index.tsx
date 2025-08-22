@@ -6,8 +6,6 @@ import {
   AlertCircle,
   ExternalLink,
 } from "lucide-react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import {
   Button,
   Popover,
@@ -18,6 +16,7 @@ import {
 import { check, Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { useWindowResize } from "@/hooks/useWindow";
+import { Markdown } from "../Markdown";
 
 type UpdateState =
   | "checking"
@@ -240,25 +239,7 @@ export const Updater = () => {
             {/* Release Notes */}
             <div className="prose prose-sm dark:prose-invert max-w-none">
               {update?.body ? (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    pre: ({ node, ...props }) => (
-                      <pre
-                        {...props}
-                        className="whitespace-pre-wrap break-words"
-                      />
-                    ),
-                    code: ({ node, ...props }) => (
-                      <code
-                        {...props}
-                        className="whitespace-pre-wrap break-words"
-                      />
-                    ),
-                  }}
-                >
-                  {update.body}
-                </ReactMarkdown>
+                <Markdown>{update.body}</Markdown>
               ) : (
                 <p className="text-sm text-muted-foreground">
                   Release notes not available for this version.
