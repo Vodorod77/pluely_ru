@@ -37,6 +37,13 @@ export interface CustomProvider {
   imageExampleStructure?: string;
 }
 
+// Screenshot configuration types
+export interface ScreenshotConfig {
+  mode: "auto" | "manual";
+  autoPrompt: string;
+  enabled: boolean;
+}
+
 // Settings-related types
 export interface SettingsState {
   selectedProvider: string;
@@ -50,6 +57,7 @@ export interface SettingsState {
   modelsFetchError: string | null;
   openAiApiKey: string;
   isOpenAiApiKeySubmitted: boolean;
+  screenshotConfig: ScreenshotConfig;
 }
 
 export interface ModelSelectionProps {

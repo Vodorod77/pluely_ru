@@ -1,5 +1,16 @@
-import { SettingsState, ChatConversation, CustomProvider } from "@/types";
+import {
+  SettingsState,
+  ChatConversation,
+  CustomProvider,
+  ScreenshotConfig,
+} from "@/types";
 import { STORAGE_KEYS, DEFAULT_SYSTEM_PROMPT } from "@/config";
+
+const defaultScreenshotConfig: ScreenshotConfig = {
+  mode: "manual",
+  autoPrompt: "Analyze this screenshot and provide insights",
+  enabled: true,
+};
 
 const defaultSettings: SettingsState = {
   selectedProvider: "",
@@ -13,6 +24,7 @@ const defaultSettings: SettingsState = {
   modelsFetchError: null,
   openAiApiKey: "",
   isOpenAiApiKeySubmitted: false,
+  screenshotConfig: defaultScreenshotConfig,
 };
 
 export const loadSettingsFromStorage = (): SettingsState => {
@@ -154,4 +166,28 @@ export const getCustomProvider = (
 ): CustomProvider | null => {
   const providers = loadCustomProvidersFromStorage();
   return providers.find((p) => p.id === providerId) || null;
+};
+
+// Screenshot config storage functions
+export const loadScreenshotConfig = (): ScreenshotConfig => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEYS.SCREENSHOT_CONFIG);
+    if (stored) {
+      return { ...defaultScreenshotConfig, ...JSON.parse(stored) };
+    }
+  } catch (error) {
+    console.error("Failed to load screenshot config from localStorage:", error);
+  }
+  return defaultScreenshotConfig;
+};
+
+export const saveScreenshotConfig = (config: ScreenshotConfig) => {
+  try {
+    localStorage.setItem(
+      STORAGE_KEYS.SCREENSHOT_CONFIG,
+      JSON.stringify(config)
+    );
+  } catch (error) {
+    console.error("Failed to save screenshot config to localStorage:", error);
+  }
 };

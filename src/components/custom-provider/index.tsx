@@ -70,8 +70,8 @@ export const CustomProviderComponent = ({
   resetForm,
 }: CustomProviderProps) => {
   return (
-    <div className="space-y-4">
-      <div>
+    <div className="space-y-3">
+      <div className="border-b border-input/50 pb-2">
         <Label className="text-sm font-semibold flex items-center gap-2">
           Custom Providers
         </Label>
@@ -81,74 +81,76 @@ export const CustomProviderComponent = ({
         </p>
       </div>
 
-      {/* Existing Custom Providers */}
-      {customProviders.length > 0 && (
-        <div className="space-y-2">
-          {customProviders.map((provider) => (
-            <Card key={provider.id} className="p-3 border border-input/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-sm">{provider.name}</h4>
-                  <p className="text-xs text-muted-foreground">
-                    {provider.baseUrl}
-                  </p>
+      <div className="space-y-2">
+        {/* Existing Custom Providers */}
+        {customProviders.length > 0 && (
+          <div className="space-y-2">
+            {customProviders.map((provider) => (
+              <Card key={provider.id} className="p-3 border border-input/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-sm">{provider.name}</h4>
+                    <p className="text-xs text-muted-foreground">
+                      {provider.baseUrl}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleEdit(provider)}
+                      title="Edit Provider"
+                    >
+                      <EditIcon className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        handleDelete(provider.id);
+                      }}
+                      title="Delete Provider"
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <TrashIcon className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleEdit(provider)}
-                    title="Edit Provider"
-                  >
-                    <EditIcon className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      handleDelete(provider.id);
-                    }}
-                    title="Delete Provider"
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <TrashIcon className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+              </Card>
+            ))}
+          </div>
+        )}
 
-      {/* Add/Edit Form */}
-      {!showForm ? (
-        <Button
-          onClick={() => setShowForm(true)}
-          variant="outline"
-          className="w-full"
-        >
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Add Custom Provider
-        </Button>
-      ) : (
-        <ManageCustomProvider
-          editingProvider={editingProvider}
-          saveError={saveError}
-          formData={formData}
-          setFormData={setFormData}
-          errors={errors}
-          handleSave={handleSave}
-          resetForm={resetForm}
-        />
-      )}
+        {/* Add/Edit Form */}
+        {!showForm ? (
+          <Button
+            onClick={() => setShowForm(true)}
+            variant="outline"
+            className="w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
+          >
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Add Custom Provider
+          </Button>
+        ) : (
+          <ManageCustomProvider
+            editingProvider={editingProvider}
+            saveError={saveError}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+            handleSave={handleSave}
+            resetForm={resetForm}
+          />
+        )}
 
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
-        <DeleteCustomProvider
-          cancelDelete={cancelDelete}
-          confirmDelete={confirmDelete}
-        />
-      )}
+        {/* Delete Confirmation Dialog */}
+        {deleteConfirm && (
+          <DeleteCustomProvider
+            cancelDelete={cancelDelete}
+            confirmDelete={confirmDelete}
+          />
+        )}
+      </div>
     </div>
   );
 };

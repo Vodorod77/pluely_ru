@@ -23,6 +23,7 @@ import {
 } from "@/lib";
 import { SettingsState } from "@/types";
 import { useCustomProvider } from "@/hooks";
+import { ScreenshotConfigs } from "./ScreenshotConfigs";
 export const Settings = () => {
   const [settings, setSettings] = useState<SettingsState>(
     loadSettingsFromStorage
@@ -169,6 +170,13 @@ export const Settings = () => {
       >
         <ScrollArea className="h-[calc(100vh-6.5rem)]">
           <div className="p-6 space-y-4">
+            {/* System Prompt */}
+            <SystemPrompt
+              value={settings.systemPrompt}
+              onChange={(value) => updateSettings({ systemPrompt: value })}
+            />
+            {/* Screenshot Configs */}
+            <ScreenshotConfigs />
             {/* Configuration Header */}
             <div className="border-b border-input/50 pb-2">
               <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
@@ -248,12 +256,6 @@ export const Settings = () => {
                   isSubmitted={settings.isOpenAiApiKeySubmitted}
                 />
               )}
-
-            {/* System Prompt */}
-            <SystemPrompt
-              value={settings.systemPrompt}
-              onChange={(value) => updateSettings({ systemPrompt: value })}
-            />
           </div>
 
           <div className="pb-4 flex items-center justify-center">

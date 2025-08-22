@@ -4,6 +4,7 @@ export const STORAGE_KEYS = {
   THEME: "theme",
   CHAT_HISTORY: "chat_history",
   CUSTOM_PROVIDERS: "custom_providers",
+  SCREENSHOT_CONFIG: "screenshot_config",
 } as const;
 
 // Available AI providers

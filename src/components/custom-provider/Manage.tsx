@@ -75,7 +75,7 @@ export const ManageCustomProvider = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 -mt-3">
         {/* Basic Configuration */}
         <div className="space-y-3">
           <div>
@@ -86,7 +86,9 @@ export const ManageCustomProvider = ({
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, name: e.target.value }))
               }
-              className={`text-sm ${errors.name ? "border-destructive" : ""}`}
+              className={`h-11 border-1 border-input/50 focus:border-primary/50 transition-colors ${
+                errors.name ? "border-destructive" : ""
+              }`}
             />
             {errors.name && (
               <p className="text-xs text-destructive mt-1">{errors.name}</p>
@@ -104,7 +106,7 @@ export const ManageCustomProvider = ({
                   baseUrl: e.target.value,
                 }))
               }
-              className={`text-sm ${
+              className={`h-11 border-1 border-input/50 focus:border-primary/50 transition-colors ${
                 errors.baseUrl ? "border-destructive" : ""
               }`}
             />
@@ -124,7 +126,7 @@ export const ManageCustomProvider = ({
                   chatEndpoint: e.target.value,
                 }))
               }
-              className={`text-sm ${
+              className={`h-11 border-1 border-input/50 focus:border-primary/50 transition-colors ${
                 errors.chatEndpoint ? "border-destructive" : ""
               }`}
             />
@@ -143,7 +145,7 @@ export const ManageCustomProvider = ({
                 setFormData((prev) => ({ ...prev, authType: value }))
               }
             >
-              <SelectTrigger className="text-sm">
+              <SelectTrigger className="h-11 border-1 border-input/50 focus:border-primary/50 transition-colors">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -166,7 +168,7 @@ export const ManageCustomProvider = ({
                     customHeaderName: e.target.value,
                   }))
                 }
-                className="text-sm"
+                className="h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
               />
               <div className="mt-2 p-3 bg-muted/50 rounded-md border">
                 <p className="text-xs font-medium text-foreground mb-1">
@@ -208,7 +210,7 @@ export const ManageCustomProvider = ({
                     authParam: e.target.value,
                   }))
                 }
-                className="text-sm"
+                className="h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
               />
               <div className="mt-2 p-3 bg-muted/50 rounded-md border">
                 <p className="text-xs font-medium text-foreground mb-1">
@@ -250,7 +252,7 @@ export const ManageCustomProvider = ({
                   defaultModel: e.target.value,
                 }))
               }
-              className="text-sm"
+              className="h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
             />
           </div>
 
@@ -288,7 +290,7 @@ export const ManageCustomProvider = ({
                   responseContentPath: e.target.value,
                 }))
               }
-              className={`text-sm ${
+              className={`h-11 border-1 border-input/50 focus:border-primary/50 transition-colors ${
                 errors.responseContentPath ? "border-destructive" : ""
               }`}
             />
@@ -310,7 +312,7 @@ export const ManageCustomProvider = ({
                   responseUsagePath: e.target.value,
                 }))
               }
-              className="text-sm"
+              className="h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
             />
           </div>
 
@@ -349,7 +351,7 @@ export const ManageCustomProvider = ({
                 setFormData((prev) => ({ ...prev, imageType: value }))
               }
             >
-              <SelectTrigger className="text-sm">
+              <SelectTrigger className="h-11 border-1 border-input/50 focus:border-primary/50 transition-colors">
                 <SelectValue placeholder="Select image type" />
               </SelectTrigger>
               <SelectContent>
@@ -389,8 +391,12 @@ export const ManageCustomProvider = ({
         </div>
       </div>
 
-      <div className="flex justify-end gap-2 pt-2 border-t">
-        <Button variant="outline" onClick={resetForm}>
+      <div className="flex justify-end gap-2 -mt-3">
+        <Button
+          variant="outline"
+          onClick={resetForm}
+          className="h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
+        >
           Cancel
         </Button>
         <Button
@@ -400,6 +406,7 @@ export const ManageCustomProvider = ({
             !formData.baseUrl.trim() ||
             !formData.chatEndpoint.trim()
           }
+          className="h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
         >
           <SaveIcon className="h-4 w-4 mr-2" />
           {editingProvider ? "Update" : "Save"} Provider
