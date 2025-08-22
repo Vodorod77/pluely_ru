@@ -508,6 +508,11 @@ export const useCompletion = () => {
     }
   };
 
+  const onRemoveAllFiles = () => {
+    clearFiles();
+    setIsFilesPopoverOpen(false);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -574,7 +579,6 @@ export const useCompletion = () => {
     setEnableVAD,
     micOpen,
     setMicOpen,
-    // Conversation history functions
     currentConversationId: state.currentConversationId,
     conversationHistory: state.conversationHistory,
     loadConversation,
@@ -591,5 +595,6 @@ export const useCompletion = () => {
     resizeWindow,
     isFilesPopoverOpen,
     setIsFilesPopoverOpen,
+    onRemoveAllFiles,
   };
 };

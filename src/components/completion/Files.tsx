@@ -6,29 +6,19 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "../ui/button";
 import { PaperclipIcon, XIcon, PlusIcon, TrashIcon } from "lucide-react";
-import { AttachedFile } from "@/types";
+import { UseCompletionReturn } from "@/types";
 import { MAX_FILES } from "@/config";
 import { ScrollArea } from "../ui/scroll-area";
 
-interface FilesProps {
-  attachedFiles: AttachedFile[];
-  onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onRemoveFile: (fileId: string) => void;
-  onRemoveAllFiles: () => void;
-  isLoading: boolean;
-  isFilesPopoverOpen: boolean;
-  setIsFilesPopoverOpen: (open: boolean) => void;
-}
-
 export const Files = ({
   attachedFiles,
-  onFileSelect,
-  onRemoveFile,
+  handleFileSelect,
+  removeFile,
   onRemoveAllFiles,
   isLoading,
   isFilesPopoverOpen,
   setIsFilesPopoverOpen,
-}: FilesProps) => {
+}: UseCompletionReturn) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddMoreClick = () => {
@@ -122,7 +112,7 @@ export const Files = ({
                       size="icon"
                       variant="default"
                       className="absolute top-2 right-2 h-6 w-6 cursor-pointer"
-                      onClick={() => onRemoveFile(file.id)}
+                      onClick={() => removeFile(file.id)}
                       title="Remove image"
                     >
                       <XIcon className="h-3 w-3" />
@@ -161,7 +151,7 @@ export const Files = ({
         type="file"
         multiple
         accept="image/*"
-        onChange={onFileSelect}
+        onChange={handleFileSelect}
         className="hidden"
       />
     </div>

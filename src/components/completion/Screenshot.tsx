@@ -1,34 +1,28 @@
 import { Button } from "../ui/button";
 import { LaptopMinimalIcon, Loader2 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
-import { AttachedFile, ScreenshotConfig } from "@/types";
+import { UseCompletionReturn } from "@/types";
 import { MAX_FILES } from "@/config";
 import { useState } from "react";
 
-interface ScreenshotProps {
-  screenshotConfig: ScreenshotConfig;
-  onScreenshotSubmit?: (base64: string, prompt?: string) => void;
-  attachedFiles: AttachedFile[];
-}
-
 export const Screenshot = ({
   screenshotConfig,
-  onScreenshotSubmit,
+  handleScreenshotSubmit,
   attachedFiles,
-}: ScreenshotProps) => {
+}: UseCompletionReturn) => {
   const [isScreenshotLoading, setIsScreenshotLoading] = useState(false);
   const captureScreenshot = async () => {
-    if (!screenshotConfig.enabled || !onScreenshotSubmit) return;
+    if (!screenshotConfig.enabled || !handleScreenshotSubmit) return;
     setIsScreenshotLoading(true);
     try {
       const base64 = await invoke("capture_to_base64");
 
       if (screenshotConfig.mode === "auto") {
         // Auto mode: Submit directly to AI with the configured prompt
-        onScreenshotSubmit(base64 as string, screenshotConfig.autoPrompt);
+        handleScreenshotSubmit(base64 as string, screenshotConfig.autoPrompt);
       } else if (screenshotConfig.mode === "manual") {
         // Manual mode: Add to attached files without prompt
-        onScreenshotSubmit(base64 as string);
+        handleScreenshotSubmit(base64 as string);
       }
     } catch (error) {
       console.error("Failed to capture screenshot:", error);

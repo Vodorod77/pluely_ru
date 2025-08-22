@@ -1,19 +1,17 @@
 import { getSettings, transcribeAudio } from "@/lib";
-import { CompletionState } from "@/types";
+import { UseCompletionReturn } from "@/types";
 import { useMicVAD } from "@ricky0123/vad-react";
 import { LoaderCircleIcon, MicIcon, MicOffIcon } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "../ui/button";
 
-export const Speech = ({
-  submit,
-  setState,
-  setEnableVAD,
-}: {
-  submit: (transcription: string) => void;
-  setState: React.Dispatch<React.SetStateAction<CompletionState>>;
-  setEnableVAD: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
+interface SpeechProps {
+  submit: UseCompletionReturn["submit"];
+  setState: UseCompletionReturn["setState"];
+  setEnableVAD: UseCompletionReturn["setEnableVAD"];
+}
+
+export const Speech = ({ submit, setState, setEnableVAD }: SpeechProps) => {
   const [isTranscribing, setIsTranscribing] = useState(false);
 
   const vad = useMicVAD({
