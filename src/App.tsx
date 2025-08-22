@@ -1,7 +1,5 @@
-import { useEffect } from "react";
-import { Card, Settings, Completion, ChatHistory } from "./components";
+import { Card, Settings, Completion, ChatHistory, Updater } from "./components";
 import { ChatConversation } from "./types";
-import { check } from "@tauri-apps/plugin-updater";
 
 const App = () => {
   const handleSelectConversation = (conversation: ChatConversation) => {
@@ -14,11 +12,6 @@ const App = () => {
       })
     );
   };
-
-  // Check for updates
-  useEffect(() => {
-    check();
-  }, []);
 
   const handleNewConversation = () => {
     // Clear any selected conversation and trigger new conversation
@@ -36,6 +29,7 @@ const App = () => {
           currentConversationId={null}
         />
         <Settings />
+        <Updater />
       </Card>
     </div>
   );
