@@ -178,7 +178,7 @@ export const Settings = () => {
             {/* Screenshot Configs */}
             <ScreenshotConfigs />
             {/* Configuration Header */}
-            <div className="border-b border-input/50 pb-2">
+            <div className="border-b border-input/50 pb-2 mt-6">
               <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 AI Configuration
               </h1>

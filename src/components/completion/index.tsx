@@ -1,4 +1,4 @@
-import { MicIcon, PaperclipIcon, Loader2, XIcon, CopyIcon } from "lucide-react";
+import { MicIcon, Loader2, XIcon, CopyIcon } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -7,13 +7,13 @@ import {
   ScrollArea,
   Input,
 } from "@/components";
-import { useCompletion, useWindowFocus } from "@/hooks";
-import { useWindowResize } from "@/hooks";
-import { useRef, useEffect } from "react";
+import { useCompletion } from "@/hooks";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Speech } from "./Speech";
 import { MessageHistory } from "../history";
+import { Screenshot } from "./Screenshot";
+import { Files } from "./Files";
 
 export const Completion = () => {
   const {
@@ -23,9 +23,7 @@ export const Completion = () => {
     isLoading,
     error,
     attachedFiles,
-    addFile,
-    // removeFile,
-    // clearFiles,
+    removeFile,
     submit,
     cancel,
     reset,
@@ -40,61 +38,15 @@ export const Completion = () => {
     startNewConversation,
     messageHistoryOpen,
     setMessageHistoryOpen,
+    isPopoverOpen,
+    scrollAreaRef,
+    screenshotConfig,
+    handleScreenshotSubmit,
+    handleFileSelect,
+    handleKeyPress,
+    isFilesPopoverOpen,
+    setIsFilesPopoverOpen,
   } = useCompletion();
-
-  const { resizeWindow } = useWindowResize();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    files.forEach((file) => {
-      if (file.type.startsWith("image/")) {
-        addFile(file);
-      }
-    });
-    // Reset input so same file can be selected again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (!isLoading && input.trim()) {
-        submit();
-      }
-    }
-  };
-
-  const isPopoverOpen = isLoading || response !== "" || error !== null;
-
-  useEffect(() => {
-    resizeWindow(isPopoverOpen || micOpen || messageHistoryOpen);
-  }, [isPopoverOpen, micOpen, messageHistoryOpen, resizeWindow]);
-
-  // Auto scroll to bottom when response updates
-  useEffect(() => {
-    if (response && scrollAreaRef.current) {
-      const scrollElement = scrollAreaRef.current.querySelector(
-        "[data-radix-scroll-area-viewport]"
-      );
-      if (scrollElement) {
-        scrollElement.scrollTo({
-          top: scrollElement.scrollHeight,
-          behavior: "smooth",
-        });
-      }
-    }
-  }, [response]);
-
-  useWindowFocus({
-    onFocusLost: () => {
-      setMicOpen(false);
-      setMessageHistoryOpen(false);
-    },
-  });
 
   return (
     <>
@@ -268,33 +220,26 @@ export const Completion = () => {
         </Popover>
       </div>
 
-      <div className="relative">
-        <Button
-          size="icon"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isLoading}
-          className="cursor-pointer"
-          title="Attach images"
-        >
-          <PaperclipIcon className="h-4 w-4" />
-        </Button>
-
-        {/* File count badge */}
-        {attachedFiles.length > 0 && (
-          <div className="absolute -top-2 -right-2 bg-primary-foreground text-primary rounded-full h-5 w-5 flex border border-primary items-center justify-center text-xs font-medium">
-            {attachedFiles.length}
-          </div>
-        )}
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={handleFileSelect}
-          className="hidden"
+      {screenshotConfig.enabled && (
+        <Screenshot
+          screenshotConfig={screenshotConfig}
+          onScreenshotSubmit={handleScreenshotSubmit}
+          attachedFiles={attachedFiles}
         />
-      </div>
+      )}
+
+      <Files
+        attachedFiles={attachedFiles}
+        onFileSelect={handleFileSelect}
+        onRemoveFile={removeFile}
+        onRemoveAllFiles={() => {
+          setState((prev) => ({ ...prev, attachedFiles: [] }));
+          setIsFilesPopoverOpen(false);
+        }}
+        isLoading={isLoading}
+        isFilesPopoverOpen={isFilesPopoverOpen}
+        setIsFilesPopoverOpen={setIsFilesPopoverOpen}
+      />
     </>
   );
 };

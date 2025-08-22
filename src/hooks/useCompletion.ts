@@ -8,13 +8,17 @@ import {
   getConversation,
   generateConversationTitle,
   getProviderById,
+  loadScreenshotConfig,
 } from "@/lib";
 import {
   AttachedFile,
   CompletionState,
   ChatMessage,
   ChatConversation,
+  ScreenshotConfig,
 } from "@/types";
+import { useWindowResize } from "./useWindow";
+import { useWindowFocus } from "@/hooks";
 
 export const useCompletion = () => {
   const [state, setState] = useState<CompletionState>({
@@ -29,7 +33,13 @@ export const useCompletion = () => {
   const [micOpen, setMicOpen] = useState(false);
   const [enableVAD, setEnableVAD] = useState(false);
   const [messageHistoryOpen, setMessageHistoryOpen] = useState(false);
+  const [isFilesPopoverOpen, setIsFilesPopoverOpen] = useState(false);
 
+  const { resizeWindow } = useWindowResize();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [screenshotConfig, setScreenshotConfig] = useState<ScreenshotConfig>(
+    loadScreenshotConfig()
+  );
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const setInput = useCallback((value: string) => {
@@ -316,10 +326,18 @@ export const useCompletion = () => {
         startNewConversation();
       }
     };
+    const handleScreenshotConfigChange = () => {
+      const newConfig = loadScreenshotConfig();
+      setScreenshotConfig(newConfig);
+    };
 
     window.addEventListener("conversationSelected", handleConversationSelected);
     window.addEventListener("newConversation", handleNewConversation);
     window.addEventListener("conversationDeleted", handleConversationDeleted);
+    window.addEventListener(
+      "screenshotConfigChanged",
+      handleScreenshotConfigChange
+    );
 
     return () => {
       window.removeEventListener(
@@ -331,8 +349,210 @@ export const useCompletion = () => {
         "conversationDeleted",
         handleConversationDeleted
       );
+      window.removeEventListener(
+        "screenshotConfigChanged",
+        handleScreenshotConfigChange
+      );
     };
   }, [loadConversation, startNewConversation, state.currentConversationId]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const MAX_FILES = 6;
+
+    files.forEach((file) => {
+      if (
+        file.type.startsWith("image/") &&
+        state.attachedFiles.length < MAX_FILES
+      ) {
+        addFile(file);
+      }
+    });
+
+    // Reset input so same file can be selected again
+    e.target.value = "";
+  };
+
+  const handleScreenshotSubmit = async (base64: string, prompt?: string) => {
+    try {
+      if (prompt) {
+        // Auto mode: Submit directly to AI with screenshot, bypassing attached files
+        const response = await fetch(`data:image/png;base64,${base64}`);
+        const blob = await response.blob();
+        const file = new File([blob], `screenshot_${Date.now()}.png`, {
+          type: "image/png",
+        });
+
+        const base64Data = await fileToBase64(file);
+        const attachedFile: AttachedFile = {
+          id: Date.now().toString(),
+          name: file.name,
+          type: file.type,
+          base64: base64Data,
+          size: file.size,
+        };
+
+        // Temporarily set the screenshot for the API call without adding to state
+        const tempAttachedFiles = [attachedFile];
+
+        // Submit directly with the screenshot
+        const settings = getSettings();
+        if (
+          !settings?.selectedProvider ||
+          !settings?.apiKey ||
+          !settings?.isApiKeySubmitted
+        ) {
+          setState((prev) => ({
+            ...prev,
+            error: "Please configure your AI provider and API key in settings",
+          }));
+          return;
+        }
+
+        const provider = getProviderById(settings.selectedProvider);
+        if (!provider) {
+          setState((prev) => ({ ...prev, error: "Invalid provider selected" }));
+          return;
+        }
+
+        const model =
+          settings.selectedModel ||
+          settings.customModel ||
+          provider.defaultModel;
+        if (!model) {
+          setState((prev) => ({
+            ...prev,
+            error: "Please select a model in settings",
+          }));
+          return;
+        }
+
+        // Cancel any existing request
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+
+        abortControllerRef.current = new AbortController();
+
+        setState((prev) => ({
+          ...prev,
+          input: prompt,
+          isLoading: true,
+          error: null,
+          response: "",
+        }));
+
+        const payload = formatMessageForProvider(
+          provider,
+          prompt,
+          tempAttachedFiles,
+          settings.systemPrompt,
+          state.conversationHistory
+        );
+
+        let fullResponse = "";
+
+        await streamCompletion(
+          provider,
+          model,
+          settings.apiKey,
+          payload,
+          (chunk) => {
+            fullResponse += chunk;
+            setState((prev) => ({
+              ...prev,
+              response: prev.response + chunk,
+            }));
+          },
+          (error) => {
+            setState((prev) => ({
+              ...prev,
+              error,
+              isLoading: false,
+            }));
+          },
+          abortControllerRef.current
+        );
+
+        setState((prev) => ({ ...prev, isLoading: false }));
+
+        // Save the conversation after successful completion
+        if (fullResponse) {
+          saveCurrentConversation(prompt, fullResponse, tempAttachedFiles);
+          // Clear input after saving
+          setState((prev) => ({
+            ...prev,
+            input: "",
+          }));
+        }
+      } else {
+        // Manual mode: Add to attached files
+        const response = await fetch(`data:image/png;base64,${base64}`);
+        const blob = await response.blob();
+        const file = new File([blob], `screenshot_${Date.now()}.png`, {
+          type: "image/png",
+        });
+
+        await addFile(file);
+      }
+    } catch (error) {
+      console.error("Failed to process screenshot:", error);
+      setState((prev) => ({
+        ...prev,
+        error:
+          error instanceof Error
+            ? error.message
+            : "An error occurred processing screenshot",
+        isLoading: false,
+      }));
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (!state.isLoading && state.input.trim()) {
+        submit();
+      }
+    }
+  };
+
+  const isPopoverOpen =
+    state.isLoading || state.response !== "" || state.error !== null;
+
+  useEffect(() => {
+    resizeWindow(
+      isPopoverOpen || micOpen || messageHistoryOpen || isFilesPopoverOpen
+    );
+  }, [
+    isPopoverOpen,
+    micOpen,
+    messageHistoryOpen,
+    resizeWindow,
+    isFilesPopoverOpen,
+  ]);
+
+  // Auto scroll to bottom when response updates
+  useEffect(() => {
+    if (state.response && scrollAreaRef.current) {
+      const scrollElement = scrollAreaRef.current.querySelector(
+        "[data-radix-scroll-area-viewport]"
+      );
+      if (scrollElement) {
+        scrollElement.scrollTo({
+          top: scrollElement.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+    }
+  }, [state.response]);
+
+  useWindowFocus({
+    onFocusLost: () => {
+      setMicOpen(false);
+      setMessageHistoryOpen(false);
+    },
+  });
 
   return {
     input: state.input,
@@ -361,5 +581,15 @@ export const useCompletion = () => {
     startNewConversation,
     messageHistoryOpen,
     setMessageHistoryOpen,
+    screenshotConfig,
+    setScreenshotConfig,
+    handleScreenshotSubmit,
+    handleFileSelect,
+    handleKeyPress,
+    isPopoverOpen,
+    scrollAreaRef,
+    resizeWindow,
+    isFilesPopoverOpen,
+    setIsFilesPopoverOpen,
   };
 };

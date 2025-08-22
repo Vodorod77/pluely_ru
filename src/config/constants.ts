@@ -7,6 +7,9 @@ export const STORAGE_KEYS = {
   SCREENSHOT_CONFIG: "screenshot_config",
 } as const;
 
+// Max number of files that can be attached to a message
+export const MAX_FILES = 6;
+
 // Available AI providers
 export const providers = [
   {

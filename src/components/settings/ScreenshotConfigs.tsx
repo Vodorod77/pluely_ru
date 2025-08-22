@@ -84,15 +84,14 @@ export const ScreenshotConfigs = ({}) => {
                 <Label className="text-sm font-medium">Screenshot Mode</Label>
                 {config.mode === "manual" ? (
                   <div className="text-xs text-muted-foreground">
-                    Screenshots will be captured and displayed, but you need to
-                    manually submit them to AI if desired. Perfect for when you
-                    want to review before analysis.
+                    Screenshots will be captured and automatically added to your
+                    attached files. You can then submit them with your own
+                    prompt.
                   </div>
                 ) : (
                   <div className="text-xs text-muted-foreground">
-                    Screenshots will be automatically analyzed by AI using your
-                    custom prompt. You can still view the screenshot before
-                    submission.
+                    Screenshots will be automatically submitted to AI using your
+                    custom prompt. No manual intervention required.
                   </div>
                 )}
               </div>
