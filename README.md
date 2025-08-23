@@ -93,12 +93,12 @@ Capture and analyze screenshots with automatic or manual modes for different use
 
 |                                                Manual Mode Screenshot                                                |
 | :------------------------------------------------------------------------------------------------------------------: |
-|                      <img src="images/leet-code.gif" alt="Manual Mode Screenshot" width="400"/>                      |
+|                      <img src="images/leet-code.gif" alt="Manual Mode Screenshot" width="600"/>                      |
 | _Screenshots are captured and automatically added to your attached files for manual submission with your own prompt_ |
 
 |                                     Auto Mode Screenshot                                      |
 | :-------------------------------------------------------------------------------------------: |
-|            <img src="images/youtube.gif" alt="Auto Mode Screenshot" width="400"/>             |
+|            <img src="images/youtube.gif" alt="Auto Mode Screenshot" width="600"/>             |
 | _Screenshots are automatically submitted to AI using your custom prompt for instant analysis_ |
 
 </div>

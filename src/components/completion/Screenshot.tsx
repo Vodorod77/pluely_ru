@@ -9,6 +9,7 @@ export const Screenshot = ({
   screenshotConfig,
   handleScreenshotSubmit,
   attachedFiles,
+  isLoading,
 }: UseCompletionReturn) => {
   const [isScreenshotLoading, setIsScreenshotLoading] = useState(false);
   const captureScreenshot = async () => {
@@ -45,7 +46,8 @@ export const Screenshot = ({
         disabled={
           !screenshotConfig.enabled ||
           attachedFiles.length >= MAX_FILES ||
-          isScreenshotLoading
+          isScreenshotLoading ||
+          isLoading
         }
       >
         {isScreenshotLoading ? (
