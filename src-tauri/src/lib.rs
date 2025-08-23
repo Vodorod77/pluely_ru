@@ -5,6 +5,7 @@ use xcap::Monitor;
 use base64::Engine;
 use image::codecs::png::PngEncoder;
 use image::{ColorType, ImageEncoder};
+use tauri_plugin_http;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -56,6 +57,7 @@ pub fn run() {
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_http::init())
         .invoke_handler(tauri::generate_handler![
             greet, 
             get_app_version,
