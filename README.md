@@ -68,58 +68,38 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 ---
 
-## 🎥 **Live Demos & Setup**
+## 🎥 **Live Demos**
 
-### 🔧 **AI Provider Setup**
+### 💬 **Input Methods Demo**
 
-Get started with your preferred AI provider in seconds. Pluely supports all major LLM providers with dynamic model fetching, and you can also add custom providers:
+Experience multiple input methods including text entry, and image pasting:
 
 <div>
 
-#### **Custom provider Setup**
-
-<img src="images/custom-provider.GIF" alt="Custom provider Setup" width="600"/>
-
-_Add your custom provider and select the provider from AI providers in the AI Providers section, then enter your API key and AI model_
-
-#### **OpenAI Setup**
-
-<img src="images/openai.GIF" alt="OpenAI API Setup" width="600"/>
-
-_Add your OpenAI API key and select from dynamically fetched models including GPT-4, GPT-4 Turbo, and more_
-
-#### **Google Gemini Setup**
-
-<img src="images/gemini.GIF" alt="Google Gemini API Setup" width="600"/>
-
-_Connect to Google Gemini with your API key and choose from available models like Gemini Pro_
-
-#### **xAI Grok Setup**
-
-<img src="images/grok.GIF" alt="xAI Grok API Setup" width="600"/>
-
-_Integrate with xAI Grok - dynamically fetches available models for seamless AI assistance_
-
-#### **Anthropic Claude Setup**
-
-<img src="images/claude.GIF" alt="Anthropic Claude API Setup" width="600"/>
-
-_Enter your Claude API key and model name manually for powerful AI conversations_
+|                                  Input Example 1                                  |                                      Input Example 2                                       |
+| :-------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: |
+|           <img src="images/input1.GIF" alt="Input Demo 1" width="400"/>           |               <img src="images/input2.GIF" alt="Input Demo 2" width="400"/>                |
+| _Clean, intuitive text interface with markdown support for seamless conversation_ | _Image pasting functionality that automatically adds files to attachments for AI analysis_ |
 
 </div>
 
 ---
 
-### 💬 **Input Methods Demo**
+### 📸 **Screenshot Demo**
 
-Experience multiple ways to interact with Pluely - type, speak, or attach images:
+Capture and analyze screenshots with automatic or manual modes for different use cases:
 
 <div>
 
-|                          **Text Input**                          |                          **Multi-Modal Input**                          |
-| :--------------------------------------------------------------: | :---------------------------------------------------------------------: |
-| <img src="images/input1.GIF" alt="Text Input Demo" width="400"/> | <img src="images/input2.GIF" alt="Multi-Modal Input Demo" width="400"/> |
-|     _Clean, intuitive text interface with markdown support_      |       _Attach images, screenshots, and documents for AI analysis_       |
+|                                                Manual Mode Screenshot                                                |
+| :------------------------------------------------------------------------------------------------------------------: |
+|                      <img src="images/leet-code.gif" alt="Manual Mode Screenshot" width="400"/>                      |
+| _Screenshots are captured and automatically added to your attached files for manual submission with your own prompt_ |
+
+|                                     Auto Mode Screenshot                                      |
+| :-------------------------------------------------------------------------------------------: |
+|            <img src="images/youtube.gif" alt="Auto Mode Screenshot" width="400"/>             |
+| _Screenshots are automatically submitted to AI using your custom prompt for instant analysis_ |
 
 </div>
 
@@ -148,6 +128,33 @@ Keep track of all your AI interactions with persistent conversation history:
 <img src="images/history.GIF" alt="Conversation History Demo" width="600"/>
 
 _Browse through previous conversations, search chat history, and continue where you left off_
+
+</div>
+
+---
+
+## 🔧 **Setup**
+
+### 🔧 **AI Provider Setup**
+
+Get started with your preferred AI provider in seconds. Pluely supports all major LLM providers with dynamic model fetching, and you can also add custom providers:
+
+<div align="center">
+
+|                                                         Custom Provider Setup                                                          |                                                OpenAI Setup                                                 |
+| :------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------: |
+|                            <img src="images/custom-provider.GIF" alt="Custom provider Setup" width="400"/>                             |                      <img src="images/openai.GIF" alt="OpenAI API Setup" width="400"/>                      |
+| _Add your custom provider and select the provider from AI providers in the AI Providers section, then enter your API key and AI model_ | _Add your OpenAI API key and select from dynamically fetched models including GPT-4, GPT-4 Turbo, and more_ |
+
+|                                      Google Gemini Setup                                      |                                       xAI Grok Setup                                        |
+| :-------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------: |
+|           <img src="images/gemini.GIF" alt="Google Gemini API Setup" width="400"/>            |              <img src="images/grok.GIF" alt="xAI Grok API Setup" width="400"/>              |
+| _Connect to Google Gemini with your API key and choose from available models like Gemini Pro_ | _Integrate with xAI Grok - dynamically fetches available models for seamless AI assistance_ |
+
+|                              Anthropic Claude Setup                               |
+| :-------------------------------------------------------------------------------: |
+|    <img src="images/claude.GIF" alt="Anthropic Claude API Setup" width="400"/>    |
+| _Enter your Claude API key and model name manually for powerful AI conversations_ |
 
 </div>
 
