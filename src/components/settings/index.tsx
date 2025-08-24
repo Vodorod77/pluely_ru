@@ -40,7 +40,7 @@ export const Settings = () => {
         className="select-none w-screen p-0 border overflow-hidden border-input/50"
         sideOffset={8}
       >
-        <ScrollArea className="h-[calc(100vh-7rem)]">
+        <ScrollArea className="h-[calc(100vh-7.2rem)]">
           <div className="p-6 space-y-6">
             {/* System Prompt */}
             <SystemPrompt {...settings} />
