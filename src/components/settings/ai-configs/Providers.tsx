@@ -111,14 +111,18 @@ export const Providers = ({
         </div>
       </div>
 
-      {allAiProviders.find((p) => p.id === selectedAIProvider.provider)
-        ?.models || availableModels[selectedAIProvider.provider]?.length > 0 ? (
-        <div className="space-y-2">
-          <Header
-            title="Model"
-            description={`Select your ${selectedAIProvider.provider} model to use.`}
-          />
-
+      <div className="space-y-1">
+        <Header
+          title="Model"
+          description={`${
+            availableModels[selectedAIProvider.provider]?.length > 0
+              ? "select your preferred "
+              : "add your preferred "
+          }${selectedAIProvider.provider} model to get started.`}
+        />
+        {allAiProviders.find((p) => p.id === selectedAIProvider.provider)
+          ?.models ||
+        availableModels[selectedAIProvider.provider]?.length > 0 ? (
           <div className="space-y-2">
             <Selection
               selected={selectedAIProvider?.model}
@@ -130,7 +134,7 @@ export const Providers = ({
               )}
               placeholder={
                 !selectedAIProvider?.apiKey
-                  ? "Enter API Key to fetch models dynamically"
+                  ? `Enter API Key to fetch ${selectedAIProvider.provider} models dynamically`
                   : "Choose your AI model"
               }
               onChange={(value) => {
@@ -142,26 +146,20 @@ export const Providers = ({
               disabled={!selectedAIProvider.apiKey.trim()}
               isLoading={modelsFetching}
             />
-            {availableModels[selectedAIProvider.provider]?.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                having trouble fetching models?
-              </p>
-            ) : null}
           </div>
-        </div>
-      ) : (
-        <TextInput
-          label="Model"
-          placeholder="Enter your model id"
-          value={selectedAIProvider.model}
-          onChange={(value) => {
-            onSetSelectedAIProvider({
-              ...selectedAIProvider,
-              model: value,
-            });
-          }}
-        />
-      )}
+        ) : (
+          <TextInput
+            placeholder={`Enter your ${selectedAIProvider.provider} model`}
+            value={selectedAIProvider.model}
+            onChange={(value) => {
+              onSetSelectedAIProvider({
+                ...selectedAIProvider,
+                model: value,
+              });
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 };

@@ -29,6 +29,8 @@ export const useSettings = () => {
     selectedSttProvider.apiKey
   );
 
+  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
+
   // Sync local API key with global state when provider changes
   useEffect(() => {
     if (selectedAIProvider.apiKey) {
@@ -140,7 +142,10 @@ export const useSettings = () => {
   //   },
   // });
 
-  console.log("availableModels", availableModels);
+  const handleDeleteAllChatsConfirm = () => {
+    safeLocalStorage.removeItem(STORAGE_KEYS.CHAT_HISTORY);
+    setShowDeleteConfirmDialog(false);
+  };
 
   return {
     isPopoverOpen,
@@ -167,5 +172,8 @@ export const useSettings = () => {
     localSTTApiKey,
     setLocalSTTApiKey,
     submitSTTApiKey,
+    handleDeleteAllChatsConfirm,
+    showDeleteConfirmDialog,
+    setShowDeleteConfirmDialog,
   };
 };

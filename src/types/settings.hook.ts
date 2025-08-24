@@ -40,4 +40,7 @@ export interface UseSettingsReturn {
   localSTTApiKey: string;
   setLocalSTTApiKey: React.Dispatch<React.SetStateAction<string>>;
   submitSTTApiKey: () => void;
+  handleDeleteAllChatsConfirm: () => void;
+  showDeleteConfirmDialog: boolean;
+  setShowDeleteConfirmDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }

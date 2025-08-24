@@ -12,6 +12,7 @@ import { SystemPrompt } from "./SystemPrompt";
 import { ScreenshotConfigs } from "./ScreenshotConfigs";
 import { AIProviders } from "./ai-configs";
 import { STTProviders } from "./stt-configs";
+import { DeleteChats } from "./DeleteChats";
 
 export const Settings = () => {
   const settings = useSettings();
@@ -52,9 +53,12 @@ export const Settings = () => {
 
             {/* STT Providers */}
             <STTProviders {...settings} />
+
+            {/* Disclaimer */}
+            <DeleteChats {...settings} />
           </div>
 
-          <div className="pb-4 flex items-center justify-center">
+          <div className="pt-2 pb-6 flex items-center justify-center">
             <a
               href="https://www.srikanthnani.com"
               target="_blank"

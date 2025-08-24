@@ -89,17 +89,22 @@ export const Providers = ({
         </div>
       </div>
 
-      <TextInput
-        label="Model"
-        placeholder="Enter your model id"
-        value={selectedSttProvider.model}
-        onChange={(value) => {
-          onSetSelectedSttProvider({
-            ...selectedSttProvider,
-            model: value,
-          });
-        }}
-      />
+      <div className="space-y-1">
+        <Header
+          title="Model"
+          description={`add your preferred ${selectedSttProvider.provider} model to get started.`}
+        />
+        <TextInput
+          placeholder={`Enter your ${selectedSttProvider.provider} model`}
+          value={selectedSttProvider.model}
+          onChange={(value) => {
+            onSetSelectedSttProvider({
+              ...selectedSttProvider,
+              model: value,
+            });
+          }}
+        />
+      </div>
     </div>
   );
 };
