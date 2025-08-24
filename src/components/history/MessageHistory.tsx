@@ -7,7 +7,7 @@ import {
   ScrollArea,
   Markdown,
 } from "@/components";
-import { ChatMessage } from "@/types";
+import { ChatMessage } from "@/types/completion";
 
 interface MessageHistoryProps {
   conversationHistory: ChatMessage[];

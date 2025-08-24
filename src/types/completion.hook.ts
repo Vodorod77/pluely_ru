@@ -55,10 +55,6 @@ export interface UseCompletionReturn {
   /** Function to reset the completion state (clears input, response, error, files) */
   reset: () => void;
 
-  // API key validation
-  /** Function to check if OpenAI API key is available and configured */
-  isOpenAIKeyAvailable: () => boolean;
-
   // State management
   /** Direct state setter for advanced use cases */
   setState: Dispatch<SetStateAction<any>>;
@@ -91,9 +87,9 @@ export interface UseCompletionReturn {
 
   // Screenshot functionality
   /** Current screenshot configuration settings */
-  screenshotConfig: any;
+  screenshotConfiguration: any;
   /** Function to update screenshot configuration */
-  setScreenshotConfig: Dispatch<SetStateAction<any>>;
+  setScreenshotConfiguration: Dispatch<SetStateAction<any>>;
   /** Function to handle screenshot submission with optional prompt */
   handleScreenshotSubmit: (base64: string, prompt?: string) => Promise<void>;
 

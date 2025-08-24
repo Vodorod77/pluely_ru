@@ -57,7 +57,7 @@ export const SPEECH_TO_TEXT_PROVIDERS = [
       audioFormat: "wav",
       audioKey: "file",
       fields: {
-        model_id: "eleven_english_stt_v1",
+        model_id: "scribe_v1",
       },
       query: {},
       headers: {},
