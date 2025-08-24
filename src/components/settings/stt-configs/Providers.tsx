@@ -1,6 +1,7 @@
 import { Button, Header, Input, Selection, TextInput } from "@/components";
 import { UseSettingsReturn } from "@/types";
 import { KeyIcon, TrashIcon } from "lucide-react";
+import { useCallback } from "react";
 
 export const Providers = ({
   allSttProviders,
@@ -10,6 +11,25 @@ export const Providers = ({
   setLocalSTTApiKey,
   submitSTTApiKey,
 }: UseSettingsReturn) => {
+  const findModel = useCallback(() => {
+    const provider = allSttProviders.find(
+      (p) => p.id === selectedSttProvider.provider
+    );
+
+    if (!provider) return null;
+
+    // Check different locations where model information might be stored
+    const modelFromFields =
+      provider.request?.fields?.model ||
+      provider.request?.fields?.model_id ||
+      provider.request?.fields?.model_name;
+
+    const modelFromQuery = provider.request?.query?.model;
+
+    // Return the first available model identifier
+    return modelFromFields || modelFromQuery || null;
+  }, [allSttProviders, selectedSttProvider?.provider]);
+
   return (
     <div className="space-y-3">
       <div className="space-y-2">
@@ -95,8 +115,10 @@ export const Providers = ({
           description={`add your preferred ${selectedSttProvider.provider} model to get started.`}
         />
         <TextInput
-          placeholder={`Enter your ${selectedSttProvider.provider} model`}
-          value={selectedSttProvider.model}
+          placeholder={`Enter your ${selectedSttProvider.provider} model${
+            findModel() ? ` (default: ${findModel()})` : ""
+          }`}
+          value={selectedSttProvider.model || findModel() || ""}
           onChange={(value) => {
             onSetSelectedSttProvider({
               ...selectedSttProvider,

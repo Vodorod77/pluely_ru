@@ -195,4 +195,50 @@ export const SPEECH_TO_TEXT_PROVIDERS = [
     streaming: false,
     note: "Async API; requires polling for results",
   },
+  {
+    id: "zhipu-glm-asr",
+    name: "Zhipu GLM-ASR",
+    baseUrl: "https://open.bigmodel.cn/api/paas/v4",
+    endpoint: "/audio/transcriptions",
+    method: "POST",
+    authType: "bearer",
+    request: {
+      bodyType: "formdata",
+      audioFormat: "wav",
+      audioKey: "file",
+      fields: {
+        model: "glm-asr",
+        response_format: "text",
+      },
+      query: {},
+      headers: {},
+    },
+    response: {
+      contentPath: "text",
+    },
+    streaming: false,
+  },
+  {
+    id: "doubao-stt",
+    name: "Doubao Speech-to-Text",
+    baseUrl: "https://ark.volcengine.com/api/v3",
+    endpoint: "/audio/transcriptions",
+    method: "POST",
+    authType: "bearer",
+    request: {
+      bodyType: "formdata",
+      audioFormat: "wav",
+      audioKey: "file",
+      fields: {
+        model: "whisper-1",
+        response_format: "text",
+      },
+      query: {},
+      headers: {},
+    },
+    response: {
+      contentPath: "text",
+    },
+    streaming: false,
+  },
 ];
