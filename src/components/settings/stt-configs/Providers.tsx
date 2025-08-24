@@ -6,6 +6,9 @@ export const Providers = ({
   allSttProviders,
   selectedSttProvider,
   onSetSelectedSttProvider,
+  localSTTApiKey,
+  setLocalSTTApiKey,
+  submitSTTApiKey,
 }: UseSettingsReturn) => {
   return (
     <div className="space-y-3">
@@ -29,6 +32,7 @@ export const Providers = ({
               apiKey: "",
               model: "",
             });
+            setLocalSTTApiKey("");
           }}
         />
       </div>
@@ -44,12 +48,9 @@ export const Providers = ({
             <Input
               type="password"
               placeholder="**********"
-              value={selectedSttProvider.apiKey}
+              value={localSTTApiKey}
               onChange={(value) => {
-                onSetSelectedSttProvider({
-                  ...selectedSttProvider,
-                  apiKey: value.target.value,
-                });
+                setLocalSTTApiKey(value.target.value);
               }}
               disabled={false}
               className="flex-1 h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
@@ -57,12 +58,9 @@ export const Providers = ({
             {!selectedSttProvider.apiKey.trim() ? (
               <Button
                 onClick={() => {
-                  onSetSelectedSttProvider({
-                    ...selectedSttProvider,
-                    apiKey: selectedSttProvider.apiKey.trim(),
-                  });
+                  submitSTTApiKey();
                 }}
-                disabled={!selectedSttProvider.apiKey.trim()}
+                disabled={!localSTTApiKey.trim()}
                 size="icon"
                 className="shrink-0 h-11 w-11"
                 title="Submit API Key"
@@ -75,7 +73,9 @@ export const Providers = ({
                   onSetSelectedSttProvider({
                     ...selectedSttProvider,
                     apiKey: "",
+                    model: "",
                   });
+                  setLocalSTTApiKey("");
                 }}
                 size="icon"
                 variant="destructive"

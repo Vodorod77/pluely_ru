@@ -34,4 +34,10 @@ export interface UseSettingsReturn {
     provider: TYPE_AI_PROVIDER,
     apiKey: string
   ) => Promise<void>;
+  localApiKey: string;
+  setLocalApiKey: React.Dispatch<React.SetStateAction<string>>;
+  submitApiKey: () => void;
+  localSTTApiKey: string;
+  setLocalSTTApiKey: React.Dispatch<React.SetStateAction<string>>;
+  submitSTTApiKey: () => void;
 }

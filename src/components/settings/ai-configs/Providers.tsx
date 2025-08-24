@@ -1,5 +1,5 @@
 import { Button, Header, Input, Selection, TextInput } from "@/components";
-import { TYPE_AI_PROVIDER, UseSettingsReturn } from "@/types";
+import { UseSettingsReturn } from "@/types";
 import { KeyIcon, TrashIcon } from "lucide-react";
 
 export const Providers = ({
@@ -9,6 +9,9 @@ export const Providers = ({
   availableModels,
   modelsFetching,
   fetchModelsForProvider,
+  localApiKey,
+  setLocalApiKey,
+  submitApiKey,
 }: UseSettingsReturn) => {
   return (
     <div className="space-y-3">
@@ -32,6 +35,7 @@ export const Providers = ({
               apiKey: "",
               model: "",
             });
+            setLocalApiKey("");
           }}
         />
       </div>
@@ -47,19 +51,19 @@ export const Providers = ({
             <Input
               type="password"
               placeholder="**********"
-              value={selectedAIProvider.apiKey}
+              value={localApiKey}
               onChange={(value) => {
-                onSetSelectedAIProvider({
-                  ...selectedAIProvider,
-                  apiKey: value.target.value,
-                });
-                if (selectedAIProvider.apiKey.trim()) {
-                  fetchModelsForProvider(
-                    allAiProviders.find(
-                      (p) => p.id === selectedAIProvider.provider
-                    ) as TYPE_AI_PROVIDER,
-                    selectedAIProvider.apiKey.trim()
+                setLocalApiKey(value.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && localApiKey.trim()) {
+                  submitApiKey();
+                  const provider = allAiProviders.find(
+                    (p) => p.id === selectedAIProvider.provider
                   );
+                  if (provider) {
+                    fetchModelsForProvider(provider, localApiKey.trim());
+                  }
                 }
               }}
               disabled={false}
@@ -68,20 +72,17 @@ export const Providers = ({
             {!selectedAIProvider.apiKey.trim() ? (
               <Button
                 onClick={() => {
-                  onSetSelectedAIProvider({
-                    ...selectedAIProvider,
-                    apiKey: selectedAIProvider.apiKey.trim(),
-                  });
-                  if (selectedAIProvider.apiKey.trim()) {
-                    fetchModelsForProvider(
-                      allAiProviders.find(
-                        (p) => p.id === selectedAIProvider.provider
-                      ) as TYPE_AI_PROVIDER,
-                      selectedAIProvider.apiKey.trim()
+                  if (localApiKey.trim()) {
+                    submitApiKey();
+                    const provider = allAiProviders.find(
+                      (p) => p.id === selectedAIProvider.provider
                     );
+                    if (provider) {
+                      fetchModelsForProvider(provider, localApiKey.trim());
+                    }
                   }
                 }}
-                disabled={!selectedAIProvider.apiKey.trim()}
+                disabled={!localApiKey.trim()}
                 size="icon"
                 className="shrink-0 h-11 w-11"
                 title="Submit API Key"
@@ -91,9 +92,11 @@ export const Providers = ({
             ) : (
               <Button
                 onClick={() => {
+                  setLocalApiKey("");
                   onSetSelectedAIProvider({
                     ...selectedAIProvider,
                     apiKey: "",
+                    model: "",
                   });
                 }}
                 size="icon"

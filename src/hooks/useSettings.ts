@@ -24,6 +24,21 @@ export const useSettings = () => {
     [providerId: string]: string[];
   }>({});
   const [modelsFetching, setModelsFetching] = useState(false);
+  const [localApiKey, setLocalApiKey] = useState(selectedAIProvider.apiKey);
+  const [localSTTApiKey, setLocalSTTApiKey] = useState(
+    selectedSttProvider.apiKey
+  );
+
+  // Sync local API key with global state when provider changes
+  useEffect(() => {
+    if (selectedAIProvider.apiKey) {
+      setLocalApiKey(selectedAIProvider.apiKey);
+    }
+
+    if (selectedSttProvider.apiKey) {
+      setLocalSTTApiKey(selectedSttProvider.apiKey);
+    }
+  }, [selectedAIProvider.provider, selectedSttProvider.provider]);
 
   useEffect(() => {
     resizeWindow(isPopoverOpen);
@@ -54,6 +69,24 @@ export const useSettings = () => {
       STORAGE_KEYS.SCREENSHOT_CONFIG,
       JSON.stringify(newConfig)
     );
+  };
+
+  const submitApiKey = () => {
+    if (localApiKey.trim()) {
+      onSetSelectedAIProvider({
+        ...selectedAIProvider,
+        apiKey: localApiKey.trim(),
+      });
+    }
+  };
+
+  const submitSTTApiKey = () => {
+    if (localSTTApiKey.trim()) {
+      onSetSelectedSttProvider({
+        ...selectedSttProvider,
+        apiKey: localSTTApiKey.trim(),
+      });
+    }
   };
 
   const fetchModelsForProvider = async (
@@ -97,7 +130,7 @@ export const useSettings = () => {
         fetchModelsForProvider(provider, selectedAIProvider.apiKey);
       }
     }
-  }, [selectedAIProvider.apiKey, selectedAIProvider.provider, allAiProviders]);
+  }, [selectedAIProvider.apiKey, isPopoverOpen, allAiProviders.length]);
 
   // Auto-close on focus loss disabled to prevent interruptions during form interactions
   // Settings should be closed manually via the toggle button for better UX
@@ -128,5 +161,11 @@ export const useSettings = () => {
     fetchModelsForProvider,
     availableModels,
     modelsFetching,
+    localApiKey,
+    setLocalApiKey,
+    submitApiKey,
+    localSTTApiKey,
+    setLocalSTTApiKey,
+    submitSTTApiKey,
   };
 };
