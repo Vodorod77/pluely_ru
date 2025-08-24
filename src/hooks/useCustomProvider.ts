@@ -1,290 +1,312 @@
-import { useState, useEffect } from "react";
-import { CustomProvider } from "@/types";
+import { useState } from "react";
+import { TYPE_AI_PROVIDER } from "@/types";
 import {
-  loadCustomProvidersFromStorage,
-  addCustomProvider,
-  deleteCustomProvider,
-} from "@/lib/storage";
+  addCustomAiProvider,
+  updateCustomAiProvider,
+  removeCustomAiProvider,
+  getCustomAiProviders,
+} from "@/lib";
+import { AI_PROVIDERS } from "@/config";
+import { useApp } from "@/contexts";
 
-export const useCustomProvider = (onProviderAdded: () => void) => {
+export function useCustomAiProviders() {
+  const { loadData } = useApp();
   const [showForm, setShowForm] = useState(false);
   const [editingProvider, setEditingProvider] = useState<string | null>(null);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [saveError, setSaveError] = useState<string>("");
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<TYPE_AI_PROVIDER>({
     name: "",
     baseUrl: "",
-    chatEndpoint: "/v1/chat/completions",
+    chatEndpoint: "",
     authType: "bearer",
     authParam: "",
-    customHeaderName: "",
     defaultModel: "",
-    supportsStreaming: true,
-    responseContentPath: "choices[0].message.content",
-    responseUsagePath: "usage",
-    textExampleStructure: JSON.stringify(
-      {
-        role: "user",
-        content: "Your text message here",
+    streaming: false,
+    response: {
+      contentPath: "",
+      usagePath: "",
+    },
+    input: {
+      text: {
+        messages: [],
       },
-      null,
-      2
-    ),
-    imageType: "url_or_base64",
-    imageExampleStructure: JSON.stringify(
-      {
-        role: "user",
-        content: [
-          { type: "text", text: "Describe this image:" },
-          {
-            type: "image_url",
-            image_url: { url: "https://example.com/image.jpg" },
-          },
-        ],
+      image: {
+        type: "",
+        messages: [],
       },
-      null,
-      2
-    ),
+    },
+    id: "",
+    isCustom: true,
   });
 
-  const [customProviders, setCustomProviders] = useState<CustomProvider[]>([]);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  // Load custom providers on component mount and when form changes
-  useEffect(() => {
-    const providers = loadCustomProvidersFromStorage();
-    setCustomProviders(providers);
-  }, [showForm, editingProvider]);
+  const handleAutoFill = (providerId: string) => {
+    const provider = AI_PROVIDERS.find((p) => p.id === providerId);
+    if (!provider) return;
 
-  const resetForm = () => {
     setFormData({
-      name: "",
-      baseUrl: "",
-      chatEndpoint: "/v1/chat/completions",
-      authType: "bearer",
-      authParam: "",
-      customHeaderName: "",
-      defaultModel: "",
-      supportsStreaming: true,
-      responseContentPath: "choices[0].message.content",
-      responseUsagePath: "usage",
-      textExampleStructure: JSON.stringify(
-        {
-          role: "user",
-          content: "Your text message here",
-        },
-        null,
-        2
-      ),
-      imageType: "url_or_base64",
-      imageExampleStructure: JSON.stringify(
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "Describe this image:" },
-            {
-              type: "image_url",
-              image_url: { url: "https://example.com/image.jpg" },
-            },
-          ],
-        },
-        null,
-        2
-      ),
-    });
-    setShowForm(false);
-    setEditingProvider(null);
-    setErrors({});
-    setSaveError("");
-  };
-
-  const generateId = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "")
-      .substring(0, 20);
-  };
-
-  const handleEdit = (provider: CustomProvider) => {
-    setFormData({
+      ...formData,
       name: provider.name,
       baseUrl: provider.baseUrl,
       chatEndpoint: provider.chatEndpoint,
       authType: provider.authType,
-      authParam: provider.authParam || "",
-      customHeaderName: provider.customHeaderName || "",
       defaultModel: provider.defaultModel,
-      supportsStreaming: provider.supportsStreaming,
-      responseContentPath: provider.response.contentPath,
-      responseUsagePath: provider.response.usagePath,
-      textExampleStructure: JSON.stringify(
-        provider.input.text.exampleStructure,
-        null,
-        2
-      ),
-      imageType: provider.input.image.type,
-      imageExampleStructure: JSON.stringify(
-        provider.input.image.exampleStructure,
-        null,
-        2
-      ),
+      streaming: provider.streaming || false,
+      response: {
+        contentPath: provider.response.contentPath,
+        usagePath: provider.response.usagePath,
+      },
+      input: {
+        text: {
+          messages: (provider.input.text.messages || []) as any[],
+        },
+        image: provider.input.image
+          ? {
+              type: provider.input.image.type,
+              messages: (provider.input.image.messages || []) as any[],
+            }
+          : null,
+      },
+      authParam: (provider as any).authParam || "",
+      compat: (provider as any).compat || "openai",
+      isCustom: true,
     });
-    setEditingProvider(provider.id);
-    setShowForm(true);
+    setErrors({});
   };
 
-  const validateForm = () => {
+  const validateForm = (data: typeof formData) => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!formData.name.trim()) {
+    // Required fields validation
+    if (!data.name.trim()) {
       newErrors.name = "Provider name is required";
     }
 
-    if (!formData.baseUrl.trim()) {
+    if (!data.baseUrl.trim()) {
       newErrors.baseUrl = "Base URL is required";
-    } else {
-      try {
-        new URL(formData.baseUrl.trim());
-      } catch {
-        newErrors.baseUrl = "Please enter a valid URL";
-      }
+    } else if (
+      !data.baseUrl.startsWith("http://") &&
+      !data.baseUrl.startsWith("https://")
+    ) {
+      newErrors.baseUrl = "Base URL must start with http:// or https://";
     }
 
-    if (!formData.chatEndpoint.trim()) {
+    if (!data.chatEndpoint.trim()) {
       newErrors.chatEndpoint = "Chat endpoint is required";
     }
 
-    if (!formData.responseContentPath.trim()) {
-      newErrors.responseContentPath = "Response content path is required";
+    if (!data.defaultModel.trim()) {
+      newErrors.defaultModel = "Default model is required";
     }
 
-    // Validate JSON structures
-    if (formData.textExampleStructure.trim()) {
-      try {
-        JSON.parse(formData.textExampleStructure);
-      } catch {
-        newErrors.textExampleStructure = "Invalid JSON format";
-      }
+    // Response validation
+    if (!data.response.contentPath.trim()) {
+      newErrors["response.contentPath"] = "Content path is required";
     }
 
-    if (formData.imageExampleStructure.trim()) {
-      try {
-        JSON.parse(formData.imageExampleStructure);
-      } catch {
-        newErrors.imageExampleStructure = "Invalid JSON format";
-      }
+    if (!data.response.usagePath.trim()) {
+      newErrors["response.usagePath"] = "Usage path is required";
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    // Auth validation
+    if (
+      data.authType === "custom" &&
+      (!data.authParam || !data.authParam.trim())
+    ) {
+      newErrors.authParam = "Custom header parameter is required";
+    }
+
+    if (
+      data.authType === "query" &&
+      (!data.authParam || !data.authParam.trim())
+    ) {
+      newErrors.authParam = "Query parameter is required";
+    }
+
+    return newErrors;
   };
 
-  const handleSave = () => {
-    setSaveError("");
+  const handleEdit = (providerId: string) => {
+    // Clear any existing errors
+    setErrors({});
 
-    if (!validateForm()) {
-      setSaveError("Please fix the errors above before saving.");
+    // Set editing state first
+    setEditingProvider(providerId);
+
+    // Find the provider from custom providers
+    const customProviders = getCustomAiProviders();
+    const provider = customProviders.find((p) => p.id === providerId);
+
+    if (!provider) {
+      setErrors({ general: "Provider not found" });
       return;
     }
 
-    try {
-      const provider: CustomProvider = {
-        id: editingProvider || generateId(formData.name),
-        name: formData.name.trim(),
-        baseUrl: formData.baseUrl.trim(),
-        chatEndpoint: formData.chatEndpoint.trim(),
-        authType: formData.authType,
-        authParam: formData.authParam.trim() || undefined,
-        customHeaderName: formData.customHeaderName.trim() || undefined,
-        defaultModel: formData.defaultModel.trim(),
-        supportsStreaming: formData.supportsStreaming,
-        response: {
-          contentPath: formData.responseContentPath.trim(),
-          usagePath: formData.responseUsagePath.trim(),
-        },
-        input: {
-          text: {
-            placement: "",
-            exampleStructure: formData.textExampleStructure.trim()
-              ? JSON.parse(formData.textExampleStructure)
-              : {},
-          },
-          image: {
-            type: formData.imageType.trim(),
-            placement: "",
-            exampleStructure: formData.imageExampleStructure.trim()
-              ? JSON.parse(formData.imageExampleStructure)
-              : {},
-          },
-        },
-        models: null,
-        isCustom: true,
-      };
+    // Populate form with provider data
+    setFormData({
+      ...provider,
+      authParam: provider.authParam || "",
+    });
 
-      addCustomProvider(provider);
-      // Refresh the local state immediately
-      setCustomProviders(loadCustomProvidersFromStorage());
-      resetForm();
-      onProviderAdded();
-    } catch (error) {
-      console.error("Failed to save custom provider:", error);
-      setSaveError(
-        error instanceof Error
-          ? `Failed to save provider: ${error.message}`
-          : "Failed to save provider. Please check your input."
-      );
-    }
+    // Show the form
+    setShowForm(true);
   };
 
   const handleDelete = (providerId: string) => {
     setDeleteConfirm(providerId);
   };
 
-  const confirmDelete = () => {
-    const providerId = deleteConfirm;
-    if (!providerId) return;
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
 
     try {
-      deleteCustomProvider(providerId);
-
-      // Refresh the local state immediately
-      const updatedProviders = loadCustomProvidersFromStorage();
-      setCustomProviders(updatedProviders);
-
-      // Notify parent component
-      onProviderAdded();
+      const result = removeCustomAiProvider(deleteConfirm);
+      if (result) {
+        loadData();
+        setDeleteConfirm(null);
+        // If we're editing the deleted provider, reset form
+        if (editingProvider === deleteConfirm) {
+          setShowForm(false);
+          setEditingProvider(null);
+          setFormData({
+            name: "",
+            baseUrl: "",
+            chatEndpoint: "",
+            authType: "bearer",
+            authParam: "",
+            defaultModel: "",
+            streaming: false,
+            response: {
+              contentPath: "",
+              usagePath: "",
+            },
+            input: {
+              text: {
+                messages: [],
+              },
+              image: {
+                type: "",
+                messages: [],
+              },
+            },
+            id: "",
+            isCustom: true,
+          });
+        }
+      } else {
+        setErrors({ general: "Failed to delete provider" });
+      }
     } catch (error) {
-      console.error("Failed to delete custom provider:", error);
-      alert("Failed to delete custom provider. Please try again.");
+      console.error("Error deleting custom provider:", error);
+      setErrors({ general: "An unexpected error occurred while deleting" });
     }
-
-    setDeleteConfirm(null);
   };
 
   const cancelDelete = () => {
     setDeleteConfirm(null);
   };
 
+  const handleSave = async () => {
+    try {
+      // Clear previous errors
+      setErrors({});
+
+      // Validate form data
+      const validationErrors = validateForm(formData);
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+      }
+
+      // Prepare provider data
+      const providerData = {
+        name: formData.name.trim(),
+        baseUrl: formData.baseUrl.trim(),
+        chatEndpoint: formData.chatEndpoint.trim(),
+        authType: formData.authType,
+        authParam: formData.authParam,
+        defaultModel: formData.defaultModel.trim(),
+        streaming: formData.streaming,
+        response: {
+          contentPath: formData.response.contentPath.trim(),
+          usagePath: formData.response.usagePath.trim(),
+        },
+        input: {
+          text: {
+            messages: formData.input.text.messages,
+          },
+          image: formData.input.image,
+        },
+        models: null, // Custom providers don't need models
+      };
+
+      let result;
+      if (editingProvider) {
+        // Update existing provider
+        result = updateCustomAiProvider(editingProvider, providerData);
+      } else {
+        // Add new provider
+        result = addCustomAiProvider(providerData);
+      }
+
+      if (result) {
+        loadData();
+        // Success - close form and reset
+        setShowForm(false);
+        setEditingProvider(null);
+
+        // Reset form data
+        setFormData({
+          name: "",
+          baseUrl: "",
+          chatEndpoint: "",
+          authType: "bearer",
+          authParam: "",
+          defaultModel: "",
+          streaming: false,
+          response: {
+            contentPath: "",
+            usagePath: "",
+          },
+          input: {
+            text: {
+              messages: [],
+            },
+            image: {
+              type: "",
+              messages: [],
+            },
+          },
+          id: "",
+          isCustom: true,
+        });
+      } else {
+        // Failed to save provider
+        const action = editingProvider ? "update" : "save";
+        setErrors({ general: `Failed to ${action} provider` });
+      }
+    } catch (error) {
+      console.error("Error saving custom provider:", error);
+      setErrors({ general: "An unexpected error occurred" });
+    }
+  };
+
   return {
-    customProviders,
-    setCustomProviders,
+    errors,
+    setErrors,
     showForm,
     setShowForm,
     editingProvider,
     setEditingProvider,
-    errors,
-    setErrors,
-    saveError,
-    setSaveError,
     deleteConfirm,
-    setDeleteConfirm,
     formData,
     setFormData,
-    handleEdit,
     handleSave,
+    handleAutoFill,
+    handleEdit,
     handleDelete,
     confirmDelete,
     cancelDelete,
-    resetForm,
   };
-};
+}

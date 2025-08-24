@@ -11,7 +11,9 @@ export const Completion = () => {
     <>
       <Audio {...completion} />
       <Input {...completion} />
-      {completion?.screenshotConfig?.enabled && <Screenshot {...completion} />}
+      {completion?.screenshotConfiguration?.enabled && (
+        <Screenshot {...completion} />
+      )}
       <Files {...completion} />
     </>
   );

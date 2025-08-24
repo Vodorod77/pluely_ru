@@ -6,13 +6,13 @@ import {
   ChangeEvent,
   ClipboardEvent,
 } from "react";
-import {
-  AttachedFile,
-  ChatMessage,
-  ChatConversation,
-  CompletionState,
-  ScreenshotConfig,
-} from "@/types";
+// import {
+//   AttachedFile,
+//   ChatMessage,
+//   ChatConversation,
+//   CompletionState,
+//   ScreenshotConfig,
+// } from "@/types";
 
 /**
  * Type definition for the useCompletion hook return value
@@ -39,7 +39,7 @@ export interface UseCompletionReturn {
 
   // File attachment management
   /** Array of currently attached files */
-  attachedFiles: AttachedFile[];
+  attachedFiles: any[];
   /** Function to add a file to attachments */
   addFile: (file: File) => Promise<void>;
   /** Function to remove a file by its ID */
@@ -55,13 +55,9 @@ export interface UseCompletionReturn {
   /** Function to reset the completion state (clears input, response, error, files) */
   reset: () => void;
 
-  // API key validation
-  /** Function to check if OpenAI API key is available and configured */
-  isOpenAIKeyAvailable: () => boolean;
-
   // State management
   /** Direct state setter for advanced use cases */
-  setState: Dispatch<SetStateAction<CompletionState>>;
+  setState: Dispatch<SetStateAction<any>>;
 
   // Voice Activity Detection (VAD) and microphone
   /** Whether Voice Activity Detection is enabled */
@@ -77,9 +73,9 @@ export interface UseCompletionReturn {
   /** ID of the currently active conversation, null for new conversation */
   currentConversationId: string | null;
   /** Array of messages in the current conversation */
-  conversationHistory: ChatMessage[];
+  conversationHistory: any[];
   /** Function to load an existing conversation */
-  loadConversation: (conversation: ChatConversation) => void;
+  loadConversation: (conversation: any) => void;
   /** Function to start a new conversation (clears current state) */
   startNewConversation: () => void;
 
@@ -91,9 +87,9 @@ export interface UseCompletionReturn {
 
   // Screenshot functionality
   /** Current screenshot configuration settings */
-  screenshotConfig: ScreenshotConfig;
+  screenshotConfiguration: any;
   /** Function to update screenshot configuration */
-  setScreenshotConfig: Dispatch<SetStateAction<ScreenshotConfig>>;
+  setScreenshotConfiguration: Dispatch<SetStateAction<any>>;
   /** Function to handle screenshot submission with optional prompt */
   handleScreenshotSubmit: (base64: string, prompt?: string) => Promise<void>;
 
