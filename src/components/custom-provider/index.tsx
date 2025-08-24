@@ -70,8 +70,8 @@ export const CustomProviderComponent = ({
   resetForm,
 }: CustomProviderProps) => {
   return (
-    <div className="space-y-3">
-      <div className="border-b border-input/50 pb-2">
+    <div className="space-y-2">
+      <div className="">
         <Label className="text-sm font-semibold flex items-center gap-2">
           Custom Providers
         </Label>

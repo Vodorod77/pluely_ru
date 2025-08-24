@@ -4,6 +4,8 @@ export const STORAGE_KEYS = {
   THEME: "theme",
   CHAT_HISTORY: "chat_history",
   CUSTOM_PROVIDERS: "custom_providers",
+  SPEECH_PROVIDERS: "speech_providers",
+  SELECTED_SPEECH_PROVIDER: "selected_speech_provider",
   SCREENSHOT_CONFIG: "screenshot_config",
 } as const;
 
@@ -208,6 +210,31 @@ export const providers = [
     },
     models: null,
     isCustom: true,
+  },
+];
+
+export const speechProviders = [
+  {
+    id: "openai-whisper",
+    name: "OpenAI Whisper",
+    baseUrl: "https://api.openai.com",
+    endpoint: "/v1/audio/transcriptions",
+    method: "POST" as const,
+    authType: "bearer" as const,
+    request: {
+      audioFormat: "wav",
+      audioFieldName: "file",
+      additionalFields: {
+        model: "whisper-1",
+        response_format: "text",
+      },
+    },
+    response: {
+      contentPath: "",
+      exampleStructure: "Direct text response",
+    },
+    isCustom: false,
+    supportsStreaming: false,
   },
 ];
 

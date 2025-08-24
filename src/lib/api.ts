@@ -1,5 +1,7 @@
 import { loadCustomProvidersFromStorage } from "./storage";
 import { providers } from "@/config";
+import { fetch } from "@tauri-apps/plugin-http";
+
 // get nested value from object
 const getNestedValue = (obj: any, path: string): any => {
   return path.split(".").reduce((current, key) => {
@@ -163,6 +165,145 @@ export const transcribeAudio = async (
     console.error("Transcription error:", error);
     throw error;
   }
+};
+
+// Generic transcription function for any speech provider
+export const transcribeAudioWithProvider = async (
+  audioData: Float32Array,
+  provider: any,
+  apiKey?: string
+): Promise<string> => {
+  try {
+    let audioBlob: Blob;
+
+    // Convert audio based on format
+    if (provider.request.audioFormat === "wav") {
+      audioBlob = floatArrayToWav(audioData);
+    } else {
+      audioBlob = floatArrayToWav(audioData);
+    }
+
+    let url = `${provider.baseUrl}${provider.endpoint}`;
+
+    // Add query parameter authentication if needed
+    if (apiKey && provider.authType === "query") {
+      const paramName = provider.authParam || "key";
+      const separator = url.includes("?") ? "&" : "?";
+      url = `${url}${separator}${paramName}=${encodeURIComponent(apiKey)}`;
+    }
+
+    // Prepare request based on provider configuration
+    let body: FormData | string;
+    const headers: { [key: string]: string } = {};
+
+    if (provider.method === "POST" && provider.request.audioFieldName) {
+      // Form data request
+      const formData = new FormData();
+      formData.append(
+        provider.request.audioFieldName,
+        audioBlob,
+        `audio.${provider.request.audioFormat}`
+      );
+
+      // Add additional fields
+      if (provider.request.additionalFields) {
+        Object.entries(provider.request.additionalFields).forEach(
+          ([key, value]) => {
+            formData.append(key, String(value));
+          }
+        );
+      }
+
+      body = formData;
+    } else {
+      // JSON request
+      const jsonBody: { [key: string]: any } = {};
+      if (provider.request.additionalFields) {
+        Object.entries(provider.request.additionalFields).forEach(
+          ([key, value]) => {
+            jsonBody[key] = value;
+          }
+        );
+      }
+      body = JSON.stringify(jsonBody);
+      headers["Content-Type"] = "application/json";
+    }
+
+    // Add authentication headers
+    if (apiKey && provider.authType !== "none") {
+      switch (provider.authType) {
+        case "bearer":
+          headers["Authorization"] = `Bearer ${apiKey}`;
+          break;
+        case "custom-header":
+          if (provider.customHeaderName) {
+            headers[provider.customHeaderName] = apiKey;
+          }
+          break;
+        case "query":
+          if (provider.authParam) {
+            url += `?${provider.authParam}=${apiKey}`;
+          }
+          break;
+        default:
+          break;
+      }
+    }
+
+    // Add additional headers
+    if (provider.additionalHeaders) {
+      Object.entries(provider.additionalHeaders).forEach(([key, value]) => {
+        headers[key] = String(value);
+      });
+    }
+
+    const response = await fetch(url, {
+      method: provider.method,
+      headers,
+      body,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Speech API Error: ${response.status} ${response.statusText}\n${errorText}`
+      );
+    }
+
+    let transcription: string;
+
+    if (provider.response.contentPath) {
+      // JSON response - extract content using path
+      const jsonResponse = await response.json();
+      transcription = extractValueByPath(
+        jsonResponse,
+        provider.response.contentPath
+      );
+    } else {
+      // Direct text response
+      transcription = await response.text();
+    }
+
+    return transcription.trim();
+  } catch (error) {
+    console.error("Speech provider transcription error:", error);
+    throw error;
+  }
+};
+
+// Helper function to extract value from JSON using dot notation path
+const extractValueByPath = (obj: any, path: string): string => {
+  return (
+    path.split(".").reduce((current, key) => {
+      // Handle array indices
+      if (key.includes("[") && key.includes("]")) {
+        const [arrayKey, indexStr] = key.split("[");
+        const index = parseInt(indexStr.replace("]", ""));
+        return current?.[arrayKey]?.[index];
+      }
+      return current?.[key];
+    }, obj) || ""
+  );
 };
 
 // stream completion from API

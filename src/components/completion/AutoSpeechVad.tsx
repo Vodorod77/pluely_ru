@@ -1,4 +1,10 @@
-import { getSettings, transcribeAudio } from "@/lib";
+import {
+  transcribeAudio,
+  transcribeAudioWithProvider,
+  loadSpeechProvidersFromStorage,
+  loadSelectedSpeechProvider,
+  isSelectedSpeechProviderConfigured,
+} from "@/lib";
 import { UseCompletionReturn } from "@/types";
 import { useMicVAD } from "@ricky0123/vad-react";
 import { LoaderCircleIcon, MicIcon, MicOffIcon } from "lucide-react";
@@ -24,27 +30,89 @@ export const AutoSpeechVAD = ({
     onSpeechEnd: async (audio) => {
       try {
         setIsTranscribing(true);
-        const settings = getSettings();
 
-        // Check if we have an OpenAI API key for transcription
-        let openAiKey = "";
-        if (settings.selectedProvider === "openai") {
-          // Use the main API key if provider is OpenAI
-          if (!settings?.apiKey || !settings?.isApiKeySubmitted) {
-            console.warn("No OpenAI API key configured for transcription");
-            return;
-          }
-          openAiKey = settings.apiKey;
-        } else {
-          // Use the separate OpenAI key for non-OpenAI providers
-          if (!settings?.openAiApiKey || !settings?.isOpenAiApiKeySubmitted) {
-            console.warn("No OpenAI API key configured for speech-to-text");
-            return;
-          }
-          openAiKey = settings.openAiApiKey;
+        // Check if we have a configured speech provider
+        const selectedSpeechProvider = loadSelectedSpeechProvider();
+
+        if (!selectedSpeechProvider) {
+          console.warn("No speech provider selected");
+          setState((prev) => ({
+            ...prev,
+            error:
+              "No speech provider selected. Please select one in settings.",
+          }));
+          return;
         }
 
-        const transcription = await transcribeAudio(audio, openAiKey);
+        if (!isSelectedSpeechProviderConfigured()) {
+          console.warn("Selected speech provider not configured");
+          setState((prev) => ({
+            ...prev,
+            error:
+              "Speech provider not configured. Please configure it in settings.",
+          }));
+          return;
+        }
+
+        const speechProviders = loadSpeechProvidersFromStorage();
+        const providerConfig = speechProviders.find(
+          (p) => p.id === selectedSpeechProvider.id
+        );
+
+        if (!providerConfig) {
+          console.warn("Selected speech provider configuration not found");
+          setState((prev) => ({
+            ...prev,
+            error:
+              "Speech provider configuration not found. Please check your settings.",
+          }));
+          return;
+        }
+
+        // Get the API key to use
+        let apiKeyToUse = selectedSpeechProvider.apiKey;
+
+        // For OpenAI Whisper, try to use OpenAI AI provider's API key if no specific key is set
+        if (
+          selectedSpeechProvider.id === "openai-whisper" &&
+          (!apiKeyToUse || apiKeyToUse.trim().length === 0)
+        ) {
+          const { getSettings } = await import("@/lib");
+          const settings = getSettings();
+          if (
+            settings?.selectedProvider === "openai" &&
+            settings?.apiKey &&
+            settings.apiKey.trim().length > 0
+          ) {
+            apiKeyToUse = settings.apiKey;
+          }
+        }
+
+        if (!apiKeyToUse || apiKeyToUse.trim().length === 0) {
+          console.warn("No valid API key available for speech provider");
+          setState((prev) => ({
+            ...prev,
+            error:
+              "No valid API key available for speech provider. Please configure it in settings.",
+          }));
+          return;
+        }
+
+        let transcription: string;
+
+        // Use the appropriate transcription method
+        if (selectedSpeechProvider.id === "openai-whisper") {
+          // Use the original OpenAI transcription function
+          transcription = await transcribeAudio(audio, apiKeyToUse);
+        } else {
+          // Use the generic transcription function for custom providers
+          transcription = await transcribeAudioWithProvider(
+            audio,
+            providerConfig,
+            apiKeyToUse
+          );
+        }
+
         if (transcription) {
           submit(transcription);
         }
