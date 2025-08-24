@@ -37,9 +37,11 @@ export interface CustomProvider {
   imageExampleStructure?: string;
 }
 
+export type ScreenshotMode = "auto" | "manual";
+
 // Screenshot configuration types
 export interface ScreenshotConfig {
-  mode: "auto" | "manual";
+  mode: ScreenshotMode;
   autoPrompt: string;
   enabled: boolean;
 }

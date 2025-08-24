@@ -1,26 +1,23 @@
-import { Label, Textarea } from "@/components";
+import { Header, Textarea } from "@/components";
+import { UseSettingsReturn } from "@/types";
 
-interface SystemPromptProps {
-  value: string;
-  onChange: (value: string) => void;
-}
-
-export const SystemPrompt = ({ value, onChange }: SystemPromptProps) => {
+export const SystemPrompt = ({
+  systemPrompt,
+  setSystemPrompt,
+}: UseSettingsReturn) => {
   return (
     <div className="space-y-3">
-      <div className="border-b border-input/50 pb-2">
-        <Label className="text-lg font-semibold">System Prompt</Label>
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          Define the AI's behavior and personality. This message sets the
-          context for all conversations.
-        </p>
-      </div>
+      <Header
+        title="System Prompt"
+        description="Define the AI's behavior and personality. This message sets the context for all conversations."
+        isMainTitle
+      />
 
       <div className="space-y-2">
         <Textarea
           placeholder="You are a helpful AI assistant. Be concise, accurate, and friendly in your responses..."
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          value={systemPrompt}
+          onChange={(e) => setSystemPrompt(e.target.value)}
           className="min-h-[100px] resize-none border-1 border-input/50 focus:border-primary/50 transition-colors"
         />
         <p className="text-xs text-muted-foreground/70">

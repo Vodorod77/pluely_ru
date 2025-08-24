@@ -1,105 +1,68 @@
-import { useState, useEffect } from "react";
-import { Label } from "@/components";
-
-import { Input } from "@/components/ui/input";
 import {
+  Label,
+  Input,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { loadScreenshotConfig, saveScreenshotConfig } from "@/lib";
-import { ScreenshotConfig } from "@/types";
+  Switch,
+  Header,
+} from "@/components";
+import { UseSettingsReturn } from "@/types";
 
-export const ScreenshotConfigs = ({}) => {
-  const [config, setConfig] = useState<ScreenshotConfig>({
-    mode: "manual",
-    autoPrompt: "Analyze this screenshot and provide insights",
-    enabled: true,
-  });
-
-  useEffect(() => {
-    const savedConfig = loadScreenshotConfig();
-    setConfig(savedConfig);
-  }, []);
-
-  const handleModeChange = (value: "auto" | "manual") => {
-    const newConfig = { ...config, mode: value };
-    setConfig(newConfig);
-    saveScreenshotConfig(newConfig);
-    // Dispatch custom event for immediate UI updates
-    window.dispatchEvent(new CustomEvent("screenshotConfigChanged"));
-  };
-
-  const handlePromptChange = (value: string) => {
-    const newConfig = { ...config, autoPrompt: value };
-    setConfig(newConfig);
-    saveScreenshotConfig(newConfig);
-    // Dispatch custom event for immediate UI updates
-    window.dispatchEvent(new CustomEvent("screenshotConfigChanged"));
-  };
-
-  const handleEnabledChange = (enabled: boolean) => {
-    const newConfig = { ...config, enabled };
-    setConfig(newConfig);
-    saveScreenshotConfig(newConfig);
-    // Dispatch custom event for immediate UI updates
-    window.dispatchEvent(new CustomEvent("screenshotConfigChanged"));
-  };
-
+export const ScreenshotConfigs = ({
+  screenshotConfiguration,
+  handleScreenshotModeChange,
+  handleScreenshotPromptChange,
+  handleScreenshotEnabledChange,
+}: UseSettingsReturn) => {
   return (
     <div className="space-y-3">
-      <div className="border-b border-input/50 pb-2">
-        <Label className="text-lg font-semibold">
-          Screenshot Configuration
-        </Label>
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          Configure how screenshots are handled - automatically submit to AI or
-          manual mode.
-        </p>
-      </div>
+      <Header
+        title="Screenshot Configuration"
+        description="Configure how screenshots are handled - automatically submit to AI or manual mode."
+        isMainTitle
+      />
 
       <div className="space-y-3">
         {/* Enable/Disable Screenshot Feature */}
         <div className="flex items-center justify-between">
-          <div className="">
-            <Label className="text-sm font-medium">Enable Screenshots</Label>
-            <p className="text-xs text-muted-foreground">
-              Allow taking screenshots in the application
-            </p>
-          </div>
+          <Header
+            title="Enable Screenshots"
+            description="Allow taking screenshots in the application"
+          />
           <Switch
-            checked={config.enabled}
-            onCheckedChange={handleEnabledChange}
+            checked={screenshotConfiguration.enabled}
+            onCheckedChange={handleScreenshotEnabledChange}
           />
         </div>
 
         {/* Only show configuration options when screenshots are enabled */}
-        {config.enabled && (
+        {screenshotConfiguration.enabled && (
           <>
             {/* Mode Selection */}
             <div className="space-y-2">
               <div className="flex flex-col">
-                <Label className="text-sm font-medium">Screenshot Mode</Label>
-                {config.mode === "manual" ? (
-                  <div className="text-xs text-muted-foreground">
-                    Screenshots will be captured and automatically added to your
-                    attached files. You can then submit them with your own
-                    prompt.
-                  </div>
-                ) : (
-                  <div className="text-xs text-muted-foreground">
-                    Screenshots will be automatically submitted to AI using your
-                    custom prompt. No manual intervention required.
-                  </div>
-                )}
+                <Header
+                  title="Screenshot Mode"
+                  description={
+                    screenshotConfiguration.mode === "manual"
+                      ? "Screenshots will be captured and automatically added to your attached files. You can then submit them with your own prompt."
+                      : "Screenshots will be automatically submitted to AI using your custom prompt. No manual intervention required."
+                  }
+                />
               </div>
-              <Select value={config.mode} onValueChange={handleModeChange}>
+              <Select
+                value={screenshotConfiguration.mode}
+                onValueChange={handleScreenshotModeChange}
+              >
                 <SelectTrigger className="w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors">
                   <div className="flex items-center gap-2">
                     <div className="text-sm font-medium">
-                      {config.mode === "auto" ? "Auto" : "Manual"} Mode
+                      {screenshotConfiguration.mode === "auto"
+                        ? "Auto"
+                        : "Manual"}{" "}
+                      Mode
                     </div>
                   </div>
                 </SelectTrigger>
@@ -115,13 +78,13 @@ export const ScreenshotConfigs = ({}) => {
             </div>
 
             {/* Auto Prompt Input - Only show when auto mode is selected */}
-            {config.mode === "auto" && (
+            {screenshotConfiguration.mode === "auto" && (
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Auto Prompt</Label>
                 <Input
                   placeholder="Enter prompt for automatic screenshot analysis..."
-                  value={config.autoPrompt}
-                  onChange={(e) => handlePromptChange(e.target.value)}
+                  value={screenshotConfiguration.autoPrompt}
+                  onChange={(e) => handleScreenshotPromptChange(e.target.value)}
                   className="w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
                 />
                 <p className="text-xs text-muted-foreground">
@@ -135,7 +98,7 @@ export const ScreenshotConfigs = ({}) => {
       </div>
 
       {/* Tips - only show when screenshots are enabled */}
-      {config.enabled && (
+      {screenshotConfiguration.enabled && (
         <div className="text-xs text-muted-foreground/70">
           <p>
             💡 <strong>Tip:</strong> Auto mode is great for quick analysis,

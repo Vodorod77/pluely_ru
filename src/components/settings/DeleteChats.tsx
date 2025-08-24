@@ -1,13 +1,8 @@
 import { useState } from "react";
 import { TrashIcon } from "lucide-react";
 import { Button, Label } from "@/components";
-import { deleteAllConversations } from "@/lib";
 
-interface DeleteChatsProps {
-  onDelete?: () => void;
-}
-
-export const DeleteChats = ({ onDelete }: DeleteChatsProps = {}) => {
+export const DeleteChats = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -23,30 +18,30 @@ export const DeleteChats = ({ onDelete }: DeleteChatsProps = {}) => {
     setIsDeleting(true);
     setDeleteSuccess(false);
 
-    try {
-      const success = deleteAllConversations();
+    // try {
+    //   const success = deleteAllConversations();
 
-      if (success) {
-        setDeleteSuccess(true);
+    //   if (success) {
+    //     setDeleteSuccess(true);
 
-        // Call optional callback
-        if (onDelete) {
-          onDelete();
-        }
+    //     // Call optional callback
+    //     if (onDelete) {
+    //       onDelete();
+    //     }
 
-        // Reset success message after 3 seconds
-        setTimeout(() => {
-          setDeleteSuccess(false);
-        }, 3000);
-      } else {
-        alert("Failed to delete chat history. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error deleting chat history:", error);
-      alert("An error occurred while deleting chat history.");
-    } finally {
-      setIsDeleting(false);
-    }
+    //     // Reset success message after 3 seconds
+    //     setTimeout(() => {
+    //       setDeleteSuccess(false);
+    //     }, 3000);
+    //   } else {
+    //     alert("Failed to delete chat history. Please try again.");
+    //   }
+    // } catch (error) {
+    //   console.error("Error deleting chat history:", error);
+    //   alert("An error occurred while deleting chat history.");
+    // } finally {
+    //   setIsDeleting(false);
+    // }
   };
 
   const cancelDelete = () => {

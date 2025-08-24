@@ -9,10 +9,10 @@ export const Completion = () => {
 
   return (
     <>
-      <Audio {...completion} />
+      {/* <Audio {...completion} />
       <Input {...completion} />
       {completion?.screenshotConfig?.enabled && <Screenshot {...completion} />}
-      <Files {...completion} />
+      <Files {...completion} /> */}
     </>
   );
 };
