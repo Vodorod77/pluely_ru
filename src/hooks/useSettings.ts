@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useWindowResize } from "@/hooks";
 import { useApp } from "@/contexts";
 import { TYPE_AI_PROVIDER } from "@/types";
 import { safeLocalStorage, fetchModels } from "@/lib";
-import { STORAGE_KEYS } from "@/config";
+import { SPEECH_TO_TEXT_PROVIDERS, STORAGE_KEYS } from "@/config";
 
 export const useSettings = () => {
   const {
@@ -30,6 +30,7 @@ export const useSettings = () => {
   );
 
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
+  const prevAIProviderRef = useRef(selectedAIProvider.provider);
 
   // Sync local API key with global state when provider changes
   useEffect(() => {
@@ -133,6 +134,51 @@ export const useSettings = () => {
       }
     }
   }, [selectedAIProvider.apiKey, isPopoverOpen, allAiProviders.length]);
+
+  useEffect(() => {
+    // Update the previous provider reference
+    const prevProvider = prevAIProviderRef.current;
+    prevAIProviderRef.current = selectedAIProvider.provider;
+
+    // Handle case when switching FROM openai to another provider
+    if (
+      prevProvider === "openai" &&
+      selectedAIProvider.provider !== "openai" &&
+      selectedSttProvider.provider === "openai-whisper"
+    ) {
+      // Reset STT provider when AI provider is changed from openai
+      setLocalSTTApiKey("");
+      onSetSelectedSttProvider({
+        provider: "",
+        apiKey: "",
+        model: "",
+      });
+      return;
+    }
+
+    // Handle case when AI provider is openai and STT is openai-whisper
+    if (
+      selectedAIProvider.apiKey &&
+      selectedAIProvider.provider === "openai" &&
+      selectedSttProvider.provider === "openai-whisper"
+    ) {
+      const provider = SPEECH_TO_TEXT_PROVIDERS.find(
+        (p) => p.id === "openai-whisper"
+      );
+
+      setLocalSTTApiKey(selectedSttProvider.apiKey);
+      submitSTTApiKey();
+      onSetSelectedSttProvider({
+        ...selectedSttProvider,
+        apiKey: selectedAIProvider.apiKey,
+        model: provider?.request.fields.model || "whisper-1",
+      });
+    }
+  }, [
+    selectedAIProvider.apiKey,
+    selectedAIProvider.provider,
+    selectedSttProvider.provider,
+  ]);
 
   // Auto-close on focus loss disabled to prevent interruptions during form interactions
   // Settings should be closed manually via the toggle button for better UX
