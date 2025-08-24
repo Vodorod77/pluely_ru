@@ -1,5 +1,10 @@
-import { AI_PROVIDERS, SPEECH_TO_TEXT_PROVIDERS, STORAGE_KEYS } from "@/config";
-import { safeLocalStorage } from "@/lib/storage/helper";
+import {
+  AI_PROVIDERS,
+  DEFAULT_SYSTEM_PROMPT,
+  SPEECH_TO_TEXT_PROVIDERS,
+  STORAGE_KEYS,
+} from "@/config";
+import { safeLocalStorage } from "@/lib";
 import {
   IContextType,
   ScreenshotConfig,
@@ -19,7 +24,10 @@ const AppContext = createContext<IContextType | undefined>(undefined);
 
 // Create the provider component
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [systemPrompt, setSystemPrompt] = useState<string>("");
+  const [systemPrompt, setSystemPrompt] = useState<string>(
+    safeLocalStorage.getItem(STORAGE_KEYS.SYSTEM_PROMPT) ||
+      DEFAULT_SYSTEM_PROMPT
+  );
 
   // AI Providers
   const [customAiProviders, setCustomAiProviders] = useState<
@@ -56,8 +64,37 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       enabled: true,
     });
 
-  // Function to load AI and STT data from storage
+  // Function to load AI, STT, system prompt and screenshot config data from storage
   const loadData = () => {
+    // Load system prompt
+    const savedSystemPrompt = safeLocalStorage.getItem(
+      STORAGE_KEYS.SYSTEM_PROMPT
+    );
+    if (savedSystemPrompt) {
+      setSystemPrompt(savedSystemPrompt || DEFAULT_SYSTEM_PROMPT);
+    }
+
+    // Load screenshot configuration
+    const savedScreenshotConfig = safeLocalStorage.getItem(
+      STORAGE_KEYS.SCREENSHOT_CONFIG
+    );
+    if (savedScreenshotConfig) {
+      try {
+        const parsed = JSON.parse(savedScreenshotConfig);
+        if (typeof parsed === "object" && parsed !== null) {
+          setScreenshotConfiguration({
+            mode: parsed.mode || "manual",
+            autoPrompt:
+              parsed.autoPrompt ||
+              "Analyze this screenshot and provide insights",
+            enabled: parsed.enabled !== undefined ? parsed.enabled : true,
+          });
+        }
+      } catch {
+        console.warn("Failed to parse screenshot configuration");
+      }
+    }
+
     // Load custom AI providers
     const savedAi = safeLocalStorage.getItem(STORAGE_KEYS.CUSTOM_AI_PROVIDERS);
     let aiList: TYPE_AI_PROVIDER[] = [];
@@ -157,7 +194,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         e.key === STORAGE_KEYS.CUSTOM_AI_PROVIDERS ||
         e.key === STORAGE_KEYS.SELECTED_AI_PROVIDER ||
         e.key === STORAGE_KEYS.CUSTOM_SPEECH_PROVIDERS ||
-        e.key === STORAGE_KEYS.SELECTED_STT_PROVIDER
+        e.key === STORAGE_KEYS.SELECTED_STT_PROVIDER ||
+        e.key === STORAGE_KEYS.SYSTEM_PROMPT ||
+        e.key === STORAGE_KEYS.SCREENSHOT_CONFIG
       ) {
         loadData();
       }

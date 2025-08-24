@@ -1,11 +1,14 @@
 // Storage keys
 export const STORAGE_KEYS = {
   SETTINGS: "settings",
-  THEME: "theme",
   CHAT_HISTORY: "chat_history",
   CUSTOM_PROVIDERS: "custom_providers",
   SPEECH_PROVIDERS: "speech_providers",
   SELECTED_SPEECH_PROVIDER: "selected_speech_provider",
+
+  // new keys
+  THEME: "theme",
+  SYSTEM_PROMPT: "system_prompt",
   SCREENSHOT_CONFIG: "screenshot_config",
   CUSTOM_AI_PROVIDERS: "custom_ai_providers",
   CUSTOM_SPEECH_PROVIDERS: "custom_speech_providers",

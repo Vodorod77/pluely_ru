@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useWindowResize } from "@/hooks";
 import { useApp } from "@/contexts";
 import { TYPE_AI_PROVIDER } from "@/types";
-import { fetchModels } from "@/lib/functions/ai-models.function";
+import { safeLocalStorage, fetchModels } from "@/lib";
+import { STORAGE_KEYS } from "@/config";
 
 export const useSettings = () => {
   const {
@@ -31,16 +32,28 @@ export const useSettings = () => {
   const handleScreenshotModeChange = (value: "auto" | "manual") => {
     const newConfig = { ...screenshotConfiguration, mode: value };
     setScreenshotConfiguration(newConfig);
+    safeLocalStorage.setItem(
+      STORAGE_KEYS.SCREENSHOT_CONFIG,
+      JSON.stringify(newConfig)
+    );
   };
 
   const handleScreenshotPromptChange = (value: string) => {
     const newConfig = { ...screenshotConfiguration, autoPrompt: value };
     setScreenshotConfiguration(newConfig);
+    safeLocalStorage.setItem(
+      STORAGE_KEYS.SCREENSHOT_CONFIG,
+      JSON.stringify(newConfig)
+    );
   };
 
   const handleScreenshotEnabledChange = (enabled: boolean) => {
     const newConfig = { ...screenshotConfiguration, enabled };
     setScreenshotConfiguration(newConfig);
+    safeLocalStorage.setItem(
+      STORAGE_KEYS.SCREENSHOT_CONFIG,
+      JSON.stringify(newConfig)
+    );
   };
 
   const fetchModelsForProvider = async (

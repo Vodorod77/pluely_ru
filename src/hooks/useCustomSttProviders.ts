@@ -5,7 +5,7 @@ import {
   updateCustomSttProvider,
   removeCustomSttProvider,
   getCustomSttProviders,
-} from "@/lib/storage/stt-providers";
+} from "@/lib";
 import { SPEECH_TO_TEXT_PROVIDERS } from "@/config";
 import { useApp } from "@/contexts";
 
