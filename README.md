@@ -68,6 +68,17 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 ---
 
+## 🚀 Future Developments
+
+Continuously working to enhance Pluely with these highly requested features:
+
+### 🎯 **Top Priority Features**
+
+- **🎧 System Audio Capture** - Capture and transcribe audio from your computer applications, meetings, and system sounds
+- **⚡ Global Shortcuts** - Customizable keyboard shortcuts (Ctrl/Cmd + /) for quick show/hide functionality
+
+---
+
 ## 🎥 **Live Demos**
 
 ### 💬 **Input Methods Demo**
