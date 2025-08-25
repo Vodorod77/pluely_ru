@@ -137,7 +137,7 @@ _Browse through previous conversations, search chat history, and continue where 
 
 ### 🔧 **AI Provider Setup**
 
-Get started with your preferred AI provider in seconds. Pluely supports all major LLM providers with dynamic model fetching, and you can also add custom providers:
+Get started with your preferred AI provider in seconds. Pluely supports all major LLM providers with dynamic model fetching, custom providers, and seamless integration:
 
 <div align="center">
 
@@ -151,12 +151,87 @@ Get started with your preferred AI provider in seconds. Pluely supports all majo
 |           <img src="images/gemini.GIF" alt="Google Gemini API Setup" width="400"/>            |              <img src="images/grok.GIF" alt="xAI Grok API Setup" width="400"/>              |
 | _Connect to Google Gemini with your API key and choose from available models like Gemini Pro_ | _Integrate with xAI Grok - dynamically fetches available models for seamless AI assistance_ |
 
-|                              Anthropic Claude Setup                               |
-| :-------------------------------------------------------------------------------: |
-|    <img src="images/claude.GIF" alt="Anthropic Claude API Setup" width="400"/>    |
-| _Enter your Claude API key and model name manually for powerful AI conversations_ |
+|                              Anthropic Claude Setup                               |                              Additional AI Providers                               |
+| :-------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
+|    <img src="images/claude.GIF" alt="Anthropic Claude API Setup" width="400"/>    |     **🔸 Mistral AI**<br>**🔸 Groq**<br>**🔸 Cohere**<br>**🔸 Perplexity AI**      |
+| _Enter your Claude API key and model name manually for powerful AI conversations_ | _These providers are also available in the AI Providers settings for more options_ |
 
 </div>
+
+#### ⚙️ **Provider Configuration**
+
+Each provider comes pre-configured with optimal settings:
+
+- **🔄 Dynamic Model Fetching**: Automatically fetch latest models from OpenAI, xAI, Gemini, Mistral, and Groq
+- **🎯 Manual Model Selection**: For Claude and Cohere, enter your preferred model name
+- **🔐 Secure Authentication**: API keys stored locally in browser storage
+- **📡 Streaming Support**: Real-time responses for all providers
+- **🖼️ Multi-Modal**: Image analysis support where available
+- **⚡ Fast Integration**: One-click setup for instant AI assistance
+
+#### 🚀 **Quick Setup Guide**
+
+1. **Choose Your Provider**: Select from the comprehensive list in Settings
+2. **Enter API Key**: Add your provider's API key securely
+3. **Select Model**: Choose from dynamically fetched models or enter manually
+4. **Start Chatting**: Begin your AI-powered conversations immediately
+
+#### 🔧 **Custom Provider Support**
+
+For providers not in our list, use the custom provider option:
+
+- Add any OpenAI-compatible API endpoint
+- Configure custom authentication methods
+- Set up your own response parsing
+- Full flexibility for any LLM service
+
+---
+
+### 🎤 **Speech-to-Text Provider Setup**
+
+Pluely supports advanced voice input with multiple speech-to-text providers for accurate, real-time transcription. Choose from industry-leading STT services or add your own custom provider:
+
+<div align="center">
+
+| **Provider**                 | **Auth Type**    | **Features**                        | **Model**            |
+| :--------------------------- | :--------------- | :---------------------------------- | :------------------- |
+| **🎤 OpenAI Whisper**        | Bearer Token     | High accuracy, fast processing      | whisper-1            |
+| **⚡ Groq Whisper**          | Bearer Token     | Ultra-fast transcription            | whisper-large-v3     |
+| **🔊 ElevenLabs STT**        | xi-api-key       | Natural language processing         | scribe_v1            |
+| **🔍 Google Speech-to-Text** | Bearer Token     | Advanced language detection         | N/A                  |
+| **🎯 Deepgram STT**          | Bearer Token     | Real-time processing                | nova-2               |
+| **🧠 IBM Watson STT**        | Basic API Key    | Enterprise-grade accuracy           | en-US_BroadbandModel |
+| **☁️ Azure Speech-to-Text**  | Subscription Key | Cloud-native processing             | N/A                  |
+| **🎵 Speechmatics**          | Bearer Token     | High accuracy for various languages | N/A                  |
+| **🤖 Zhipu GLM-ASR**         | Bearer Token     | Chinese language specialist         | glm-asr              |
+| **🚀 Doubao STT**            | Bearer Token     | Fast Chinese transcription          | whisper-1            |
+
+</div>
+
+#### 🎙️ **STT Provider Features**
+
+- **🎯 Real-time Processing**: Instant speech recognition with voice activity detection
+- **🌍 Multi-Language Support**: Choose providers optimized for specific languages
+- **⚡ Fast & Accurate**: Industry-leading transcription accuracy and speed
+- **🔒 Secure Authentication**: API keys stored locally and securely
+- **🎨 Seamless Integration**: Works with Pluely's voice input features
+
+#### 🛠️ **Custom STT Provider Setup**
+
+Can't find your preferred speech-to-text provider? Add custom STT providers with full configuration control:
+
+- **🔧 Flexible API Integration**: Support for any REST API endpoint
+- **🔐 Custom Authentication**: Bearer tokens, API keys, or custom headers
+- **📝 Request Customization**: Configure audio formats, parameters, and headers
+- **🎯 Response Parsing**: Define custom response paths for transcription text
+- **⚙️ Advanced Configuration**: Set up audio formats, sample rates, and more
+
+#### 🚀 **Voice Input Quick Start**
+
+1. **Select Provider**: Choose from the comprehensive STT provider list
+2. **Configure API**: Enter your provider's API credentials securely
+3. **Test Connection**: Verify your setup with a quick voice test
+4. **Start Speaking**: Use voice input seamlessly in your conversations
 
 ---
 
@@ -351,30 +426,89 @@ Pluely makes API calls directly from your frontend because:
 
 ### 🏗️ Architecture Overview
 
-#### Frontend (React + TypeScript)
+#### Frontend (React + TypeScript + Tauri)
 
 ```
 src/
 ├── components/           # Reusable UI components
 │   ├── completion/      # AI completion interface
-│   │   ├── index.tsx   # Main completion component
-│   │   ├── Speech.tsx  # Voice input handling
-│   │   └── useCompletion.ts # Completion logic hook
-│   ├── settings/       # Configuration components
-│   │   ├── index.tsx   # Settings panel
-│   │   ├── ApiKeyInput.tsx # Secure API key management
-│   │   ├── ModelSelection.tsx # LLM model chooser
-│   │   ├── ProviderSelection.tsx # AI provider selector
-│   │   └── SystemPrompt.tsx # Custom prompt editor
-│   └── ui/             # shadcn/ui components
-├── lib/                # Core utilities
-│   ├── api.ts         # LLM API integration
-│   ├── completion.ts  # Message formatting
-│   ├── storage.ts     # Local data persistence
-│   └── utils.ts       # Helper functions
-├── types/             # TypeScript definitions
-├── config/            # App configuration
-└── App.tsx           # Main application
+│   │   ├── Audio.tsx    # Audio recording component
+│   │   ├── AutoSpeechVad.tsx # Voice activity detection
+│   │   ├── Files.tsx    # File handling component
+│   │   ├── index.tsx    # Main completion component
+│   │   └── Input.tsx    # Text input component
+│   ├── Header/          # Application header
+│   ├── history/         # Chat history components
+│   │   ├── ChatHistory.tsx # Chat history management
+│   │   ├── index.tsx    # History exports
+│   │   └── MessageHistory.tsx # Message history display
+│   ├── Markdown/        # Markdown rendering
+│   ├── Selection/       # Text selection handling
+│   ├── settings/        # Configuration components
+│   │   ├── ai-configs/  # AI provider configurations
+│   │   │   ├── CreateEditProvider.tsx # Custom AI provider setup
+│   │   │   ├── CustomProvider.tsx # Custom provider component
+│   │   │   ├── index.tsx # AI configs exports
+│   │   │   └── Providers.tsx # AI providers list
+│   │   ├── DeleteChats.tsx # Chat deletion functionality
+│   │   ├── Disclaimer.tsx # Legal disclaimers
+│   │   ├── index.tsx    # Settings panel
+│   │   ├── ScreenshotConfigs.tsx # Screenshot configuration
+│   │   ├── stt-configs/ # Speech-to-text configurations
+│   │   │   ├── CreateEditProvider.tsx # Custom STT provider setup
+│   │   │   ├── CustomProvider.tsx # Custom STT provider
+│   │   │   ├── index.tsx # STT configs exports
+│   │   │   └── Providers.tsx # STT providers list
+│   │   └── SystemPrompt.tsx # Custom system prompt editor
+│   ├── TextInput/       # Text input components
+│   ├── ui/              # shadcn/ui component library
+│   └── updater/         # Application update handling
+├── config/              # Application configuration
+│   ├── ai-providers.constants.ts # AI provider configurations
+│   ├── constants.ts     # General constants
+│   ├── index.ts         # Config exports
+│   └── stt.constants.ts # Speech-to-text provider configs
+├── contexts/            # React contexts
+│   ├── app.context.tsx  # Main application context
+│   ├── index.ts         # Context exports
+│   └── theme.context.tsx # Theme management context
+├── hooks/               # Custom React hooks
+│   ├── index.ts         # Hook exports
+│   ├── useCompletion.ts # AI completion hook
+│   ├── useCustomProvider.ts # Custom provider hook
+│   ├── useCustomSttProviders.ts # Custom STT providers hook
+│   ├── useSettings.ts   # Settings management hook
+│   ├── useVersion.ts    # Version management hook
+│   └── useWindow.ts     # Window management hook
+├── lib/                 # Core utilities
+│   ├── chat-history.ts  # Chat history management
+│   ├── functions/       # Core functionality modules
+│   │   ├── ai-models.function.ts # AI model handling
+│   │   ├── ai-response.function.ts # AI response processing
+│   │   ├── common.function.ts # Common utilities
+│   │   ├── index.ts     # Function exports
+│   │   └── stt.function.ts # Speech-to-text functions
+│   ├── storage/         # Local storage management
+│   │   ├── ai-providers.ts # AI provider storage
+│   │   ├── helper.ts    # Storage helpers
+│   │   ├── index.ts     # Storage exports
+│   │   └── stt-providers.ts # STT provider storage
+│   ├── index.ts         # Lib exports
+│   ├── utils.ts         # Utility functions
+│   └── version.ts       # Version utilities
+├── types/               # TypeScript type definitions
+│   ├── ai-provider.type.ts # AI provider types
+│   ├── completion.hook.ts # Completion hook types
+│   ├── completion.ts    # Completion types
+│   ├── context.type.ts  # Context types
+│   ├── index.ts         # Type exports
+│   ├── settings.hook.ts # Settings hook types
+│   ├── settings.ts      # Settings types
+│   └── stt.types.ts     # Speech-to-text types
+├── App.tsx              # Main application component
+├── main.tsx             # Application entry point
+├── global.css           # Global styles
+└── vite-env.d.ts        # Vite environment types
 ```
 
 #### Backend (Tauri + Rust)
@@ -382,11 +516,20 @@ src/
 ```
 src-tauri/
 ├── src/
-│   ├── main.rs       # Application entry point
-│   ├── lib.rs        # Core Tauri setup
-│   └── window.rs     # Window management & positioning
-├── Cargo.toml        # Rust dependencies
-└── tauri.conf.json   # Tauri configuration
+│   ├── main.rs          # Application entry point
+│   ├── lib.rs           # Core Tauri setup and IPC handlers
+│   └── window.rs        # Window management & positioning
+├── build.rs             # Build script for additional resources
+├── Cargo.toml           # Rust dependencies and build configuration
+├── tauri.conf.json      # Tauri configuration (windows, bundles, etc.)
+├── Cargo.lock           # Dependency lock file
+├── capabilities/        # Permission configurations
+│   └── default.json     # Default capabilities
+├── gen/                 # Generated files
+├── icons/               # Application icons (PNG, ICNS, ICO)
+├── info.plist           # macOS application info
+├── pluely.desktop       # Linux desktop file
+└── target/              # Build output directory
 ```
 
 ### **Development Commands**
