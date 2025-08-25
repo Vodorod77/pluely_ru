@@ -1,6 +1,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod window;
-
+#[cfg(target_os = "macos")]
+use tauri_plugin_macos_permissions;
 use xcap::Monitor;
 use base64::Engine;
 use image::codecs::png::PngEncoder;
@@ -70,11 +71,11 @@ pub fn run() {
             Ok(())
         });
 
-    // Add macOS-specific permissions plugin
-    #[cfg(target_os = "macos")]
-    {
-        builder = builder.plugin(tauri_plugin_macos_permissions::init());
-    }
+        // Add macOS-specific permissions plugin
+        #[cfg(target_os = "macos")]
+        {
+            builder = builder.plugin(tauri_plugin_macos_permissions::init());
+        }
 
     builder
         .run(tauri::generate_context!())
