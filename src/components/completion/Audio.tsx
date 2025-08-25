@@ -1,4 +1,4 @@
-import { MicIcon } from "lucide-react";
+import { InfoIcon, MicIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger, Button } from "@/components";
 import { AutoSpeechVAD } from "./AutoSpeechVad";
 import { UseCompletionReturn } from "@/types";
@@ -55,6 +55,17 @@ export const Audio = ({
           <p className="text-muted-foreground">
             {!speechProviderStatus ? (
               <>
+                <div className="mt-2 flex flex-row gap-1 items-center text-orange-600">
+                  <InfoIcon size={16} />
+                  {selectedSttProvider.apiKey ? null : (
+                    <p>API KEY IS MISSING</p>
+                  )}
+                  {selectedSttProvider.provider ? null : (
+                    <p>PROVIDER IS MISSING</p>
+                  )}
+                  {selectedSttProvider.model ? null : <p>MODEL IS MISSING</p>}
+                </div>
+
                 <span className="block mt-2">
                   Please go to settings and configure your speech provider to
                   enable voice input.

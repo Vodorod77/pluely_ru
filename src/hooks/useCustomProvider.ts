@@ -7,6 +7,7 @@ import {
   getCustomAiProviders,
 } from "@/lib";
 import { AI_PROVIDERS } from "@/config";
+import { AUTH_TYPES } from "@/lib/functions/common.function";
 import { useApp } from "@/contexts";
 
 export function useCustomAiProviders() {
@@ -41,16 +42,45 @@ export function useCustomAiProviders() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
+  // Local state for custom header and query parameter names
+  const [customHeaderName, setCustomHeaderName] = useState("");
+  const [queryParamName, setQueryParamName] = useState("");
+
+  // Helper function to determine auth type and set local states
+  const setAuthTypeFromProvider = (provider: TYPE_AI_PROVIDER) => {
+    const authType = provider.authType;
+    const authParam = provider.authParam || "";
+
+    // Check if it's a standard auth type
+    if (AUTH_TYPES.includes(authType as any)) {
+      setFormData((prev) => ({ ...prev, authType, authParam }));
+      setCustomHeaderName("");
+      setQueryParamName("");
+    } else {
+      // It's a custom header or query parameter
+      if (authParam) {
+        // If authParam exists, it's a query parameter
+        setFormData((prev) => ({ ...prev, authType: "query", authParam }));
+        setQueryParamName(authType); // authType contains the query param name
+        setCustomHeaderName("");
+      } else {
+        // If no authParam, it's a custom header
+        setFormData((prev) => ({ ...prev, authType: "custom", authParam: "" }));
+        setCustomHeaderName(authType); // authType contains the header name
+        setQueryParamName("");
+      }
+    }
+  };
+
   const handleAutoFill = (providerId: string) => {
     const provider = AI_PROVIDERS.find((p) => p.id === providerId);
     if (!provider) return;
 
-    setFormData({
+    const providerData = {
       ...formData,
       name: provider.name,
       baseUrl: provider.baseUrl,
       chatEndpoint: provider.chatEndpoint,
-      authType: provider.authType,
       defaultModel: provider.defaultModel,
       streaming: provider.streaming || false,
       response: {
@@ -71,7 +101,10 @@ export function useCustomAiProviders() {
       authParam: (provider as any).authParam || "",
       compat: (provider as any).compat || "openai",
       isCustom: true,
-    });
+    };
+
+    setFormData(providerData);
+    setAuthTypeFromProvider(providerData);
     setErrors({});
   };
 
@@ -110,18 +143,12 @@ export function useCustomAiProviders() {
     }
 
     // Auth validation
-    if (
-      data.authType === "custom" &&
-      (!data.authParam || !data.authParam.trim())
-    ) {
-      newErrors.authParam = "Custom header parameter is required";
+    if (data.authType === "custom" && !customHeaderName.trim()) {
+      newErrors.customHeaderName = "Custom header name is required";
     }
 
-    if (
-      data.authType === "query" &&
-      (!data.authParam || !data.authParam.trim())
-    ) {
-      newErrors.authParam = "Query parameter is required";
+    if (data.authType === "query" && !queryParamName.trim()) {
+      newErrors.queryParamName = "Query parameter name is required";
     }
 
     return newErrors;
@@ -144,10 +171,13 @@ export function useCustomAiProviders() {
     }
 
     // Populate form with provider data
-    setFormData({
+    const providerData = {
       ...provider,
       authParam: provider.authParam || "",
-    });
+    };
+
+    setFormData(providerData);
+    setAuthTypeFromProvider(providerData);
 
     // Show the form
     setShowForm(true);
@@ -220,12 +250,24 @@ export function useCustomAiProviders() {
       }
 
       // Prepare provider data
+      let authType = formData.authType;
+      let authParam = formData.authParam;
+
+      // Handle custom header and query parameter
+      if (formData.authType === "custom") {
+        authType = customHeaderName; // Use the custom header name as authType
+        authParam = ""; // No authParam for custom headers
+      } else if (formData.authType === "query") {
+        authType = queryParamName; // Use the query param name as authType
+        authParam = formData.authParam; // Keep the authParam for query
+      }
+
       const providerData = {
         name: formData.name.trim(),
         baseUrl: formData.baseUrl.trim(),
         chatEndpoint: formData.chatEndpoint.trim(),
-        authType: formData.authType,
-        authParam: formData.authParam,
+        authType,
+        authParam,
         defaultModel: formData.defaultModel.trim(),
         streaming: formData.streaming,
         response: {
@@ -308,5 +350,9 @@ export function useCustomAiProviders() {
     handleDelete,
     confirmDelete,
     cancelDelete,
+    customHeaderName,
+    setCustomHeaderName,
+    queryParamName,
+    setQueryParamName,
   };
 }

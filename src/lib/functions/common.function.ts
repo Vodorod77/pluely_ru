@@ -10,6 +10,7 @@ export const AUTH_TYPES = [
   "x-goog-api-key",
   "api-key",
   "custom",
+  "query",
 ] as const;
 
 export function getByPath(obj: any, path: string): any {

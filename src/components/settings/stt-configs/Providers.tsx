@@ -50,7 +50,16 @@ export const Providers = ({
               ...selectedSttProvider,
               provider: value,
               apiKey: "",
-              model: "",
+              model:
+                allSttProviders.find((p) => p.id === value)?.request?.fields
+                  ?.model ||
+                allSttProviders.find((p) => p.id === value)?.request?.fields
+                  ?.model ||
+                allSttProviders.find((p) => p.id === value)?.request?.fields
+                  ?.model_id ||
+                allSttProviders.find((p) => p.id === value)?.request?.fields
+                  ?.model_name ||
+                "",
             });
             setLocalSTTApiKey("");
           }}
@@ -71,6 +80,11 @@ export const Providers = ({
               value={localSTTApiKey}
               onChange={(value) => {
                 setLocalSTTApiKey(value.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  submitSTTApiKey();
+                }
               }}
               disabled={false}
               className="flex-1 h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"

@@ -31,6 +31,10 @@ export const CreateEditProvider = ({
     handleSave,
     setErrors,
     handleAutoFill,
+    customHeaderName,
+    setCustomHeaderName,
+    queryParamName,
+    setQueryParamName,
   } = hookInstance;
 
   return (
@@ -124,27 +128,23 @@ export const CreateEditProvider = ({
 
               {formData.authType === "custom" && (
                 <TextInput
-                  label="Custom Header"
-                  placeholder="key"
-                  value={formData.authParam || ""}
-                  onChange={(value) =>
-                    setFormData((prev) => ({ ...prev, authParam: value }))
-                  }
-                  error={errors.authParam}
-                  notes="The parameter name for the API key. This is used to authenticate the API request."
+                  label="Custom Header Name"
+                  placeholder="x-api-key"
+                  value={customHeaderName}
+                  onChange={setCustomHeaderName}
+                  error={errors.customHeaderName}
+                  notes="The custom header name for the API key. This is used to authenticate the API request."
                 />
               )}
 
               {formData.authType === "query" && (
                 <TextInput
-                  label="Query Parameter"
+                  label="Query Parameter Name"
                   placeholder="api_key"
-                  value={formData.authParam || ""}
-                  onChange={(value) =>
-                    setFormData((prev) => ({ ...prev, authParam: value }))
-                  }
-                  error={errors.authParam}
-                  notes="The parameter name for the API key. This is used to authenticate the API request."
+                  value={queryParamName}
+                  onChange={setQueryParamName}
+                  error={errors.queryParamName}
+                  notes="The query parameter name for the API key. This is used to authenticate the API request."
                 />
               )}
 

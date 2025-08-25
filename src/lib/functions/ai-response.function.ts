@@ -1,5 +1,7 @@
+import { DEFAULT_SYSTEM_PROMPT } from "@/config";
 import { getAuthHeaders, getByPath } from "./common.function";
 import { TYPE_AI_PROVIDER } from "@/types";
+import { fetch } from "@tauri-apps/plugin-http";
 
 interface Message {
   role: "system" | "user" | "assistant";
@@ -74,16 +76,35 @@ export async function* fetchAIResponse(params: {
     const format = provider?.compat || provider?.id || "openai";
     switch (format) {
       case "claude":
+        let systemMessage = "";
+
+        // extract system message from messages array and set it directly
+        if (messages && Array.isArray(messages)) {
+          const systemMessageIndex = messages.findIndex(
+            (msg: any) => msg.role === "system"
+          );
+
+          if (systemMessageIndex !== -1) {
+            systemMessage =
+              typeof messages[systemMessageIndex].content === "string"
+                ? messages[systemMessageIndex].content
+                : "";
+            // remove system message from messages array
+            messages.splice(systemMessageIndex, 1);
+          }
+        }
+
         bodyObj = {
           model: effectiveModel,
-          messages: messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
+          messages: messages,
+          system: systemMessage || DEFAULT_SYSTEM_PROMPT,
           stream: stream && !!provider?.streaming,
           max_tokens: 4096, // Required for Claude
         };
+
         (headers as any)["anthropic-version"] = "2023-06-01";
+        (headers as any)["anthropic-dangerous-direct-browser-access"] = "true";
+
         if (imageBase64) {
           const lastMsgIndex = bodyObj.messages.length - 1;
           const lastMsg = bodyObj.messages[lastMsgIndex];

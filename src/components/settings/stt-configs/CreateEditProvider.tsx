@@ -32,6 +32,10 @@ export const CreateEditProvider = ({
     handleSave,
     setErrors,
     handleAutoFill,
+    customHeaderName,
+    setCustomHeaderName,
+    queryParamName,
+    setQueryParamName,
   } = hookInstance;
 
   // Key-value pair management functions
@@ -267,28 +271,6 @@ export const CreateEditProvider = ({
               />
 
               <div className="space-y-1">
-                <Label className="text-xs font-medium">HTTP Method *</Label>
-                <Selection
-                  selected={formData.method}
-                  onChange={(value) =>
-                    setFormData((prev: typeof formData) => ({
-                      ...prev,
-                      method: value,
-                    }))
-                  }
-                  options={[
-                    { label: "GET", value: "GET" },
-                    { label: "POST", value: "POST" },
-                    { label: "PUT", value: "PUT" },
-                    { label: "PATCH", value: "PATCH" },
-                  ]}
-                />
-                <p className="text-xs text-muted-foreground">
-                  The HTTP method to use for the request.
-                </p>
-              </div>
-
-              <div className="space-y-1">
                 <Label className="text-xs font-medium">Auth Type *</Label>
                 <Selection
                   selected={formData.authType}
@@ -310,33 +292,23 @@ export const CreateEditProvider = ({
 
               {formData.authType === "custom" && (
                 <TextInput
-                  label="Custom Header"
-                  placeholder="key"
-                  value={formData.authParam || ""}
-                  onChange={(value) =>
-                    setFormData((prev: typeof formData) => ({
-                      ...prev,
-                      authParam: value,
-                    }))
-                  }
-                  error={errors.authParam}
-                  notes="The parameter name for the API key in custom header."
+                  label="Custom Header Name"
+                  placeholder="x-api-key"
+                  value={customHeaderName}
+                  onChange={setCustomHeaderName}
+                  error={errors.customHeaderName}
+                  notes="The custom header name for the API key. This is used to authenticate the API request."
                 />
               )}
 
               {formData.authType === "query" && (
                 <TextInput
-                  label="Query Parameter"
+                  label="Query Parameter Name"
                   placeholder="api_key"
-                  value={formData.authParam || ""}
-                  onChange={(value) =>
-                    setFormData((prev: typeof formData) => ({
-                      ...prev,
-                      authParam: value,
-                    }))
-                  }
-                  error={errors.authParam}
-                  notes="The parameter name for the API key in query string."
+                  value={queryParamName}
+                  onChange={setQueryParamName}
+                  error={errors.queryParamName}
+                  notes="The query parameter name for the API key. This is used to authenticate the API request."
                 />
               )}
 
