@@ -4,3 +4,4 @@ export * from "./useWindow";
 export * from "./useCustomProvider";
 export * from "./useCustomSttProviders";
 export * from "./useSettings";
+export * from "./useGlobalShortcuts";

@@ -1,5 +1,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod window;
+mod shortcuts;
+
 #[cfg(target_os = "macos")]
 use tauri_plugin_macos_permissions;
 use xcap::Monitor;
@@ -59,23 +61,32 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             greet, 
             get_app_version,
             set_window_height,
-            capture_to_base64
+            capture_to_base64,
+            shortcuts::get_shortcuts,
+            shortcuts::check_shortcuts_registered
         ])
         .setup(|app| {
             // Setup main window positioning
             window::setup_main_window(app).expect("Failed to setup main window");
+            
+            // Setup global shortcuts
+            if let Err(e) = shortcuts::setup_global_shortcuts(app.handle()) {
+                eprintln!("Failed to setup global shortcuts: {}", e);
+            }
+            
             Ok(())
         });
 
-        // Add macOS-specific permissions plugin
-        #[cfg(target_os = "macos")]
-        {
-            builder = builder.plugin(tauri_plugin_macos_permissions::init());
-        }
+    // Add macOS-specific permissions plugin
+    #[cfg(target_os = "macos")]
+    {
+        builder = builder.plugin(tauri_plugin_macos_permissions::init());
+    }
 
     builder
         .run(tauri::generate_context!())

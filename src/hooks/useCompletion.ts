@@ -1,10 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useWindowResize } from "./useWindow";
-import { useWindowFocus } from "@/hooks";
+import { useGlobalShortcuts, useWindowFocus } from "@/hooks";
 import { MAX_FILES } from "@/config";
 import { useApp } from "@/contexts";
 import { fetchAIResponse, safeLocalStorage } from "@/lib";
 import { STORAGE_KEYS } from "@/config";
+import { invoke } from "@tauri-apps/api/core";
 
 // Types for completion
 interface AttachedFile {
@@ -48,6 +49,7 @@ export const useCompletion = () => {
     screenshotConfiguration,
     setScreenshotConfiguration,
   } = useApp();
+  const globalShortcuts = useGlobalShortcuts();
 
   const [state, setState] = useState<CompletionState>({
     input: "",
@@ -62,6 +64,8 @@ export const useCompletion = () => {
   const [enableVAD, setEnableVAD] = useState(false);
   const [messageHistoryOpen, setMessageHistoryOpen] = useState(false);
   const [isFilesPopoverOpen, setIsFilesPopoverOpen] = useState(false);
+  const [isScreenshotLoading, setIsScreenshotLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { resizeWindow } = useWindowResize();
 
@@ -463,6 +467,14 @@ export const useCompletion = () => {
   };
 
   const handleScreenshotSubmit = async (base64: string, prompt?: string) => {
+    if (state.attachedFiles.length >= MAX_FILES) {
+      setState((prev) => ({
+        ...prev,
+        error: `You can only upload ${MAX_FILES} files`,
+      }));
+      return;
+    }
+
     try {
       if (prompt) {
         // Auto mode: Submit directly to AI with screenshot
@@ -670,12 +682,54 @@ export const useCompletion = () => {
     }
   }, [state.response]);
 
+  const captureScreenshot = async () => {
+    if (!screenshotConfiguration.enabled || !handleScreenshotSubmit) return;
+    setIsScreenshotLoading(true);
+    try {
+      const base64 = await invoke("capture_to_base64");
+
+      if (screenshotConfiguration.mode === "auto") {
+        // Auto mode: Submit directly to AI with the configured prompt
+        handleScreenshotSubmit(
+          base64 as string,
+          screenshotConfiguration.autoPrompt
+        );
+      } else if (screenshotConfiguration.mode === "manual") {
+        // Manual mode: Add to attached files without prompt
+        handleScreenshotSubmit(base64 as string);
+      }
+    } catch (error) {
+      console.error("Failed to capture screenshot:", error);
+    } finally {
+      setIsScreenshotLoading(false);
+    }
+  };
+
+  const toggleRecording = () => {
+    setEnableVAD(!enableVAD);
+    setMicOpen(!micOpen);
+  };
+
   useWindowFocus({
     onFocusLost: () => {
       setMicOpen(false);
       setMessageHistoryOpen(false);
     },
   });
+
+  // register callbacks for global shortcuts
+  useEffect(() => {
+    globalShortcuts.registerAudioCallback(toggleRecording);
+    globalShortcuts.registerInputRef(inputRef.current);
+    globalShortcuts.registerScreenshotCallback(captureScreenshot);
+  }, [
+    globalShortcuts.registerAudioCallback,
+    globalShortcuts.registerInputRef,
+    globalShortcuts.registerScreenshotCallback,
+    toggleRecording,
+    captureScreenshot,
+    inputRef,
+  ]);
 
   return {
     input: state.input,
@@ -714,5 +768,8 @@ export const useCompletion = () => {
     isFilesPopoverOpen,
     setIsFilesPopoverOpen,
     onRemoveAllFiles,
+    inputRef,
+    captureScreenshot,
+    isScreenshotLoading,
   };
 };
