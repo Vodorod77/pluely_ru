@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef } from "react";
 
 interface Shortcuts {
@@ -7,6 +7,16 @@ interface Shortcuts {
   audio: string;
   screenshot: string;
 }
+
+// Global singleton to prevent multiple event listeners in StrictMode
+let globalEventListeners: {
+  focus?: UnlistenFn;
+  audio?: UnlistenFn;
+  screenshot?: UnlistenFn;
+} = {};
+
+// Global debounce for screenshot events to prevent duplicates
+let lastScreenshotEventTime = 0;
 
 export const useGlobalShortcuts = () => {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -48,57 +58,75 @@ export const useGlobalShortcuts = () => {
     screenshotCallbackRef.current = callback;
   }, []);
 
-  // Setup event listeners
+  // Setup event listeners using global singleton
   useEffect(() => {
     const setupEventListeners = async () => {
-      // Listen for focus text input event
-      const unlistenFocus = await listen("focus-text-input", () => {
-        // Add small delay to ensure window is fully shown
-        setTimeout(() => {
-          if (inputRef.current) {
-            inputRef.current.focus();
+      try {
+        // Clean up any existing global listeners first
+        if (globalEventListeners.focus) {
+          try {
+            globalEventListeners.focus();
+          } catch (error) {
+            console.warn("Error cleaning up focus listener:", error);
           }
-        }, 100);
-      });
-
-      // Listen for audio recording event
-      const unlistenAudio = await listen("start-audio-recording", () => {
-        if (audioCallbackRef.current) {
-          audioCallbackRef.current();
         }
-      });
-
-      // Listen for screenshot trigger event
-      const unlistenScreenshot = await listen("trigger-screenshot", () => {
-        if (screenshotCallbackRef.current) {
-          screenshotCallbackRef.current();
+        if (globalEventListeners.audio) {
+          try {
+            globalEventListeners.audio();
+          } catch (error) {
+            console.warn("Error cleaning up audio listener:", error);
+          }
         }
-      });
+        if (globalEventListeners.screenshot) {
+          try {
+            globalEventListeners.screenshot();
+          } catch (error) {
+            console.warn("Error cleaning up screenshot listener:", error);
+          }
+        }
 
-      // Cleanup function
-      return () => {
-        unlistenFocus();
-        unlistenAudio();
-        unlistenScreenshot();
-      };
-    };
+        // Listen for focus text input event
+        const unlistenFocus = await listen("focus-text-input", () => {
+          // Add small delay to ensure window is fully shown
+          setTimeout(() => {
+            if (inputRef.current) {
+              inputRef.current.focus();
+            }
+          }, 100);
+        });
+        globalEventListeners.focus = unlistenFocus;
 
-    let cleanup: (() => void) | null = null;
+        // Listen for audio recording event
+        const unlistenAudio = await listen("start-audio-recording", () => {
+          if (audioCallbackRef.current) {
+            audioCallbackRef.current();
+          }
+        });
+        globalEventListeners.audio = unlistenAudio;
 
-    setupEventListeners()
-      .then((cleanupFn) => {
-        cleanup = cleanupFn;
-      })
-      .catch((error) => {
+        // Listen for screenshot trigger event with debouncing
+        const unlistenScreenshot = await listen("trigger-screenshot", () => {
+          const now = Date.now();
+          const timeSinceLastEvent = now - lastScreenshotEventTime;
+
+          // Debounce screenshot events (300ms minimum interval)
+          if (timeSinceLastEvent < 300) {
+            return;
+          }
+
+          lastScreenshotEventTime = now;
+
+          if (screenshotCallbackRef.current) {
+            screenshotCallbackRef.current();
+          }
+        });
+        globalEventListeners.screenshot = unlistenScreenshot;
+      } catch (error) {
         console.error("Failed to setup event listeners:", error);
-      });
-
-    // Cleanup on unmount
-    return () => {
-      if (cleanup) {
-        cleanup();
       }
     };
+
+    setupEventListeners();
   }, []);
 
   return {
