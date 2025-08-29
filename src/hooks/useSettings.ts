@@ -1,9 +1,8 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useWindowResize } from "@/hooks";
 import { useApp } from "@/contexts";
-import { TYPE_AI_PROVIDER } from "@/types";
-import { safeLocalStorage, fetchModels } from "@/lib";
-import { SPEECH_TO_TEXT_PROVIDERS, STORAGE_KEYS } from "@/config";
+import { extractVariables, safeLocalStorage } from "@/lib";
+import { STORAGE_KEYS } from "@/config";
 
 export const useSettings = () => {
   const {
@@ -20,28 +19,17 @@ export const useSettings = () => {
   } = useApp();
   const { resizeWindow } = useWindowResize();
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [availableModels, setAvailableModels] = useState<{
-    [providerId: string]: string[];
-  }>({});
-  const [modelsFetching, setModelsFetching] = useState(false);
-  const [localApiKey, setLocalApiKey] = useState(selectedAIProvider.apiKey);
-  const [localSTTApiKey, setLocalSTTApiKey] = useState(
-    selectedSttProvider.apiKey
+  const [variables, setVariables] = useState<{ key: string; value: string }[]>(
+    []
   );
+  const [sttVariables, setSttVariables] = useState<
+    {
+      key: string;
+      value: string;
+    }[]
+  >([]);
 
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
-  const prevAIProviderRef = useRef(selectedAIProvider.provider);
-
-  // Sync local API key with global state when provider changes
-  useEffect(() => {
-    if (selectedAIProvider.apiKey) {
-      setLocalApiKey(selectedAIProvider.apiKey);
-    }
-
-    if (selectedSttProvider.apiKey) {
-      setLocalSTTApiKey(selectedSttProvider.apiKey);
-    }
-  }, [selectedAIProvider.provider, selectedSttProvider.provider]);
 
   useEffect(() => {
     resizeWindow(isPopoverOpen);
@@ -74,111 +62,73 @@ export const useSettings = () => {
     );
   };
 
-  const submitApiKey = () => {
-    if (localApiKey.trim()) {
-      onSetSelectedAIProvider({
-        ...selectedAIProvider,
-        apiKey: localApiKey.trim(),
-      });
-    }
-  };
-
-  const submitSTTApiKey = () => {
-    if (localSTTApiKey.trim()) {
-      onSetSelectedSttProvider({
-        ...selectedSttProvider,
-        apiKey: localSTTApiKey.trim(),
-      });
-    }
-  };
-
-  const fetchModelsForProvider = async (
-    provider: TYPE_AI_PROVIDER,
-    apiKey: string
-  ) => {
-    if (
-      !provider ||
-      (!apiKey &&
-        allAiProviders.find((p) => p.id === selectedAIProvider.provider)
-          ?.models)
-    ) {
-      return;
-    }
-
-    try {
-      setModelsFetching(true);
-      const models = await fetchModels({ provider, apiKey });
-      setAvailableModels((prev) => ({
-        ...prev,
-        [provider.id]: models as string[],
-      }));
-      setModelsFetching(false);
-    } catch (error) {
-      console.error("Error fetching models:", error);
-    } finally {
-      setModelsFetching(false);
-    }
-  };
-
   useEffect(() => {
-    if (
-      selectedAIProvider.apiKey &&
-      selectedAIProvider.provider &&
-      isPopoverOpen
-    ) {
+    if (selectedAIProvider.provider) {
       const provider = allAiProviders.find(
         (p) => p.id === selectedAIProvider.provider
       );
       if (provider) {
-        fetchModelsForProvider(provider, selectedAIProvider.apiKey);
+        const variables = extractVariables(provider?.curl);
+        setVariables(variables);
       }
     }
-  }, [selectedAIProvider.apiKey, isPopoverOpen, allAiProviders.length]);
+  }, [selectedAIProvider.provider]);
 
   useEffect(() => {
-    // Update the previous provider reference
-    const prevProvider = prevAIProviderRef.current;
-    prevAIProviderRef.current = selectedAIProvider.provider;
-
-    // Handle case when switching FROM openai to another provider
-    if (
-      prevProvider === "openai" &&
-      selectedAIProvider.provider !== "openai" &&
-      selectedSttProvider.provider === "openai-whisper"
-    ) {
-      // Reset STT provider when AI provider is changed from openai
-      setLocalSTTApiKey("");
-      onSetSelectedSttProvider({
-        provider: "",
-        apiKey: "",
-        model: "",
-      });
-      return;
-    }
-
-    // Handle case when AI provider is openai and STT is openai-whisper
-    if (
-      selectedAIProvider.apiKey &&
-      selectedAIProvider.provider === "openai" &&
-      selectedSttProvider.provider === "openai-whisper"
-    ) {
-      const provider = SPEECH_TO_TEXT_PROVIDERS.find(
-        (p) => p.id === "openai-whisper"
+    if (selectedSttProvider.provider) {
+      const provider = allSttProviders.find(
+        (p) => p.id === selectedSttProvider.provider
       );
-
-      setLocalSTTApiKey(selectedSttProvider.apiKey);
-      submitSTTApiKey();
-      onSetSelectedSttProvider({
-        ...selectedSttProvider,
-        apiKey: selectedAIProvider.apiKey,
-        model: provider?.request.fields.model || "whisper-1",
-      });
+      if (provider) {
+        const variables = extractVariables(provider?.curl);
+        setSttVariables(variables);
+      }
     }
-  }, [
-    selectedAIProvider.apiKey,
-    selectedAIProvider.provider,
-    selectedSttProvider.provider,
-  ]);
+  }, [selectedSttProvider.provider]);
+
+  // useEffect(() => {
+  //   // Update the previous provider reference
+  //   const prevProvider = prevAIProviderRef.current;
+  //   prevAIProviderRef.current = selectedAIProvider.provider;
+
+  //   // Handle case when switching FROM openai to another provider
+  //   if (
+  //     prevProvider === "openai" &&
+  //     selectedAIProvider.provider !== "openai" &&
+  //     selectedSttProvider.provider === "openai-whisper"
+  //   ) {
+  //     // Reset STT provider when AI provider is changed from openai
+  //     setLocalSTTApiKey("");
+  //     onSetSelectedSttProvider({
+  //       provider: "",
+  //       apiKey: "",
+  //       model: "",
+  //     });
+  //     return;
+  //   }
+
+  //   // Handle case when AI provider is openai and STT is openai-whisper
+  //   if (
+  //     selectedAIProvider.provider === "openai" &&
+  //     selectedSttProvider.provider === "openai-whisper"
+  //   ) {
+  //     const provider = SPEECH_TO_TEXT_PROVIDERS.find(
+  //       (p) => p.id === "openai-whisper"
+  //     );
+
+  //     setLocalSTTApiKey(selectedSttProvider.apiKey);
+  //     submitSTTApiKey();
+  //     onSetSelectedSttProvider({
+  //       ...selectedSttProvider,
+  //       apiKey: selectedAIProvider.variables.api_key,
+  //       model: provider?.request.fields.model || "whisper-1",
+  //     });
+  //   }
+  // }, [
+  //   selectedAIProvider.variables.api_key,
+  //   selectedAIProvider.provider,
+  //   selectedSttProvider.provider,
+  // ]);
 
   // Auto-close on focus loss disabled to prevent interruptions during form interactions
   // Settings should be closed manually via the toggle button for better UX
@@ -209,17 +159,11 @@ export const useSettings = () => {
     selectedSttProvider,
     onSetSelectedAIProvider,
     onSetSelectedSttProvider,
-    fetchModelsForProvider,
-    availableModels,
-    modelsFetching,
-    localApiKey,
-    setLocalApiKey,
-    submitApiKey,
-    localSTTApiKey,
-    setLocalSTTApiKey,
-    submitSTTApiKey,
+
     handleDeleteAllChatsConfirm,
     showDeleteConfirmDialog,
     setShowDeleteConfirmDialog,
+    variables,
+    sttVariables,
   };
 };

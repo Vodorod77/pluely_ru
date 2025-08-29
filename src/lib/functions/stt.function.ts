@@ -5,10 +5,10 @@ import {
   setByPath,
 } from "./common.function";
 import { fetch } from "@tauri-apps/plugin-http";
-import { TYPE_STT_PROVIDER } from "@/types/stt.types";
+import { TYPE_PROVIDER } from "@/types";
 
 export const fetchSTT = async (params: {
-  provider: TYPE_STT_PROVIDER;
+  provider: TYPE_PROVIDER;
   apiKey: string;
   audio: Blob;
 }): Promise<string> => {

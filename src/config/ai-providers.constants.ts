@@ -1,323 +1,104 @@
 export const AI_PROVIDERS = [
   {
     id: "openai",
-    name: "OpenAI",
-    baseUrl: "https://api.openai.com",
-    chatEndpoint: "/v1/chat/completions",
-    authType: "bearer",
-    defaultModel: "gpt-5",
+    curl: `curl https://api.openai.com/v1/chat/completions \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer {{API_KEY}}" \\
+  -d '{
+    "model": "{{MODEL}}",
+    "messages": [{"role": "system", "content": "{{SYSTEM_PROMPT}}"}, {"role": "user", "content": [{"type": "text", "text": "{{TEXT}}"}, {"type": "image_url", "image_url": {"url": "data:image/png;base64,{{IMAGE}}"}}]}]
+  }'`,
+    responseContentPath: "choices[0].message.content",
     streaming: true,
-    response: {
-      contentPath: "choices[0].message.content",
-      usagePath: "usage",
-    },
-    input: {
-      text: {
-        messages: [
-          {
-            role: "user",
-            content: "Hello!",
-          },
-        ],
-      },
-      image: {
-        type: "base64",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image_url",
-                image_url: { url: "data:image/jpeg;base64,$BASE64_IMAGE" },
-              },
-            ],
-          },
-        ],
-      },
-    },
-    models: {
-      endpoint: "/v1/models",
-      method: "GET",
-      responsePath: "data",
-      idKey: "id",
-    },
   },
   {
     id: "claude",
-    name: "Claude (Anthropic)",
-    baseUrl: "https://api.anthropic.com",
-    chatEndpoint: "/v1/messages",
-    authType: "x-api-key",
-    defaultModel: "claude-sonnet-4-20250514",
+    curl: `curl https://api.anthropic.com/v1/messages \\
+  -H "x-api-key: {{API_KEY}}" \\
+  -H "anthropic-version: 2023-06-01" \\
+  -H "content-type: application/json" \\
+  -d '{
+    "model": "{{MODEL}}",
+    "system": "{{SYSTEM_PROMPT}}",
+    "messages": [{"role": "user", "content": [{"type": "text", "text": "{{TEXT}}"}, {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": "{{IMAGE}}"}}]}],
+    "max_tokens": 1024
+  }'`,
+    responseContentPath: "content[0].text",
     streaming: true,
-    response: {
-      contentPath: "content[0].text",
-      usagePath: "usage",
-    },
-    input: {
-      text: {
-        messages: [
-          {
-            role: "user",
-            content: "Hello!",
-          },
-        ],
-      },
-      image: {
-        type: "base64",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: "image/jpeg",
-                  data: "$BASE64_IMAGE",
-                },
-              },
-            ],
-          },
-        ],
-      },
-    },
-    models: null,
   },
   {
     id: "grok",
-    name: "Grok (xAI)",
-    baseUrl: "https://api.x.ai",
-    chatEndpoint: "/v1/chat/completions",
-    authType: "bearer",
-    defaultModel: "grok-4",
+    curl: `curl https://api.x.ai/v1/chat/completions \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer {{API_KEY}}" \\
+  -d '{
+    "model": "{{MODEL}}",
+    "messages": [{"role": "system", "content": "{{SYSTEM_PROMPT}}"}, {"role": "user", "content": [{"type": "text", "text": "{{TEXT}}"}, {"type": "image_url", "image_url": {"url": "data:image/png;base64,{{IMAGE}}"}}]}]
+  }'`,
+    responseContentPath: "choices[0].message.content",
     streaming: true,
-    response: {
-      contentPath: "choices[0].message.content",
-      usagePath: "usage",
-    },
-    input: {
-      text: {
-        messages: [
-          {
-            role: "user",
-            content: "Hello!",
-          },
-        ],
-      },
-      image: {
-        type: "base64",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image_url",
-                image_url: { url: "data:image/jpeg;base64,$BASE64_IMAGE" },
-              },
-            ],
-          },
-        ],
-      },
-    },
-    models: {
-      endpoint: "/v1/models",
-      method: "GET",
-      responsePath: "data",
-      idKey: "id",
-    },
   },
   {
     id: "gemini",
-    name: "Gemini (Google)",
-    baseUrl: "https://generativelanguage.googleapis.com",
-    chatEndpoint: "/v1beta/models/${model}:streamGenerateContent?alt=sse",
-    authType: "x-goog-api-key",
-    authParam: "key",
-    defaultModel: "gemini-2.5-flash",
+    curl: `curl "https://generativelanguage.googleapis.com/v1beta/models/{{MODEL}}:streamGenerateContent?alt=sse" \\
+  -H "x-goog-api-key: {{API_KEY}}" \\
+  -H "Content-Type: application/json" \\
+  -X POST \\
+  --no-buffer \\
+  -d '{
+    "system_instruction": {"parts": [{"text": "{{SYSTEM_PROMPT}}"}]},
+    "contents": [{"parts": [{"text": "{{TEXT}}"}, {"inline_data": {"mime_type": "image/png", "data": "{{IMAGE}}"}}]}]
+  }'`,
+    responseContentPath: "candidates[0].content.parts[0].text",
     streaming: true,
-    response: {
-      contentPath: "candidates[0].content.parts[0].text",
-      usagePath: "usageMetadata",
-    },
-    input: {
-      text: {
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: "Hello!",
-              },
-            ],
-          },
-        ],
-      },
-      image: {
-        type: "base64",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                inline_data: {
-                  mime_type: "image/jpeg",
-                  data: "$BASE64_IMAGE",
-                },
-              },
-              {
-                text: "Describe this image.",
-              },
-            ],
-          },
-        ],
-      },
-    },
-    models: {
-      endpoint: "/v1beta/models",
-      method: "GET",
-      responsePath: "models",
-      idKey: "name",
-    },
   },
   {
     id: "mistral",
-    name: "Mistral AI",
-    baseUrl: "https://api.mistral.ai",
-    chatEndpoint: "/v1/chat/completions",
-    authType: "bearer",
-    defaultModel: "mistral-large-latest",
+    curl: `curl https://api.mistral.ai/v1/chat/completions \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer {{API_KEY}}" \\
+  -d '{
+    "model": "{{MODEL}}",
+    "messages": [{"role": "system", "content": "{{SYSTEM_PROMPT}}"}, {"role": "user", "content": [{"type": "text", "text": "{{TEXT}}"}, {"type": "image_url", "image_url": "data:image/png;base64,{{IMAGE}}"}]}]
+  }'`,
+    responseContentPath: "choices[0].message.content",
     streaming: true,
-    response: {
-      contentPath: "choices[0].message.content",
-      usagePath: "usage",
-    },
-    input: {
-      text: {
-        messages: [
-          {
-            role: "user",
-            content: "Hello!",
-          },
-        ],
-      },
-      image: {
-        type: "base64",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "Describe this image.",
-              },
-              {
-                type: "image_url",
-                image_url: "data:image/jpeg;base64,$BASE64_IMAGE",
-              },
-            ],
-          },
-        ],
-      },
-    },
-    models: {
-      endpoint: "/v1/models",
-      method: "GET",
-      responsePath: "data",
-      idKey: "id",
-    },
   },
   {
     id: "cohere",
-    name: "Cohere",
-    baseUrl: "https://api.cohere.com",
-    chatEndpoint: "/v1/chat",
-    authType: "bearer",
-    defaultModel: "command-r-plus",
+    curl: `curl -X POST https://api.cohere.ai/v2/chat \\
+    -H "Authorization: Bearer {{API_KEY}}" \\
+    -H "Content-Type: application/json" \\
+    -d '{
+      "model": "{{MODEL}}",
+      "preamble": "{{SYSTEM_PROMPT}}",
+      "messages": [{"role": "user", "content": [{"type": "text", "text": "{{TEXT}}"}, {"type": "image_url", "image_url": {"url": "data:image/png;base64,{{IMAGE}}"}}]}]
+    }'`,
+    responseContentPath: "message.content[0].text",
     streaming: true,
-    response: {
-      contentPath: "text",
-      usagePath: "usage",
-    },
-    input: {
-      text: {
-        messages: [
-          {
-            role: "User",
-            message: "Hello!",
-          },
-        ],
-      },
-      image: null,
-    },
-    models: null,
   },
   {
     id: "groq",
-    name: "Groq",
-    baseUrl: "https://api.groq.com/openai",
-    chatEndpoint: "/v1/chat/completions",
-    authType: "bearer",
-    defaultModel: "llama-3.1-70b-versatile",
+    curl: `curl https://api.groq.com/openai/v1/chat/completions \\
+  -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer {{API_KEY}}" \\
+  -d '{
+    "model": "{{MODEL}}",
+    "messages": [{"role": "system", "content": "{{SYSTEM_PROMPT}}"}, {"role": "user", "content": [{"type": "text", "text": "{{TEXT}}"}, {"type": "image_url", "image_url": {"url": "data:image/png;base64,{{IMAGE}}"}}]}]
+  }'`,
+    responseContentPath: "choices[0].message.content",
     streaming: true,
-    response: {
-      contentPath: "choices[0].message.content",
-      usagePath: "usage",
-    },
-    input: {
-      text: {
-        messages: [
-          {
-            role: "user",
-            content: "Hello!",
-          },
-        ],
-      },
-      image: {
-        type: "base64",
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "image_url",
-                image_url: { url: "data:image/jpeg;base64,$BASE64_IMAGE" },
-              },
-            ],
-          },
-        ],
-      },
-    },
-    models: {
-      endpoint: "/v1/models",
-      method: "GET",
-      responsePath: "data",
-      idKey: "id",
-    },
   },
   {
     id: "perplexity",
-    name: "Perplexity AI",
-    baseUrl: "https://api.perplexity.ai",
-    chatEndpoint: "/chat/completions",
-    authType: "bearer",
-    defaultModel: "sonar-medium-online",
+    curl: `curl -X POST https://api.perplexity.ai/chat/completions \\
+  -H "Authorization: Bearer {{API_KEY}}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "{{MODEL}}",
+    "messages": [{"role": "system", "content": "{{SYSTEM_PROMPT}}"}, {"role": "user", "content": [{"type": "text", "text": "{{TEXT}}"}, {"type": "image_url", "image_url": {"url": "data:image/png;base64,{{IMAGE}}"}}]}]
+  }'`,
+    responseContentPath: "choices[0].message.content",
     streaming: true,
-    response: {
-      contentPath: "choices[0].message.content",
-      usagePath: "usage",
-    },
-    input: {
-      text: {
-        messages: [
-          {
-            role: "user",
-            content: "Hello!",
-          },
-        ],
-      },
-      image: null,
-    },
-    models: null,
   },
 ];

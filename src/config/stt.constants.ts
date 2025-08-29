@@ -1,244 +1,107 @@
 export const SPEECH_TO_TEXT_PROVIDERS = [
   {
     id: "openai-whisper",
-    name: "OpenAI Whisper",
-    baseUrl: "https://api.openai.com",
-    endpoint: "/v1/audio/transcriptions",
-    method: "POST",
-    authType: "bearer",
-    request: {
-      bodyType: "formdata",
-      audioFormat: "wav",
-      audioKey: "file",
-      fields: {
-        model: "whisper-1",
-        response_format: "text",
-      },
-      query: {},
-      headers: {},
-    },
-    response: {
-      contentPath: "text",
-    },
+    curl: `curl https://api.openai.com/v1/audio/transcriptions \\
+  -H "Authorization: Bearer {{API_KEY}}" \\
+  -H "Content-Type: multipart/form-data" \\
+  -F model="{{MODEL}}" \\
+  -F file="<(base64 -d <<< {{AUDIO_BASE64}});filename=audio.wav"`,
+    responseContentPath: "text",
     streaming: false,
   },
   {
     id: "groq-whisper",
-    name: "Groq Whisper",
-    baseUrl: "https://api.groq.com/openai",
-    endpoint: "/v1/audio/transcriptions",
-    method: "POST",
-    authType: "bearer",
-    request: {
-      bodyType: "formdata",
-      audioFormat: "wav",
-      audioKey: "file",
-      fields: {
-        model: "whisper-large-v3",
-        response_format: "text",
-      },
-      query: {},
-      headers: {},
-    },
-    response: {
-      contentPath: "text",
-    },
+    curl: `curl https://api.groq.com/openai/v1/audio/transcriptions \\
+  -H "Authorization: Bearer {{API_KEY}}" \\
+  -H "Content-Type: multipart/form-data" \\
+  -F model="{{MODEL}}" \\
+  -F file="<(base64 -d <<< {{AUDIO_BASE64}});filename=audio.wav"`,
+    responseContentPath: "text",
     streaming: false,
   },
   {
     id: "elevenlabs-stt",
-    name: "ElevenLabs Speech-to-Text",
-    baseUrl: "https://api.elevenlabs.io",
-    endpoint: "/v1/speech-to-text",
-    method: "POST",
-    authType: "xi-api-key",
-    request: {
-      bodyType: "formdata",
-      audioFormat: "wav",
-      audioKey: "file",
-      fields: {
-        model_id: "scribe_v1",
-      },
-      query: {},
-      headers: {},
-    },
-    response: {
-      contentPath: "text",
-    },
+    curl: `curl https://api.elevenlabs.io/v1/speech-to-text \\
+  -H "xi-api-key: {{API_KEY}}" \\
+  -H "Content-Type: multipart/form-data" \\
+  -F model_id="{{MODEL}}" \\
+  -F file="<(base64 -d <<< {{AUDIO_BASE64}});filename=audio.wav"`,
+    responseContentPath: "text",
     streaming: false,
   },
   {
     id: "google-stt",
-    name: "Google Speech-to-Text",
-    baseUrl: "https://speech.googleapis.com",
-    endpoint: "/v1/speech:recognize",
-    method: "POST",
-    authType: "bearer",
-    request: {
-      bodyType: "json",
-      audioFormat: "wav",
-      audioKey: "audio.content",
-      fields: {
-        config: {
-          encoding: "LINEAR16",
-          sampleRateHertz: 16000,
-          languageCode: "en-US",
-        },
-      },
-      query: {},
-      headers: {
-        "Content-Type": "application/json",
-      },
+    curl: `curl https://speech.googleapis.com/v1/speech:recognize \\
+  -H "Authorization: Bearer {{API_KEY}}" \\
+  -H "Content-Type: application/json; charset=utf-8" \\
+  -d '{
+    "config": {
+      "encoding": "LINEAR16",
+      "sampleRateHertz": 16000,
+      "languageCode": "en-US"
     },
-    response: {
-      contentPath: "results[0].alternatives[0].transcript",
-    },
+    "audio": {
+      "content": "{{AUDIO_BASE64}}"
+    }
+  }'`,
+    responseContentPath: "results[0].alternatives[0].transcript",
     streaming: false,
   },
   {
     id: "deepgram-stt",
-    name: "Deepgram Speech-to-Text",
-    baseUrl: "https://api.deepgram.com",
-    endpoint: "/v1/listen",
-    method: "POST",
-    authType: "bearer",
-    request: {
-      bodyType: "raw",
-      audioFormat: "wav",
-      audioKey: null,
-      fields: {},
-      query: {
-        model: "nova-2",
-      },
-      headers: {
-        "Content-Type": "audio/wav",
-      },
-    },
-    response: {
-      contentPath: "results.channels[0].alternatives[0].transcript",
-    },
+    curl: `curl https://api.deepgram.com/v1/listen?model="{{MODEL}}" \\
+  -H "Authorization: Bearer {{API_KEY}}" \\
+  -H "Content-Type: audio/wav" \\
+  --data-binary "$(base64 -d <<< {{AUDIO_BASE64}})"`,
+    responseContentPath: "results.channels[0].alternatives[0].transcript",
     streaming: false,
   },
   {
     id: "ibm-watson-stt",
-    name: "IBM Watson Speech-to-Text",
-    baseUrl: "https://api.us-south.speech-to-text.watson.cloud.ibm.com",
-    endpoint: "/v1/recognize",
-    method: "POST",
-    authType: "basic-apikey", // Use username: 'apikey', password: API_KEY
-    request: {
-      bodyType: "raw",
-      audioFormat: "wav",
-      audioKey: null,
-      fields: {},
-      query: {
-        model: "en-US_BroadbandModel",
-      },
-      headers: {
-        "Content-Type": "audio/wav",
-      },
-    },
-    response: {
-      contentPath: "results[0].alternatives[0].transcript",
-    },
+    curl: `curl https://api.us-south.speech-to-text.watson.cloud.ibm.com/v1/recognize?model="{{MODEL}}" \\
+  -u "apikey:{{API_KEY}}" \\
+  -H "Content-Type: audio/wav" \\
+  --data-binary "$(base64 -d <<< {{AUDIO_BASE64}})"`,
+    responseContentPath: "results[0].alternatives[0].transcript",
     streaming: false,
   },
   {
     id: "azure-stt",
-    name: "Azure Speech-to-Text",
-    baseUrl: "https://eastus.stt.speech.microsoft.com", // Replace with appropriate region
-    endpoint: "/speech/recognition/conversation/cognitiveservices/v1",
-    method: "POST",
-    authType: "subscription-key", // Header: Ocp-Apim-Subscription-Key
-    request: {
-      bodyType: "raw",
-      audioFormat: "wav",
-      audioKey: null,
-      fields: {},
-      query: {
-        language: "en-US",
-      },
-      headers: {
-        "Content-Type": "audio/wav; codecs=audio/pcm; samplerate=16000",
-      },
-    },
-    response: {
-      contentPath: "DisplayText",
-    },
+    curl: `curl https://eastus.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=en-US \\
+  -H "Ocp-Apim-Subscription-Key: {{API_KEY}}" \\
+  -H "Content-Type: audio/wav; codecs=audio/pcm; samplerate=16000" \\
+  --data-binary "$(base64 -d <<< {{AUDIO_BASE64}})"`,
+    responseContentPath: "DisplayText",
     streaming: false,
   },
   {
     id: "speechmatics-stt",
-    name: "Speechmatics",
-    baseUrl: "https://asr.api.speechmatics.com",
-    endpoint: "/v2/jobs",
-    method: "POST",
-    authType: "bearer",
-    request: {
-      bodyType: "formdata",
-      audioFormat: "wav",
-      audioKey: "data_file",
-      fields: {
-        config: JSON.stringify({
-          type: "transcription",
-          transcription_config: {
-            language: "en",
-          },
-        }),
-      },
-      query: {},
-      headers: {},
-    },
-    response: {
-      contentPath: "job.id", // Note: This is async; need to poll /v2/jobs/{id}/transcript for "transcript" path: "results[].alternatives[0].content" and join them
-    },
+    curl: `curl https://asr.api.speechmatics.com/v2/jobs \\
+  -H "Authorization: Bearer {{API_KEY}}" \\
+  -H "Content-Type: multipart/form-data" \\
+  -F config='{"type": "transcription", "transcription_config": {"language": "en"}}' \\
+  -F data_file="<(base64 -d <<< {{AUDIO_BASE64}});filename=audio.wav"`,
+    responseContentPath: "job.id",
     streaming: false,
-    note: "Async API; requires polling for results",
   },
   {
     id: "zhipu-glm-asr",
-    name: "Zhipu GLM-ASR",
-    baseUrl: "https://open.bigmodel.cn/api/paas/v4",
-    endpoint: "/audio/transcriptions",
-    method: "POST",
-    authType: "bearer",
-    request: {
-      bodyType: "formdata",
-      audioFormat: "wav",
-      audioKey: "file",
-      fields: {
-        model: "glm-asr",
-        response_format: "text",
-      },
-      query: {},
-      headers: {},
-    },
-    response: {
-      contentPath: "text",
-    },
+    curl: `curl https://open.bigmodel.cn/api/paas/v4/audio/transcriptions \\
+  -H "Authorization: Bearer {{API_KEY}}" \\
+  -H "Content-Type: multipart/form-data" \\
+  -F model="{{MODEL}}" \\
+  -F file="<(base64 -d <<< {{AUDIO_BASE64}});filename=audio.wav"`,
+    responseContentPath: "text",
     streaming: false,
   },
   {
     id: "doubao-stt",
-    name: "Doubao Speech-to-Text",
-    baseUrl: "https://ark.volcengine.com/api/v3",
-    endpoint: "/audio/transcriptions",
-    method: "POST",
-    authType: "bearer",
-    request: {
-      bodyType: "formdata",
-      audioFormat: "wav",
-      audioKey: "file",
-      fields: {
-        model: "whisper-1",
-        response_format: "text",
-      },
-      query: {},
-      headers: {},
-    },
-    response: {
-      contentPath: "text",
-    },
+    curl: `curl https://ark.volcengine.com/api/v3/audio/transcriptions \\
+  -H "Authorization: Bearer {{API_KEY}}" \\
+  -H "Content-Type: multipart/form-data" \\
+  -F model="{{MODEL}}" \\
+  -F file="<(base64 -d <<< {{AUDIO_BASE64}});filename=audio.wav"`,
+    responseContentPath: "text",
     streaming: false,
   },
 ];

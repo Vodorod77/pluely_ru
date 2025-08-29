@@ -1,4 +1,4 @@
-import { TYPE_AI_PROVIDER, TYPE_STT_PROVIDER } from "@/types";
+import { TYPE_PROVIDER } from "@/types";
 
 export const AUTH_TYPES = [
   "bearer",
@@ -46,7 +46,7 @@ export async function blobToBase64(blob: Blob): Promise<string> {
 }
 
 export function getAuthHeaders(
-  provider: TYPE_AI_PROVIDER | TYPE_STT_PROVIDER,
+  provider: TYPE_PROVIDER | TYPE_PROVIDER,
   apiKey: string
 ): Record<string, string> {
   if ("authParam" in provider && provider.authParam) {
@@ -84,4 +84,36 @@ export function getAuthHeaders(
       break;
   }
   return headers;
+}
+
+export function extractVariables(
+  curl: string
+): { key: string; value: string }[] {
+  if (typeof curl !== "string") {
+    return [];
+  }
+
+  const regex = /\{\{([A-Z_]+)\}\}/g;
+  const matches = curl?.match(regex) || [];
+  const variables = matches
+    .map((match) => {
+      if (typeof match === "string") {
+        return match.slice(2, -2);
+      }
+      return "";
+    })
+    .filter((v) => v !== "");
+
+  const uniqueVariables = [...new Set(variables)];
+
+  const doNotInclude = ["SYSTEM_PROMPT", "TEXT", "IMAGE"];
+
+  const filteredVariables = uniqueVariables?.filter(
+    (variable) => !doNotInclude?.includes(variable)
+  );
+
+  return filteredVariables.map((variable) => ({
+    key: variable?.toLowerCase()?.replace(/_/g, "_") || "",
+    value: variable,
+  }));
 }

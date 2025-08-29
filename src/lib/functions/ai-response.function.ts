@@ -1,6 +1,6 @@
 import { DEFAULT_SYSTEM_PROMPT } from "@/config";
 import { getAuthHeaders, getByPath } from "./common.function";
-import { TYPE_AI_PROVIDER } from "@/types";
+import { TYPE_PROVIDER } from "@/types";
 import { fetch } from "@tauri-apps/plugin-http";
 
 interface Message {
@@ -17,7 +17,7 @@ interface Message {
 }
 
 export async function* fetchAIResponse(params: {
-  provider: TYPE_AI_PROVIDER;
+  provider: TYPE_PROVIDER;
   apiKey: string;
   systemPrompt?: string;
   history?: Message[];

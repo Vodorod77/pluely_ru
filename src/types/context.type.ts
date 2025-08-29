@@ -1,32 +1,34 @@
 import { Dispatch, SetStateAction } from "react";
-import { ScreenshotConfig, TYPE_AI_PROVIDER, TYPE_STT_PROVIDER } from "@/types";
+import { ScreenshotConfig, TYPE_PROVIDER } from "@/types";
 
 export type IContextType = {
   systemPrompt: string;
   setSystemPrompt: Dispatch<SetStateAction<string>>;
-  allAiProviders: TYPE_AI_PROVIDER[];
-  customAiProviders: TYPE_AI_PROVIDER[];
-  selectedAIProvider: { provider: string; apiKey: string; model: string };
+  allAiProviders: TYPE_PROVIDER[];
+  customAiProviders: TYPE_PROVIDER[];
+  selectedAIProvider: {
+    provider: string;
+    variables: Record<string, string>;
+  };
   onSetSelectedAIProvider: ({
     provider,
-    apiKey,
-    model,
+    variables,
   }: {
     provider: string;
-    apiKey: string;
-    model: string;
+    variables: Record<string, string>;
   }) => void;
-  allSttProviders: TYPE_STT_PROVIDER[];
-  customSttProviders: TYPE_STT_PROVIDER[];
-  selectedSttProvider: { provider: string; apiKey: string; model: string };
+  allSttProviders: TYPE_PROVIDER[];
+  customSttProviders: TYPE_PROVIDER[];
+  selectedSttProvider: {
+    provider: string;
+    variables: Record<string, string>;
+  };
   onSetSelectedSttProvider: ({
     provider,
-    apiKey,
-    model,
+    variables,
   }: {
     provider: string;
-    apiKey: string;
-    model: string;
+    variables: Record<string, string>;
   }) => void;
   screenshotConfiguration: ScreenshotConfig;
   setScreenshotConfiguration: React.Dispatch<

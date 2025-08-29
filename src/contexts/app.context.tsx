@@ -5,12 +5,7 @@ import {
   STORAGE_KEYS,
 } from "@/config";
 import { safeLocalStorage } from "@/lib";
-import {
-  IContextType,
-  ScreenshotConfig,
-  TYPE_AI_PROVIDER,
-  TYPE_STT_PROVIDER,
-} from "@/types";
+import { IContextType, ScreenshotConfig, TYPE_PROVIDER } from "@/types";
 import {
   ReactNode,
   createContext,
@@ -30,31 +25,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   );
 
   // AI Providers
-  const [customAiProviders, setCustomAiProviders] = useState<
-    TYPE_AI_PROVIDER[]
-  >([]);
+  const [customAiProviders, setCustomAiProviders] = useState<TYPE_PROVIDER[]>(
+    []
+  );
   const [selectedAIProvider, setSelectedAIProvider] = useState<{
     provider: string;
-    apiKey: string;
-    model: string;
+    variables: Record<string, string>;
   }>({
     provider: "",
-    apiKey: "",
-    model: "",
+    variables: {},
   });
 
   // STT Providers
-  const [customSttProviders, setCustomSttProviders] = useState<
-    TYPE_STT_PROVIDER[]
-  >([]);
+  const [customSttProviders, setCustomSttProviders] = useState<TYPE_PROVIDER[]>(
+    []
+  );
   const [selectedSttProvider, setSelectedSttProvider] = useState<{
     provider: string;
-    apiKey: string;
-    model: string;
+    variables: Record<string, string>;
   }>({
     provider: "",
-    apiKey: "",
-    model: "",
+    variables: {},
   });
 
   const [screenshotConfiguration, setScreenshotConfiguration] =
@@ -97,7 +88,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     // Load custom AI providers
     const savedAi = safeLocalStorage.getItem(STORAGE_KEYS.CUSTOM_AI_PROVIDERS);
-    let aiList: TYPE_AI_PROVIDER[] = [];
+    let aiList: TYPE_PROVIDER[] = [];
     if (savedAi) {
       try {
         const parsed = JSON.parse(savedAi);
@@ -110,38 +101,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
     setCustomAiProviders(aiList);
 
-    // Load selected AI provider
-    const savedSelectedAi = safeLocalStorage.getItem(
-      STORAGE_KEYS.SELECTED_AI_PROVIDER
-    );
-    let selectedAiObj = {
-      provider: AI_PROVIDERS[0]?.id || "",
-      apiKey: "",
-      model: AI_PROVIDERS[0]?.defaultModel || "",
-    };
-    if (savedSelectedAi) {
-      try {
-        const parsed = JSON.parse(savedSelectedAi);
-        if (typeof parsed === "object" && parsed !== null) {
-          selectedAiObj = {
-            provider: parsed.provider || "",
-            apiKey: parsed.apiKey || "",
-            model: parsed.model || "",
-          };
-        } else if (typeof parsed === "string") {
-          selectedAiObj = { provider: parsed, apiKey: "", model: "" };
-        }
-      } catch {
-        selectedAiObj = { provider: savedSelectedAi, apiKey: "", model: "" };
-      }
-    }
-    setSelectedAIProvider(selectedAiObj);
-
-    // Load custom STT providers
+    // Load custom AI providers
     const savedStt = safeLocalStorage.getItem(
       STORAGE_KEYS.CUSTOM_SPEECH_PROVIDERS
     );
-    let sttList: TYPE_STT_PROVIDER[] = [];
+    let sttList: TYPE_PROVIDER[] = [];
     if (savedStt) {
       try {
         const parsed = JSON.parse(savedStt);
@@ -149,37 +113,26 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           sttList = parsed.map((p) => ({ ...p, isCustom: true }));
         }
       } catch {
-        console.warn("Failed to parse custom STT providers");
+        console.warn("Failed to parse custom AI providers");
       }
     }
     setCustomSttProviders(sttList);
+
+    // Load selected AI provider
+    const savedSelectedAi = safeLocalStorage.getItem(
+      STORAGE_KEYS.SELECTED_AI_PROVIDER
+    );
+    if (savedSelectedAi) {
+      setSelectedAIProvider(JSON.parse(savedSelectedAi));
+    }
 
     // Load selected STT provider
     const savedSelectedStt = safeLocalStorage.getItem(
       STORAGE_KEYS.SELECTED_STT_PROVIDER
     );
-    let selectedSttObj = {
-      provider: SPEECH_TO_TEXT_PROVIDERS[0]?.id || "",
-      apiKey: "",
-      model: "",
-    };
     if (savedSelectedStt) {
-      try {
-        const parsed = JSON.parse(savedSelectedStt);
-        if (typeof parsed === "object" && parsed !== null) {
-          selectedSttObj = {
-            provider: parsed.provider || "",
-            apiKey: parsed.apiKey || "",
-            model: parsed.model || "",
-          };
-        } else if (typeof parsed === "string") {
-          selectedSttObj = { provider: parsed, apiKey: "", model: "" };
-        }
-      } catch {
-        selectedSttObj = { provider: savedSelectedStt, apiKey: "", model: "" };
-      }
+      setSelectedSttProvider(JSON.parse(savedSelectedStt));
     }
-    setSelectedSttProvider(selectedSttObj);
   };
 
   // Load data on mount
@@ -225,53 +178,51 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [selectedSttProvider]);
 
-  // @ts-ignore
   // Computed all AI providers
-  const allAiProviders: TYPE_AI_PROVIDER[] = [
+  const allAiProviders: TYPE_PROVIDER[] = [
     ...AI_PROVIDERS,
     ...customAiProviders,
   ];
 
-  // @ts-ignore
   // Computed all STT providers
-  const allSttProviders: TYPE_STT_PROVIDER[] = [
+  const allSttProviders: TYPE_PROVIDER[] = [
     ...SPEECH_TO_TEXT_PROVIDERS,
     ...customSttProviders,
   ];
 
   const onSetSelectedAIProvider = ({
     provider,
-    apiKey,
-    model,
+    variables,
   }: {
     provider: string;
-    apiKey: string;
-    model: string;
+    variables: Record<string, string>;
   }) => {
     if (provider && !allAiProviders.some((p) => p.id === provider)) {
       console.warn(`Invalid AI provider ID: ${provider}`);
       return;
     }
 
-    setSelectedAIProvider((prev) => ({ ...prev, provider, apiKey, model }));
+    setSelectedAIProvider((prev) => ({
+      ...prev,
+      provider,
+      variables,
+    }));
   };
 
   // Setter for selected STT with validation
   const onSetSelectedSttProvider = ({
     provider,
-    apiKey,
-    model,
+    variables,
   }: {
     provider: string;
-    apiKey: string;
-    model: string;
+    variables: Record<string, string>;
   }) => {
     if (provider && !allSttProviders.some((p) => p.id === provider)) {
       console.warn(`Invalid STT provider ID: ${provider}`);
       return;
     }
 
-    setSelectedSttProvider((prev) => ({ ...prev, provider, apiKey, model }));
+    setSelectedSttProvider((prev) => ({ ...prev, provider, variables }));
   };
 
   // Create the context value (extend IContextType accordingly)
