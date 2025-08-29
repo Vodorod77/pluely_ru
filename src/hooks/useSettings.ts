@@ -159,7 +159,6 @@ export const useSettings = () => {
     selectedSttProvider,
     onSetSelectedAIProvider,
     onSetSelectedSttProvider,
-
     handleDeleteAllChatsConfirm,
     showDeleteConfirmDialog,
     setShowDeleteConfirmDialog,

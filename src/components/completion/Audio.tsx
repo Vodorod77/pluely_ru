@@ -14,10 +14,7 @@ export const Audio = ({
 }: UseCompletionReturn) => {
   const { selectedSttProvider } = useApp();
 
-  const speechProviderStatus =
-    selectedSttProvider.apiKey &&
-    selectedSttProvider.provider &&
-    selectedSttProvider.model;
+  const speechProviderStatus = selectedSttProvider.provider;
 
   return (
     <Popover open={micOpen} onOpenChange={setMicOpen}>
@@ -57,13 +54,9 @@ export const Audio = ({
               <>
                 <div className="mt-2 flex flex-row gap-1 items-center text-orange-600">
                   <InfoIcon size={16} />
-                  {selectedSttProvider.apiKey ? null : (
-                    <p>API KEY IS MISSING</p>
-                  )}
                   {selectedSttProvider.provider ? null : (
                     <p>PROVIDER IS MISSING</p>
                   )}
-                  {selectedSttProvider.model ? null : <p>MODEL IS MISSING</p>}
                 </div>
 
                 <span className="block mt-2">

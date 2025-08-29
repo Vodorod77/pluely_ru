@@ -39,16 +39,6 @@ export const AutoSpeechVAD = ({
           return;
         }
 
-        if (!selectedSttProvider.apiKey) {
-          console.warn("Selected speech provider not configured");
-          setState((prev: any) => ({
-            ...prev,
-            error:
-              "Speech provider not configured. Please configure it in settings.",
-          }));
-          return;
-        }
-
         const providerConfig = allSttProviders.find(
           (p) => p.id === selectedSttProvider.provider
         );
@@ -63,19 +53,6 @@ export const AutoSpeechVAD = ({
           return;
         }
 
-        // Get the API key to use
-        let apiKeyToUse = selectedSttProvider.apiKey;
-
-        if (!apiKeyToUse || apiKeyToUse.trim().length === 0) {
-          console.warn("No valid API key available for speech provider");
-          setState((prev: any) => ({
-            ...prev,
-            error:
-              "No valid API key available for speech provider. Please configure it in settings.",
-          }));
-          return;
-        }
-
         // convert float32array to blob
         const audioBlob = floatArrayToWav(audio, 16000, "wav");
 
@@ -84,7 +61,7 @@ export const AutoSpeechVAD = ({
         // Use the fetchSTT function for all providers
         transcription = await fetchSTT({
           provider: providerConfig,
-          apiKey: apiKeyToUse,
+          selectedProvider: selectedSttProvider,
           audio: audioBlob,
         });
 

@@ -1,210 +1,128 @@
-import { DEFAULT_SYSTEM_PROMPT } from "@/config";
-import { getAuthHeaders, getByPath } from "./common.function";
-import { TYPE_PROVIDER } from "@/types";
+import {
+  buildDynamicMessages,
+  deepVariableReplacer,
+  extractVariables,
+  getByPath,
+  getStreamingContent,
+} from "./common.function";
+import { Message, TYPE_PROVIDER } from "@/types";
 import { fetch } from "@tauri-apps/plugin-http";
-
-interface Message {
-  role: "system" | "user" | "assistant";
-  content:
-    | string
-    | Array<{
-        type: string;
-        text?: string;
-        image_url?: { url: string };
-        source?: any;
-        inline_data?: any;
-      }>;
-}
+import curl2Json from "@bany/curl-to-json";
 
 export async function* fetchAIResponse(params: {
   provider: TYPE_PROVIDER;
-  apiKey: string;
+  selectedProvider: {
+    provider: string;
+    variables: Record<string, string>;
+  };
   systemPrompt?: string;
   history?: Message[];
   userMessage: string;
-  model?: string;
-  stream?: boolean;
-  imageBase64?: string;
+  imagesBase64?: string[];
 }): AsyncIterable<string> {
   try {
     const {
       provider,
-      apiKey,
+      selectedProvider,
       systemPrompt,
       history = [],
       userMessage,
-      model = "",
-      stream = false,
-      imageBase64,
+      imagesBase64 = [],
     } = params;
     if (!provider) {
       throw new Error(`Provider not provided`);
     }
-    if (imageBase64 && !provider?.input?.image) {
+    if (!selectedProvider) {
+      throw new Error(`Selected provider not provided`);
+    }
+
+    let curlJson;
+    try {
+      curlJson = curl2Json(provider.curl);
+    } catch (error) {
+      throw new Error(
+        `Failed to parse curl: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+
+    const extractedVariables = extractVariables(provider.curl);
+    const requiredVars = extractedVariables.filter(
+      ({ key }) => key !== "SYSTEM_PROMPT" && key !== "TEXT" && key !== "IMAGE"
+    );
+    for (const { key } of requiredVars) {
+      if (
+        !selectedProvider.variables?.[key] ||
+        selectedProvider.variables[key].trim() === ""
+      ) {
+        throw new Error(
+          `Missing required variable: ${key}. Please configure it in settings.`
+        );
+      }
+    }
+
+    if (!userMessage) {
+      throw new Error("User message is required");
+    }
+    if (imagesBase64.length > 0 && !provider.curl.includes("{{IMAGE}}")) {
       throw new Error(
         `Provider ${provider?.id ?? "unknown"} does not support image input`
       );
     }
-    const effectiveModel = model || provider?.defaultModel;
-    if (!effectiveModel) {
-      throw new Error("No model specified and no default model available");
+
+    let bodyObj: any = curlJson.data
+      ? JSON.parse(JSON.stringify(curlJson.data))
+      : {};
+    const messagesKey = Object.keys(bodyObj).find((key) =>
+      ["messages", "contents", "conversation", "history"].includes(key)
+    );
+
+    if (messagesKey && Array.isArray(bodyObj[messagesKey])) {
+      const finalMessages = buildDynamicMessages(
+        bodyObj[messagesKey],
+        history,
+        userMessage,
+        imagesBase64
+      );
+      bodyObj[messagesKey] = finalMessages;
     }
-    let messages: Message[] = [];
-    if (systemPrompt) {
-      messages.push({ role: "system", content: systemPrompt });
-    }
-    messages = [...messages, ...history];
-    if (!userMessage) {
-      throw new Error("User message is required");
-    }
-    messages.push({ role: "user", content: userMessage });
-    let url = `${provider?.baseUrl ?? ""}${
-      provider?.chatEndpoint?.replace(/\${model}/g, effectiveModel) ?? ""
-    }`;
-    const queryParams = new URLSearchParams();
-    if ("authParam" in (provider ?? {}) && provider?.authParam) {
-      queryParams.append(provider.authParam, apiKey);
-    }
-    if (queryParams.toString()) {
-      url += `?${queryParams.toString()}`;
-    }
-    const headers = {
-      ...getAuthHeaders(provider, apiKey),
-      "Content-Type": "application/json",
+
+    const allVariables = {
+      ...Object.fromEntries(
+        Object.entries(selectedProvider.variables).map(([key, value]) => [
+          key.toUpperCase(),
+          value,
+        ])
+      ),
+      SYSTEM_PROMPT: systemPrompt || "",
     };
-    let bodyObj: any = {};
-    const format = provider?.compat || provider?.id || "openai";
-    switch (format) {
-      case "claude":
-        let systemMessage = "";
 
-        // extract system message from messages array and set it directly
-        if (messages && Array.isArray(messages)) {
-          const systemMessageIndex = messages.findIndex(
-            (msg: any) => msg.role === "system"
-          );
+    bodyObj = deepVariableReplacer(bodyObj, allVariables);
+    let url = deepVariableReplacer(curlJson.url || "", allVariables);
 
-          if (systemMessageIndex !== -1) {
-            systemMessage =
-              typeof messages[systemMessageIndex].content === "string"
-                ? messages[systemMessageIndex].content
-                : "";
-            // remove system message from messages array
-            messages.splice(systemMessageIndex, 1);
-          }
-        }
+    const headers = deepVariableReplacer(curlJson.header || {}, allVariables);
+    headers["Content-Type"] = "application/json";
 
-        bodyObj = {
-          model: effectiveModel,
-          messages: messages,
-          system: systemMessage || DEFAULT_SYSTEM_PROMPT,
-          stream: stream && !!provider?.streaming,
-          max_tokens: 4096, // Required for Claude
-        };
-
-        (headers as any)["anthropic-version"] = "2023-06-01";
-        (headers as any)["anthropic-dangerous-direct-browser-access"] = "true";
-
-        if (imageBase64) {
-          const lastMsgIndex = bodyObj.messages.length - 1;
-          const lastMsg = bodyObj.messages[lastMsgIndex];
-          if (lastMsg && lastMsg.role === "user") {
-            const textContent =
-              typeof lastMsg.content === "string" ? lastMsg.content : "";
-            lastMsg.content = [
-              { type: "text", text: textContent },
-              {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: "image/jpeg",
-                  data: imageBase64,
-                },
-              },
-            ];
-          }
+    if (provider?.streaming) {
+      if (typeof bodyObj === "object" && bodyObj !== null) {
+        const streamKey = Object.keys(bodyObj).find(
+          (k) => k.toLowerCase() === "stream"
+        );
+        if (streamKey) {
+          bodyObj[streamKey] = true;
+        } else {
+          bodyObj.stream = true;
         }
-        break;
-      case "gemini":
-        const mappedContents = messages.map((m) => ({
-          role: m.role === "assistant" ? "model" : m.role,
-          parts:
-            typeof m.content === "string"
-              ? [{ text: m.content }]
-              : m.content.map((c: any) =>
-                  c.text ? { text: c.text } : c.inline_data || c
-                ),
-        }));
-        bodyObj = {
-          contents: mappedContents,
-        };
-        if (!stream) {
-          url = url.replace(
-            ":streamGenerateContent?alt=sse",
-            ":generateContent"
-          );
-        }
-        if (imageBase64) {
-          const lastIndex = bodyObj.contents.length - 1;
-          const last = bodyObj.contents[lastIndex];
-          if (last && last.role === "user") {
-            const textParts = last.parts;
-            last.parts = [
-              ...textParts,
-              { inline_data: { mime_type: "image/jpeg", data: imageBase64 } },
-            ];
-          }
-        }
-        break;
-      case "cohere":
-        const chatHistory = messages.slice(0, -1).map((m) => ({
-          role: m.role.toUpperCase(),
-          message: typeof m.content === "string" ? m.content : "",
-        }));
-        const messageContent = messages[messages.length - 1]
-          ? typeof messages[messages.length - 1].content === "string"
-            ? messages[messages.length - 1].content
-            : ""
-          : "";
-        bodyObj = {
-          model: effectiveModel,
-          message: messageContent,
-          chat_history: chatHistory,
-          stream: stream && !!provider?.streaming,
-        };
-        break;
-      default: // 'openai' compatible, including custom
-        bodyObj = {
-          model: effectiveModel,
-          messages: messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          stream: stream && !!provider?.streaming,
-        };
-        if (imageBase64) {
-          const lastMsgIndex = bodyObj.messages.length - 1;
-          const lastMsg = bodyObj.messages[lastMsgIndex];
-          if (lastMsg && lastMsg.role === "user") {
-            const textContent =
-              typeof lastMsg.content === "string" ? lastMsg.content : "";
-            lastMsg.content = [
-              { type: "text", text: textContent },
-              {
-                type: "image_url",
-                image_url: { url: `data:image/jpeg;base64,${imageBase64}` },
-              },
-            ];
-          }
-        }
-        break;
+      }
     }
+
     let response;
     try {
       response = await fetch(url, {
-        method: "POST",
+        method: curlJson.method || "POST",
         headers,
-        body: JSON.stringify(bodyObj),
+        body: curlJson.method === "GET" ? undefined : JSON.stringify(bodyObj),
       });
     } catch (fetchError) {
       yield `Network error during API request: ${
@@ -212,6 +130,7 @@ export async function* fetchAIResponse(params: {
       }`;
       return;
     }
+
     if (!response.ok) {
       let errorText = "";
       try {
@@ -222,7 +141,8 @@ export async function* fetchAIResponse(params: {
       }`;
       return;
     }
-    if (!stream || !provider?.streaming) {
+
+    if (!provider?.streaming) {
       let json;
       try {
         json = await response.json();
@@ -233,17 +153,20 @@ export async function* fetchAIResponse(params: {
         return;
       }
       const content =
-        getByPath(json, provider?.response?.contentPath ?? "") || "";
+        getByPath(json, provider?.responseContentPath || "") || "";
       yield content;
       return;
     }
+
     if (!response.body) {
       yield "Streaming not supported or response body missing";
       return;
     }
+
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
+
     while (true) {
       let readResult;
       try {
@@ -257,98 +180,26 @@ export async function* fetchAIResponse(params: {
       const { done, value } = readResult;
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-      let lines: string[];
-      switch (format) {
-        case "openai":
-        case "grok":
-        case "mistral":
-        case "groq":
-        case "perplexity":
-          lines = buffer.split("data: ");
-          buffer = lines.pop() || "";
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed || trimmed === "[DONE]") continue;
-            try {
-              const parsed = JSON.parse(trimmed);
-              const delta = getByPath(parsed, "choices[0].delta.content");
-              if (delta) yield delta;
-            } catch (e) {
-              yield `Error parsing stream chunk: ${
-                e instanceof Error ? e.message : "Unknown error"
-              }`;
-              return;
+
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+      for (const line of lines) {
+        if (line.startsWith("data:")) {
+          const trimmed = line.substring(5).trim();
+          if (!trimmed || trimmed === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(trimmed);
+            const delta = getStreamingContent(
+              parsed,
+              provider?.responseContentPath || ""
+            );
+            if (delta) {
+              yield delta;
             }
+          } catch (e) {
+            // Ignore parsing errors for partial JSON chunks
           }
-          break;
-        case "claude":
-          lines = buffer.split("event: ");
-          buffer = lines.pop() || "";
-          for (const line of lines) {
-            const eventLines = line.split("\n");
-            const eventType = eventLines[0]?.trim();
-            if (eventType === "content_block_delta") {
-              const dataLine = eventLines
-                .find((l) => l.startsWith("data: "))
-                ?.replace("data: ", "")
-                .trim();
-              if (dataLine) {
-                try {
-                  const parsed = JSON.parse(dataLine);
-                  const text = parsed.delta?.text;
-                  if (text) yield text;
-                } catch (e) {
-                  yield `Error parsing stream chunk: ${
-                    e instanceof Error ? e.message : "Unknown error"
-                  }`;
-                  return;
-                }
-              }
-            }
-          }
-          break;
-        case "gemini":
-          lines = buffer.split("\n\n");
-          buffer = lines.pop() || "";
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed) continue;
-            try {
-              const parsed = JSON.parse(trimmed);
-              const text = getByPath(
-                parsed,
-                provider?.response?.contentPath ?? ""
-              );
-              if (text) yield text;
-            } catch (e) {
-              yield `Error parsing stream chunk: ${
-                e instanceof Error ? e.message : "Unknown error"
-              }`;
-              return;
-            }
-          }
-          break;
-        case "cohere":
-          lines = buffer.split("data: ");
-          buffer = lines.pop() || "";
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed) continue;
-            try {
-              const parsed = JSON.parse(trimmed);
-              const text = parsed.text;
-              if (text) yield text;
-            } catch (e) {
-              yield `Error parsing stream chunk: ${
-                e instanceof Error ? e.message : "Unknown error"
-              }`;
-              return;
-            }
-          }
-          break;
-        default:
-          buffer = "";
-          break;
+        }
       }
     }
   } catch (error) {

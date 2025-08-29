@@ -122,10 +122,10 @@ export const useCompletion = () => {
       const input = speechText || state.input;
 
       // Check if AI provider is configured
-      if (!selectedAIProvider.provider || !selectedAIProvider.apiKey) {
+      if (!selectedAIProvider.provider) {
         setState((prev) => ({
           ...prev,
-          error: "Please configure your AI provider and API key in settings",
+          error: "Please select an AI provider in settings",
         }));
         return;
       }
@@ -137,15 +137,6 @@ export const useCompletion = () => {
         setState((prev) => ({
           ...prev,
           error: "Invalid provider selected",
-        }));
-        return;
-      }
-
-      const model = selectedAIProvider.model || provider.defaultModel;
-      if (!model) {
-        setState((prev) => ({
-          ...prev,
-          error: "Please select a model in settings",
         }));
         return;
       }
@@ -183,12 +174,13 @@ export const useCompletion = () => {
         }));
 
         // Handle image attachments
-        let imageBase64: string | undefined;
+        const imagesBase64: string[] = [];
         if (state.attachedFiles.length > 0) {
-          const firstImage = state.attachedFiles[0];
-          if (firstImage.type.startsWith("image/")) {
-            imageBase64 = firstImage.base64;
-          }
+          state.attachedFiles.forEach((file) => {
+            if (file.type.startsWith("image/")) {
+              imagesBase64.push(file.base64);
+            }
+          });
         }
 
         let fullResponse = "";
@@ -196,13 +188,11 @@ export const useCompletion = () => {
         // Use the fetchAIResponse function
         for await (const chunk of fetchAIResponse({
           provider,
-          apiKey: selectedAIProvider.apiKey,
+          selectedProvider: selectedAIProvider,
           systemPrompt: systemPrompt || undefined,
           history: messageHistory,
           userMessage: input,
-          model,
-          stream: true,
-          imageBase64,
+          imagesBase64,
         })) {
           fullResponse += chunk;
           setState((prev) => ({
@@ -487,10 +477,10 @@ export const useCompletion = () => {
         };
 
         // Check if AI provider is configured
-        if (!selectedAIProvider.provider || !selectedAIProvider.apiKey) {
+        if (!selectedAIProvider.provider) {
           setState((prev) => ({
             ...prev,
-            error: "Please configure your AI provider and API key in settings",
+            error: "Please select an AI provider in settings",
           }));
           return;
         }
@@ -502,15 +492,6 @@ export const useCompletion = () => {
           setState((prev) => ({
             ...prev,
             error: "Invalid provider selected",
-          }));
-          return;
-        }
-
-        const model = selectedAIProvider.model || provider.defaultModel;
-        if (!model) {
-          setState((prev) => ({
-            ...prev,
-            error: "Please select a model in settings",
           }));
           return;
         }
@@ -542,13 +523,11 @@ export const useCompletion = () => {
           // Use the fetchAIResponse function with image
           for await (const chunk of fetchAIResponse({
             provider,
-            apiKey: selectedAIProvider.apiKey,
+            selectedProvider: selectedAIProvider,
             systemPrompt: systemPrompt || undefined,
             history: messageHistory,
             userMessage: prompt,
-            model,
-            stream: true,
-            imageBase64: base64,
+            imagesBase64: [base64],
           })) {
             fullResponse += chunk;
             setState((prev) => ({

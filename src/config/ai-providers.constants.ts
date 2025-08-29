@@ -16,6 +16,7 @@ export const AI_PROVIDERS = [
     curl: `curl https://api.anthropic.com/v1/messages \\
   -H "x-api-key: {{API_KEY}}" \\
   -H "anthropic-version: 2023-06-01" \\
+  -H "anthropic-dangerous-direct-browser-access: true" \\
   -H "content-type: application/json" \\
   -d '{
     "model": "{{MODEL}}",
@@ -40,17 +41,17 @@ export const AI_PROVIDERS = [
   },
   {
     id: "gemini",
-    curl: `curl "https://generativelanguage.googleapis.com/v1beta/models/{{MODEL}}:streamGenerateContent?alt=sse" \\
+    curl: `curl "https://generativelanguage.googleapis.com/v1beta/models/{{MODEL}}:generateContent" \\
   -H "x-goog-api-key: {{API_KEY}}" \\
   -H "Content-Type: application/json" \\
   -X POST \\
   --no-buffer \\
   -d '{
     "system_instruction": {"parts": [{"text": "{{SYSTEM_PROMPT}}"}]},
-    "contents": [{"parts": [{"text": "{{TEXT}}"}, {"inline_data": {"mime_type": "image/png", "data": "{{IMAGE}}"}}]}]
+    "contents": [{"role": "user", "parts": [{"text": "{{TEXT}}"}, {"inline_data": {"mime_type": "image/png", "data": "{{IMAGE}}"}}]}]
   }'`,
     responseContentPath: "candidates[0].content.parts[0].text",
-    streaming: true,
+    streaming: false,
   },
   {
     id: "mistral",
