@@ -6,7 +6,7 @@ import {
   getStreamingContent,
 } from "./common.function";
 import { Message, TYPE_PROVIDER } from "@/types";
-import { fetch } from "@tauri-apps/plugin-http";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 import curl2Json from "@bany/curl-to-json";
 
 export async function* fetchAIResponse(params: {
@@ -117,9 +117,11 @@ export async function* fetchAIResponse(params: {
       }
     }
 
+    const fetchFunction = url?.includes("http") ? fetch : tauriFetch;
+
     let response;
     try {
-      response = await fetch(url, {
+      response = await fetchFunction(url, {
         method: curlJson.method || "POST",
         headers,
         body: curlJson.method === "GET" ? undefined : JSON.stringify(bodyObj),

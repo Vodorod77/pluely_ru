@@ -94,7 +94,7 @@ export function useCustomSttProviders() {
         // Update existing provider
         const success = updateCustomSttProvider(editingProvider, {
           curl: formData.curl,
-          streaming: formData.streaming,
+          streaming: false, // Streaming is not supported for STT providers. it will be fixed in the future.
           responseContentPath: formData.responseContentPath,
         });
 
@@ -114,7 +114,7 @@ export function useCustomSttProviders() {
         // Create new provider
         const newProvider = {
           curl: formData.curl,
-          streaming: formData.streaming,
+          streaming: false, // Streaming is not supported for STT providers. it will be fixed in the future.
           responseContentPath: formData.responseContentPath,
         };
 

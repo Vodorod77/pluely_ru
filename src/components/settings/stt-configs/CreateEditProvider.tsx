@@ -150,20 +150,27 @@ export const CreateEditProvider = ({
                 </div>
               </div>
             </div>
-            <div className="flex justify-between items-center space-x-2">
-              <Header
-                title="Streaming"
-                description="streaming is used to stream the response from the AI provider."
-              />
-              <Switch
-                checked={formData.streaming}
-                onCheckedChange={(checked) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    streaming: checked,
-                  }))
-                }
-              />
+            <div className="space-y-0">
+              <div className="flex justify-between items-center space-x-2">
+                <Header
+                  title="Streaming"
+                  description="streaming is used to stream the response from the AI provider."
+                />
+                <Switch
+                  checked={formData.streaming}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      streaming: checked,
+                    }))
+                  }
+                  disabled={true}
+                />
+              </div>
+              <span className="text-xs italic text-red-500">
+                Streaming is not supported for STT providers. it will be fixed
+                in the future.
+              </span>
             </div>
             {/* Response Configuration */}
             <div className="space-y-2">
