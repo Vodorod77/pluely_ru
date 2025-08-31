@@ -8,10 +8,14 @@ export const Warning = () => {
         <div className="flex items-start gap-2">
           <AlertCircleIcon className="w-4 h-4 text-amber-600 flex-shrink-0" />
           <div>
-            <h4 className="font-medium text-xs text-amber-900">
-              [BUG]: Close, and reopen the app, when you see microphone is still
-              in use
+            <h4 className="font-medium text-xs text-amber-900 mb-1">
+              Known Issue
             </h4>
+            <p className="text-xs text-amber-800 leading-relaxed">
+              After turning off system audio, if you see the microphone is still
+              active, please restart the app. I haven't been able to fix this
+              issue yet - feel free to create a PR if you know how to solve it!
+            </p>
           </div>
         </div>
       </Card>

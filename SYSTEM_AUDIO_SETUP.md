@@ -6,19 +6,23 @@ This comprehensive guide will help you set up system audio capture for real-time
 
 Pluely offers **multiple capture methods** for different needs:
 
-### 🎤 **Default Input Capture** (Works Immediately)
+### 🎤 **Default Input Capture** (Basic - May Have Limitations)
 
 - ✅ **No setup required** - works out of the box
+- ⚠️ **May not work reliably** on all systems
 - ✅ **Uses your microphone** for voice input
 - ❌ **Cannot capture system audio** (videos, meetings, music)
-- 🎯 **Best for**: Voice commands, dictation, personal notes
+- ❌ **Limited functionality** compared to system audio capture
+- 🎯 **Best for**: Quick testing only - **we recommend using system audio capture below**
 
-### 🔊 **System Audio Capture** (Requires Setup)
+### 🔊 **System Audio Capture** (Recommended - Full Features)
 
-- ❌ **Requires virtual audio device setup**
+- ⚠️ **Requires virtual audio device setup** (one-time setup)
+- ✅ **Most reliable and stable method**
 - ✅ **Captures everything your computer plays**
 - ✅ **Perfect for meetings, videos, calls**
-- 🎯 **Best for**: Meeting transcription, video analysis, system audio
+- ✅ **Full feature support and best performance**
+- 🎯 **Recommended for**: All users - provides the best experience
 
 ---
 
@@ -75,13 +79,15 @@ Think of virtual audio devices as a "bridge" that safely routes your system audi
 
 ## 🍎 macOS Setup
 
-### 🎤 Method 1: Default Input (No Setup Required)
+### 🎤 Method 1: Default Input (Basic - Not Recommended)
+
+⚠️ **Note**: This method may not work reliably on all macOS systems and has limited functionality. **We strongly recommend using Method 2 (System Audio with BlackHole) below for the best experience.**
 
 1. **Open Pluely**
 2. **Click the system audio button** (headphones icon)
 3. **Click "🎤 Default Input"**
 4. **Grant microphone permissions** when prompted
-5. **Start speaking** - transcription should work immediately!
+5. **Start speaking** - transcription may work, but results can be inconsistent
 
 ### 🔊 Method 2: System Audio with BlackHole (Recommended)
 
@@ -193,13 +199,15 @@ If you prefer a more user-friendly (but paid) solution:
 
 ## 🪟 Windows Setup
 
-### 🎤 Method 1: Default Input (No Setup Required)
+### 🎤 Method 1: Default Input (Basic - Not Recommended)
+
+⚠️ **Note**: This method may not work reliably on all Windows systems and has limited functionality. **We strongly recommend using Method 2 (System Audio) below for the best experience.**
 
 1. **Open Pluely**
 2. **Click the system audio button** (headphones icon)
 3. **Click "🎤 Default Input"**
 4. **Grant microphone permissions** when prompted
-5. **Start speaking** - transcription should work immediately!
+5. **Start speaking** - transcription may work, but results can be inconsistent
 
 ### 🔊 Method 2: System Audio Capture
 
@@ -311,13 +319,15 @@ Windows offers several options for system audio capture:
 
 ## 🐧 Linux Setup
 
-### 🎤 Method 1: Default Input (No Setup Required)
+### 🎤 Method 1: Default Input (Basic - Not Recommended)
+
+⚠️ **Note**: This method may not work reliably on all Linux systems and has limited functionality. **We strongly recommend using Method 2 (System Audio with PulseAudio) below for the best experience.**
 
 1. **Open Pluely**
 2. **Click the system audio button** (headphones icon)
 3. **Click "🎤 Default Input"**
 4. **Grant microphone permissions** when prompted
-5. **Start speaking** - transcription should work immediately!
+5. **Start speaking** - transcription may work, but results can be inconsistent
 
 ### 🔊 Method 2: System Audio with PulseAudio (Most Common)
 
@@ -525,11 +535,13 @@ Audio Debug - RMS: 0.000000, Peak: 0.000000, Threshold: 0.001000, Speech: false
 
 ### 🚀 **Platform-Specific Quick Setup**
 
-| Platform    | Easiest Method | Best for System Audio    |
-| ----------- | -------------- | ------------------------ |
-| **macOS**   | Default Input  | BlackHole + Multi-Output |
-| **Windows** | Default Input  | Stereo Mix or VB-Cable   |
-| **Linux**   | Default Input  | PulseAudio Monitor       |
+| Platform    | Basic Method (Not Recommended) | **Recommended Method** (Best Experience) |
+| ----------- | ------------------------------ | ---------------------------------------- |
+| **macOS**   | Default Input (may not work)   | **BlackHole + Multi-Output** ✅          |
+| **Windows** | Default Input (may not work)   | **Stereo Mix or VB-Cable** ✅            |
+| **Linux**   | Default Input (may not work)   | **PulseAudio Monitor** ✅                |
+
+💡 **Pro Tip**: Skip the basic method and go straight to the recommended setup for reliable performance!
 
 ### 🔧 **Common Issues & Solutions**
 
@@ -543,7 +555,7 @@ Audio Debug - RMS: 0.000000, Peak: 0.000000, Threshold: 0.001000, Speech: false
 
 ### 💡 **Pro Tips**
 
-1. **Start Simple**: Always try "Default Input" first to verify the app works
+1. **Skip Default Input**: Go straight to the recommended system audio setup for best results
 2. **One Method at a Time**: Don't mix different virtual audio solutions
 3. **Restart After Setup**: Reboot after installing virtual audio devices
 4. **Check Permissions**: Ensure all required permissions are granted
