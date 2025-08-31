@@ -1,6 +1,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod window;
 mod shortcuts;
+mod audio;
 
 #[cfg(target_os = "macos")]
 use tauri_plugin_macos_permissions;
@@ -68,7 +69,21 @@ pub fn run() {
             set_window_height,
             capture_to_base64,
             shortcuts::get_shortcuts,
-            shortcuts::check_shortcuts_registered
+            shortcuts::check_shortcuts_registered,
+            audio::start_system_audio_capture,
+            audio::start_default_audio_capture,
+            audio::stop_system_audio_capture,
+            audio::get_audio_devices,
+            audio::set_vad_sensitivity,
+            audio::set_speech_threshold,
+            audio::set_silence_threshold,
+            audio::set_min_speech_duration,
+            audio::set_pre_speech_buffer_size,
+            audio::get_audio_settings,
+            audio::reset_audio_settings,
+            audio::get_vad_status,
+            audio::debug_audio_devices,
+            audio::test_audio_levels
         ])
         .setup(|app| {
             // Setup main window positioning

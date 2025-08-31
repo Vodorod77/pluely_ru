@@ -5,3 +5,4 @@ export * from "./useCustomProvider";
 export * from "./useCustomSttProviders";
 export * from "./useSettings";
 export * from "./useGlobalShortcuts";
+export * from "./useSystemAudio";

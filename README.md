@@ -55,6 +55,21 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 **🚀 Experience AI assistance that's lighter than a single photo, always visible, and instantly accessible without disrupting your workflow.**
 
+### 🎵 **Powerful Audio Capabilities**
+
+<div align="center">
+
+|    🎤 **Default Input**    | 🔊 **System Audio Capture** |
+| :------------------------: | :-------------------------: |
+|  ✅ **Works immediately**  | 🎯 **Captures everything**  |
+|     No setup required      |   Meetings, videos, music   |
+| Voice commands & dictation |  Perfect for transcription  |
+|  All platforms supported   |  Cross-platform compatible  |
+
+**[📖 Complete Audio Setup Guide](SYSTEM_AUDIO_SETUP.md)** • **Works on macOS, Windows & Linux**
+
+</div>
+
 #### 📊 **Pluely vs Original Cluely**
 
 |       Feature       |   🟢 **Pluely (Open Source)**   |      🔴 **Original Cluely**       |
@@ -319,10 +334,23 @@ Connect to any AI provider with built-in support for:
 
 ### 🎤 **Advanced Speech-to-Text**
 
+Pluely offers **two powerful audio input methods**:
+
+#### 🎤 **Default Input** (Microphone)
+
 - **Voice Activity Detection (VAD)** using `@ricky0123/vad-react`
-- **OpenAI Whisper integration** for accurate transcription
-- **Real-time audio processing** with automatic speech detection
-- **Seamless voice input** - just speak and get AI responses
+- **Real-time voice commands** - just speak and get AI responses
+- **Works immediately** - no setup required on any platform
+
+#### 🔊 **System Audio Capture** (Everything Your Computer Plays)
+
+- **Meeting transcription** - capture Zoom, Teams, Google Meet audio
+- **Video analysis** - transcribe YouTube, educational content, podcasts
+- **Real-time processing** with automatic speech detection
+- **Cross-platform support** - works on macOS, Windows, Linux
+- **Setup required** - see [System Audio Setup Guide](SYSTEM_AUDIO_SETUP.md)
+
+**With any industry-leading STT providers**: OpenAI Whisper, Groq, ElevenLabs, Google, Deepgram, and more!
 
 ### 📎 **Multi-Modal Input**
 
@@ -344,6 +372,106 @@ Connect to any AI provider with built-in support for:
 
 ---
 
+## 🌍 Cross-Platform Compatibility
+
+Pluely works seamlessly across all major operating systems with comprehensive audio capture support.
+
+### 🎯 **Audio Capture Methods**
+
+Pluely offers **multiple audio capture options** to work with any setup:
+
+#### 🎤 **Default Input Capture** (Works Immediately)
+
+- ✅ **No setup required** - works out of the box on all platforms
+- ✅ **Uses your microphone** for voice input and commands
+- ✅ **Perfect for**: Voice dictation, personal notes, voice commands
+- ✅ **Supported**: macOS, Windows, Linux
+
+#### 🔊 **System Audio Capture** (Advanced Setup)
+
+- 🎯 **Captures everything your computer plays** - meetings, videos, music
+- 🎯 **Perfect for**: Meeting transcription, video analysis, system audio monitoring
+- ⚙️ **Requires**: Virtual audio device setup (platform-specific)
+- ✅ **Supported**: macOS, Windows, Linux
+
+### 🖥️ **Platform Support Matrix**
+
+| Platform       | Default Input | System Audio | Virtual Audio Solutions                                          |
+| -------------- | ------------- | ------------ | ---------------------------------------------------------------- |
+| **🍎 macOS**   | ✅ Built-in   | ✅ Supported | BlackHole (free), Loopback ($109), SoundFlower                   |
+| **🪟 Windows** | ✅ Built-in   | ✅ Supported | Stereo Mix (built-in), VB-Audio Cable (free), VoiceMeeter (free) |
+| **🐧 Linux**   | ✅ Built-in   | ✅ Supported | PulseAudio Monitors (built-in), ALSA Loopback                    |
+
+### 🎵 **System Audio Capture Capabilities**
+
+Once configured, system audio capture enables transcription of:
+
+- 🎥 **Meeting Audio**: Zoom, Teams, Google Meet, Discord, Slack
+- 🎬 **Video Content**: YouTube, Netflix, Twitch, educational videos
+- 🎵 **Music & Podcasts**: Spotify, Apple Music, podcast apps
+- 🎮 **Game Audio**: Game commentary, streaming content
+- 📞 **VoIP Calls**: Skype, WhatsApp calls, phone calls
+- 📱 **Any System Audio**: Everything your computer plays
+
+### 🛠️ **Setup Difficulty by Platform**
+
+#### 🍎 **macOS Setup**
+
+- **Default Input**: ✅ **Instant** - no setup required
+- **System Audio**: ⚙️ **Easy** - install BlackHole, configure Multi-Output
+- **Time**: ~5 minutes for system audio setup
+- **Best Option**: BlackHole (free) or Loopback (paid but easier)
+
+#### 🪟 **Windows Setup**
+
+- **Default Input**: ✅ **Instant** - no setup required
+- **System Audio**: ⚙️ **Easy** - enable Stereo Mix or install VB-Cable
+- **Time**: ~3 minutes for system audio setup
+- **Best Option**: Stereo Mix (built-in) or VB-Audio Cable (free)
+
+#### 🐧 **Linux Setup**
+
+- **Default Input**: ✅ **Instant** - no setup required
+- **System Audio**: ⚙️ **Easy** - PulseAudio monitors usually work out-of-box
+- **Time**: ~2 minutes for system audio setup
+- **Best Option**: PulseAudio Monitor devices (usually pre-configured)
+
+### 🔧 **Built-in Debug & Testing Tools**
+
+Pluely includes comprehensive debugging tools for all platforms:
+
+- **🔍 Device Debug**: Shows all available audio devices with detailed analysis
+- **🎵 Audio Level Testing**: 3-second audio level test with real-time feedback
+- **📊 Real-time Monitoring**: Live RMS/Peak audio level display in console
+- **🎯 Smart Device Detection**: Automatically selects best available device
+- **🔄 Auto-Recovery**: Handles device conflicts and "already running" errors
+
+### 📚 **Comprehensive Documentation**
+
+- **📖 [SYSTEM_AUDIO_SETUP.md](SYSTEM_AUDIO_SETUP.md)**: Complete setup guide for all platforms
+- **🎯 Platform-specific instructions**: Step-by-step guides with screenshots
+- **🔧 Troubleshooting**: Common issues and solutions for each OS
+- **💡 Pro Tips**: Best practices and optimization recommendations
+
+### 🚀 **Quick Start (Any Platform)**
+
+1. **Download Pluely** for your platform from [releases](https://github.com/iamsrikanthnani/pluely/releases/latest)
+2. **Install & Launch** the application
+3. **Click the audio button** (headphones icon) in the interface
+4. **Choose your method**:
+   - **"🎤 Default Input"** - works immediately, no setup
+   - **"🔄 System Audio"** - requires virtual audio setup (see [guide](SYSTEM_AUDIO_SETUP.md))
+5. **Start speaking or play audio** - transcription begins automatically!
+
+### 🎉 **Why Cross-Platform Matters**
+
+- **🌐 Universal Access**: Use Pluely on any device, anywhere
+- **🔄 Consistent Experience**: Same features and UI across all platforms
+- **🛠️ Flexible Setup**: Multiple audio solutions to fit any environment
+- **📈 Future-Proof**: Built with Tauri for native performance on all platforms
+
+---
+
 ## 🛠️ Installation & Setup
 
 ### Prerequisites
@@ -351,6 +479,8 @@ Connect to any AI provider with built-in support for:
 - **Node.js** (v18 or higher)
 - **Rust** (latest stable)
 - **npm** or **yarn**
+
+> **🎵 Audio Capabilities**: The built app includes full cross-platform audio support with both microphone input and system audio capture. See [SYSTEM_AUDIO_SETUP.md](SYSTEM_AUDIO_SETUP.md) for platform-specific setup guides.
 
 ### Quick Start
 
@@ -620,6 +750,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 🔗 Links
 
+- **🎵 Audio Setup Guide**: [SYSTEM_AUDIO_SETUP.md](SYSTEM_AUDIO_SETUP.md) - Complete cross-platform audio configuration
 - **Website**: [cluely.com](https://cluely.com/) (Original Cluely)
 - **Documentation**: [GitHub Wiki](https://github.com/iamsrikanthnani/pluely/wiki)
 - **Issues**: [GitHub Issues](https://github.com/iamsrikanthnani/pluely/issues)
