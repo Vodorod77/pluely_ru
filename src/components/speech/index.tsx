@@ -21,7 +21,9 @@ import { useSystemAudioType } from "@/hooks";
 export const SystemAudio = ({
   capturing,
   isProcessing,
+  isAIProcessing,
   lastTranscription,
+  lastAIResponse,
   error,
   setupRequired,
   startCapture,
@@ -97,14 +99,17 @@ export const SystemAudio = ({
           sideOffset={8}
         >
           <ScrollArea className="h-[calc(100vh-7.2rem)]">
-            <div className="p-6 space-y-6">
-              {/* Header */}
-              <Header
-                setupRequired={setupRequired}
-                error={error}
-                isProcessing={isProcessing}
-                capturing={capturing}
-              />
+            <div
+              className={`p-6 ${
+                !lastTranscription && !lastAIResponse
+                  ? "space-y-6"
+                  : "space-y-4"
+              }`}
+            >
+              {/* Header - Hide when there are messages to save space */}
+              {!lastTranscription && !lastAIResponse && (
+                <Header setupRequired={setupRequired} />
+              )}
 
               {setupRequired ? (
                 // Setup Instructions Section
@@ -119,7 +124,11 @@ export const SystemAudio = ({
               ) : (
                 <>
                   {/* Operation Section */}
-                  <OperationSection lastTranscription={lastTranscription} />
+                  <OperationSection
+                    lastTranscription={lastTranscription}
+                    lastAIResponse={lastAIResponse}
+                    isAIProcessing={isAIProcessing}
+                  />
                   {/* Audio Settings */}
                   <Settings
                     capturing={capturing}

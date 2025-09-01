@@ -1,9 +1,11 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useWindowResize } from ".";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useApp } from "@/contexts";
-import { fetchSTT } from "@/lib/functions";
+import { fetchSTT, fetchAIResponse } from "@/lib/functions";
+import { safeLocalStorage } from "@/lib";
+import { STORAGE_KEYS } from "@/config";
 
 // Audio settings type
 export interface AudioSettings {
@@ -14,11 +16,28 @@ export interface AudioSettings {
   preSpeechBufferSize: number;
 }
 
+// Chat message interface (reusing from useCompletion)
+interface ChatMessage {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  timestamp: number;
+}
+
+// Conversation interface (reusing from useCompletion)
+interface ChatConversation {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: number;
+  updatedAt: number;
+}
+
 // Default settings
 const DEFAULT_SETTINGS: AudioSettings = {
   vadSensitivity: 0.004,
   speechThreshold: 0.01,
-  silenceThreshold: 200,
+  silenceThreshold: 150,
   minSpeechDuration: 20,
   preSpeechBufferSize: 20,
 };
@@ -30,14 +49,32 @@ export function useSystemAudio() {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [capturing, setCapturing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isAIProcessing, setIsAIProcessing] = useState(false);
   const [lastTranscription, setLastTranscription] = useState<string>("");
+  const [lastAIResponse, setLastAIResponse] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [setupRequired, setSetupRequired] = useState<boolean>(false);
   const [settings, setSettings] = useState<AudioSettings>(DEFAULT_SETTINGS);
   const [showSettings, setShowSettings] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string>("");
   const [testResults, setTestResults] = useState<string>("");
-  const { selectedSttProvider, allSttProviders } = useApp();
+
+  // Conversation management states
+  const [currentConversationId, setCurrentConversationId] = useState<
+    string | null
+  >(null);
+  const [conversationHistory, setConversationHistory] = useState<ChatMessage[]>(
+    []
+  );
+
+  const {
+    selectedSttProvider,
+    allSttProviders,
+    selectedAIProvider,
+    allAiProviders,
+    systemPrompt,
+  } = useApp();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Check capture status on mount
   useEffect(() => {
@@ -65,7 +102,10 @@ export function useSystemAudio() {
       try {
         // Listen for speech start events
         speechStartUnlisten = await listen("speech-start", () => {
-          setError("");
+          // Only clear error if still capturing
+          if (capturing) {
+            setError("");
+          }
         });
 
         // Listen for speech detected events (with audio data)
@@ -73,6 +113,11 @@ export function useSystemAudio() {
           "speech-detected",
           async (event) => {
             try {
+              // Early return if capturing is no longer active
+              if (!capturing) {
+                return;
+              }
+
               const base64Audio = event.payload as string;
 
               // Check if we have a configured speech provider
@@ -113,6 +158,9 @@ export function useSystemAudio() {
               if (transcription && transcription.trim()) {
                 setLastTranscription(transcription);
                 setError("");
+
+                // Send transcription to AI for processing
+                await processWithAI(transcription);
               }
             } catch (err) {
               setError(
@@ -138,6 +186,196 @@ export function useSystemAudio() {
     };
   }, [capturing, selectedSttProvider, allSttProviders]);
 
+  // Conversation management functions
+  const generateConversationTitle = useCallback(
+    (userMessage: string): string => {
+      const words = userMessage.trim().split(" ").slice(0, 6);
+      return (
+        words.join(" ") +
+        (words.length < userMessage.trim().split(" ").length ? "..." : "")
+      );
+    },
+    []
+  );
+
+  const saveConversation = useCallback((conversation: ChatConversation) => {
+    try {
+      const existingData = safeLocalStorage.getItem(STORAGE_KEYS.CHAT_HISTORY);
+      let conversations: ChatConversation[] = [];
+
+      if (existingData) {
+        conversations = JSON.parse(existingData);
+      }
+
+      const existingIndex = conversations.findIndex(
+        (c) => c.id === conversation.id
+      );
+      if (existingIndex >= 0) {
+        conversations[existingIndex] = conversation;
+      } else {
+        conversations.push(conversation);
+      }
+
+      safeLocalStorage.setItem(
+        STORAGE_KEYS.CHAT_HISTORY,
+        JSON.stringify(conversations)
+      );
+    } catch (error) {
+      console.error("Failed to save conversation:", error);
+    }
+  }, []);
+
+  const getConversation = useCallback((id: string): ChatConversation | null => {
+    try {
+      const existingData = safeLocalStorage.getItem(STORAGE_KEYS.CHAT_HISTORY);
+      if (!existingData) return null;
+
+      const conversations: ChatConversation[] = JSON.parse(existingData);
+      return conversations.find((c) => c.id === id) || null;
+    } catch (error) {
+      console.error("Failed to get conversation:", error);
+      return null;
+    }
+  }, []);
+
+  const saveCurrentConversation = useCallback(
+    (userMessage: string, assistantResponse: string) => {
+      const conversationId =
+        currentConversationId ||
+        `sysaudio_conv_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`;
+      const timestamp = Date.now();
+
+      // Create system audio message (user role but with system audio identifier)
+      const systemAudioMsg: ChatMessage = {
+        id: `msg_${timestamp}_system`,
+        role: "system",
+        content: `🎤 System Audio: ${userMessage}`,
+        timestamp,
+      };
+
+      const assistantMsg: ChatMessage = {
+        id: `msg_${timestamp}_assistant`,
+        role: "assistant",
+        content: assistantResponse,
+        timestamp: timestamp + 1,
+      };
+
+      const newMessages = [
+        ...conversationHistory,
+        systemAudioMsg,
+        assistantMsg,
+      ];
+      const title =
+        conversationHistory.length === 0
+          ? `🎤 ${generateConversationTitle(userMessage)}`
+          : undefined;
+
+      const conversation: ChatConversation = {
+        id: conversationId,
+        title:
+          title ||
+          (currentConversationId
+            ? getConversation(currentConversationId)?.title ||
+              `🎤 ${generateConversationTitle(userMessage)}`
+            : `🎤 ${generateConversationTitle(userMessage)}`),
+        messages: newMessages,
+        createdAt: currentConversationId
+          ? getConversation(currentConversationId)?.createdAt || timestamp
+          : timestamp,
+        updatedAt: timestamp,
+      };
+
+      saveConversation(conversation);
+
+      setCurrentConversationId(conversationId);
+      setConversationHistory(newMessages);
+    },
+    [
+      currentConversationId,
+      conversationHistory,
+      generateConversationTitle,
+      getConversation,
+      saveConversation,
+    ]
+  );
+
+  // AI Processing function
+  const processWithAI = useCallback(
+    async (transcription: string) => {
+      // Check if AI provider is configured
+      if (!selectedAIProvider.provider) {
+        setError("No AI provider selected. Please select one in settings.");
+        return;
+      }
+
+      const provider = allAiProviders.find(
+        (p) => p.id === selectedAIProvider.provider
+      );
+      if (!provider) {
+        setError(
+          "AI provider configuration not found. Please check your settings."
+        );
+        return;
+      }
+
+      // Cancel any existing AI request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      abortControllerRef.current = new AbortController();
+
+      try {
+        setIsAIProcessing(true);
+        setLastAIResponse("");
+        setError("");
+
+        // Prepare message history for the AI
+        const messageHistory = conversationHistory.map((msg) => ({
+          role: msg.role,
+          content: msg.content,
+        }));
+
+        let fullResponse = "";
+
+        // Use the fetchAIResponse function
+        for await (const chunk of fetchAIResponse({
+          provider,
+          selectedProvider: selectedAIProvider,
+          systemPrompt:
+            systemPrompt ||
+            "You are a helpful AI assistant responding to voice queries. Provide concise, helpful responses.",
+          history: messageHistory,
+          userMessage: transcription,
+          imagesBase64: [],
+        })) {
+          fullResponse += chunk;
+          setLastAIResponse((prev) => prev + chunk);
+        }
+
+        if (fullResponse) {
+          // Save the conversation after successful completion
+          saveCurrentConversation(transcription, fullResponse);
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to get AI response"
+        );
+      } finally {
+        setIsAIProcessing(false);
+      }
+    },
+    [
+      selectedAIProvider,
+      allAiProviders,
+      systemPrompt,
+      conversationHistory,
+      saveCurrentConversation,
+    ]
+  );
+
   const startCapture = useCallback(async () => {
     try {
       setError("");
@@ -154,54 +392,40 @@ export function useSystemAudio() {
       setCapturing(true);
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Failed to start audio capture";
+        err instanceof Error
+          ? err.message
+          : "Failed to start system audio capture";
 
-      // Check if this is a setup-related error
-      if (
-        errorMessage.includes("No system audio loopback device found") ||
-        errorMessage.includes("virtual audio device") ||
-        errorMessage.includes("BlackHole") ||
-        errorMessage.includes("Stereo Mix") ||
-        errorMessage.includes("monitor device") ||
-        errorMessage.includes("VB-Audio Virtual Cable") ||
-        errorMessage.includes("Failed to start audio capture")
-      ) {
-        setSetupRequired(true);
-        setError(errorMessage);
-      } else {
-        setError(errorMessage);
-      }
-    }
-  }, []);
-
-  const startDefaultCapture = useCallback(async () => {
-    try {
-      setError("");
-      setSetupRequired(false);
-
-      // Stop any existing capture first
-      try {
-        await invoke<string>("stop_system_audio_capture");
-      } catch (stopErr) {
-        // Ignore errors if nothing was running
-      }
-
-      await invoke<string>("start_default_audio_capture");
-      setCapturing(true);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to start audio capture"
-      );
+      // All errors are setup-related since we only support system audio
+      setSetupRequired(true);
+      setError(errorMessage);
     }
   }, []);
 
   const stopCapture = useCallback(async () => {
     try {
-      await invoke<string>("stop_system_audio_capture");
+      // Cancel any ongoing AI request first
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+
+      // Set capturing to false first to stop any ongoing processing
       setCapturing(false);
       setIsProcessing(false);
+      setIsAIProcessing(false);
+
+      // Then stop the Rust backend
+      await invoke<string>("stop_system_audio_capture");
+
+      // Clear all state
       setLastTranscription("");
+      setLastAIResponse("");
       setSetupRequired(false);
+      setError("");
+
+      // reload the window to clear the audio visualizer
+      window.location.reload();
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to stop audio capture"
@@ -231,21 +455,29 @@ export function useSystemAudio() {
         // Update backend
         switch (key) {
           case "vadSensitivity":
-            await invoke<string>("set_vad_sensitivity", { sensitivity: value });
+            await invoke<string>("set_vad_sensitivity", {
+              value: value as number,
+            });
             break;
           case "speechThreshold":
-            await invoke<string>("set_speech_threshold", { threshold: value });
+            await invoke<string>("set_speech_threshold", {
+              value: value as number,
+            });
             break;
           case "silenceThreshold":
-            await invoke<string>("set_silence_threshold", { threshold: value });
+            await invoke<string>("set_silence_threshold", {
+              chunks: value as number,
+            });
             break;
           case "minSpeechDuration":
             await invoke<string>("set_min_speech_duration", {
-              duration: value,
+              chunks: value as number,
             });
             break;
           case "preSpeechBufferSize":
-            await invoke<string>("set_pre_speech_buffer_size", { size: value });
+            await invoke<string>("set_pre_speech_buffer_size", {
+              chunks: value as number,
+            });
             break;
         }
       } catch (err) {
@@ -316,16 +548,55 @@ export function useSystemAudio() {
   }, [testAudioLevels]);
 
   useEffect(() => {
-    const shouldOpenPopover = capturing || setupRequired;
+    const shouldOpenPopover =
+      capturing || setupRequired || isAIProcessing || !!lastAIResponse;
     setIsPopoverOpen(shouldOpenPopover);
     // Resize window when capturing state changes or setup is required
     resizeWindow(shouldOpenPopover);
-  }, [capturing, setupRequired, resizeWindow]);
+  }, [capturing, setupRequired, isAIProcessing, lastAIResponse, resizeWindow]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Cancel any ongoing AI request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      // Always try to stop capture during cleanup
+      invoke<string>("stop_system_audio_capture").catch(() => {
+        // Ignore errors during cleanup
+      });
+    };
+  }, []);
+
+  const startDefaultCapture = useCallback(async () => {
+    try {
+      setError("");
+      setSetupRequired(false);
+
+      // Stop any existing capture first
+      try {
+        await invoke<string>("stop_system_audio_capture");
+      } catch (stopErr) {
+        // Ignore errors if nothing was running
+      }
+
+      await invoke<string>("start_default_audio_capture");
+      setCapturing(true);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to start audio capture"
+      );
+    }
+  }, []);
 
   return {
     capturing,
     isProcessing,
+    isAIProcessing,
     lastTranscription,
+    lastAIResponse,
     error,
     setupRequired,
     startCapture,
@@ -347,5 +618,10 @@ export function useSystemAudio() {
     testAudioLevels,
     isPopoverOpen,
     setIsPopoverOpen,
+    // Conversation management
+    currentConversationId,
+    conversationHistory,
+    // AI processing
+    processWithAI,
   };
 }

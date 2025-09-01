@@ -1,95 +1,56 @@
-# 🎧 System Audio Capture Setup Guide
+# 🔊 System Audio Capture Setup Guide
 
-This comprehensive guide will help you set up system audio capture for real-time transcription across different operating systems. System audio capture allows Pluely to listen to your computer's audio output (what you hear through speakers/headphones) and automatically transcribe speech.
+This guide will help you set up system audio capture for real-time transcription. Pluely captures your computer's audio output (what you hear through speakers/headphones) and automatically transcribes speech from videos, meetings, music, and any audio playing on your system.
 
-## 🚀 Quick Start Options
+## 🎯 What This Enables
 
-Pluely offers **multiple capture methods** for different needs:
+System audio capture allows Pluely to transcribe:
 
-### 🎤 **Default Input Capture** (Basic - May Have Limitations)
-
-- ✅ **No setup required** - works out of the box
-- ⚠️ **May not work reliably** on all systems
-- ✅ **Uses your microphone** for voice input
-- ❌ **Cannot capture system audio** (videos, meetings, music)
-- ❌ **Limited functionality** compared to system audio capture
-- 🎯 **Best for**: Quick testing only - **we recommend using system audio capture below**
-
-### 🔊 **System Audio Capture** (Recommended - Full Features)
-
-- ⚠️ **Requires virtual audio device setup** (one-time setup)
-- ✅ **Most reliable and stable method**
-- ✅ **Captures everything your computer plays**
-- ✅ **Perfect for meetings, videos, calls**
-- ✅ **Full feature support and best performance**
-- 🎯 **Recommended for**: All users - provides the best experience
+- 🎥 **Meeting audio** (Zoom, Teams, Google Meet, Discord)
+- 🎬 **Video content** (YouTube, Netflix, Twitch)
+- 🎵 **Music and podcasts** (Spotify, Apple Music)
+- 🎮 **Game audio and commentary**
+- 📞 **VoIP calls** (Skype, WhatsApp)
+- 📱 **Any audio playing on your computer**
 
 ---
 
-## 🤔 Why Do I Need to Install Additional Software for System Audio?
+## 🔒 Why Virtual Audio Devices Are Required
 
-**Here's the reality**: Your operating system doesn't allow applications to directly capture "system audio" (what you hear) for security and privacy reasons. This is intentional - imagine if any app could secretly record everything you listen to!
+Your operating system doesn't allow applications to directly capture "system audio" (what you hear through speakers) for security and privacy reasons. This is intentional - imagine if any app could secretly record everything you listen to!
 
 ### The Technical Challenge
 
-- **Your microphone** captures external sounds (your voice, room noise)
 - **System audio** is internal (music, videos, meeting audio from speakers)
-- **Operating systems separate these** to prevent unauthorized audio recording
-- **There's no built-in way** for apps to access what your computer is playing
+- **Operating systems separate this** from microphone input to prevent unauthorized recording
+- **No built-in way** for apps to access what your computer is playing
 
-### Why Virtual Audio Devices Are Required
+### Why We Use Virtual Audio Devices
 
-Think of virtual audio devices as a "bridge" that safely routes your system audio so Pluely can access it:
+Virtual audio devices act as a secure "bridge" that routes your system audio to Pluely:
 
 - 🔒 **Security**: You explicitly install and control this bridge
-- 🎯 **Precision**: Only captures system audio, not microphone input
-- 🛡️ **Privacy**: You decide when it's active and what it captures
-- ⚡ **Performance**: Designed specifically for audio routing without quality loss
+- 🎯 **Precision**: Captures exactly what you want
+- 🛡️ **Privacy**: You control when it's active
+- ⚡ **Performance**: Optimized for audio routing
 
-### This Isn't Just Pluely - It's Universal
+### This Is Universal
 
-**Every application** that captures system audio requires this setup:
+**Every application** that captures system audio requires similar setup:
 
-- OBS (streaming software)
+- OBS Studio (streaming software)
 - Audacity (audio recording)
 - Discord (screen sharing with audio)
-- Zoom/Teams (screen sharing with computer audio)
-- Any screen recording tool with system audio
+- Zoom/Teams (computer audio in meetings)
+- Any screen recording tool
 
-**We wish there was a simpler way, but this is the only method that works reliably across all platforms while maintaining security.**
-
-## 🎯 What Can You Capture?
-
-### 🎤 **Default Input Capture** captures:
-
-- Your voice through microphone
-- Voice commands and dictation
-- Personal audio notes
-
-### 🔊 **System Audio Capture** captures:
-
-- 🎥 Meeting audio (Zoom, Teams, Google Meet, Discord)
-- 🎬 Video content (YouTube, Netflix, Twitch streams)
-- 🎵 Music and podcasts (Spotify, Apple Music, etc.)
-- 🎮 Game audio and commentary
-- 📞 VoIP calls (Skype, WhatsApp, etc.)
-- 📱 Any audio playing on your computer
+**This is the industry standard for system audio capture while maintaining security.**
 
 ---
 
 ## 🍎 macOS Setup
 
-### 🎤 Method 1: Default Input (Basic - Not Recommended)
-
-⚠️ **Note**: This method may not work reliably on all macOS systems and has limited functionality. **We strongly recommend using Method 2 (System Audio with BlackHole) below for the best experience.**
-
-1. **Open Pluely**
-2. **Click the system audio button** (headphones icon)
-3. **Click "🎤 Default Input"**
-4. **Grant microphone permissions** when prompted
-5. **Start speaking** - transcription may work, but results can be inconsistent
-
-### 🔊 Method 2: System Audio with BlackHole (Recommended)
+### 🔊 System Audio with BlackHole
 
 #### Step 1: Install BlackHole (Free & Open Source)
 
@@ -199,17 +160,7 @@ If you prefer a more user-friendly (but paid) solution:
 
 ## 🪟 Windows Setup
 
-### 🎤 Method 1: Default Input (Basic - Not Recommended)
-
-⚠️ **Note**: This method may not work reliably on all Windows systems and has limited functionality. **We strongly recommend using Method 2 (System Audio) below for the best experience.**
-
-1. **Open Pluely**
-2. **Click the system audio button** (headphones icon)
-3. **Click "🎤 Default Input"**
-4. **Grant microphone permissions** when prompted
-5. **Start speaking** - transcription may work, but results can be inconsistent
-
-### 🔊 Method 2: System Audio Capture
+### 🔊 System Audio Capture
 
 Windows offers several options for system audio capture:
 
@@ -319,17 +270,7 @@ Windows offers several options for system audio capture:
 
 ## 🐧 Linux Setup
 
-### 🎤 Method 1: Default Input (Basic - Not Recommended)
-
-⚠️ **Note**: This method may not work reliably on all Linux systems and has limited functionality. **We strongly recommend using Method 2 (System Audio with PulseAudio) below for the best experience.**
-
-1. **Open Pluely**
-2. **Click the system audio button** (headphones icon)
-3. **Click "🎤 Default Input"**
-4. **Grant microphone permissions** when prompted
-5. **Start speaking** - transcription may work, but results can be inconsistent
-
-### 🔊 Method 2: System Audio with PulseAudio (Most Common)
+### 🔊 System Audio with PulseAudio
 
 **Most Linux distributions** use PulseAudio, which has built-in monitor devices for system audio capture.
 
@@ -535,13 +476,13 @@ Audio Debug - RMS: 0.000000, Peak: 0.000000, Threshold: 0.001000, Speech: false
 
 ### 🚀 **Platform-Specific Quick Setup**
 
-| Platform    | Basic Method (Not Recommended) | **Recommended Method** (Best Experience) |
-| ----------- | ------------------------------ | ---------------------------------------- |
-| **macOS**   | Default Input (may not work)   | **BlackHole + Multi-Output** ✅          |
-| **Windows** | Default Input (may not work)   | **Stereo Mix or VB-Cable** ✅            |
-| **Linux**   | Default Input (may not work)   | **PulseAudio Monitor** ✅                |
+| Platform    | **Recommended Method** (System Audio) |
+| ----------- | ------------------------------------- |
+| **macOS**   | **BlackHole + Multi-Output** ✅       |
+| **Windows** | **Stereo Mix or VB-Cable** ✅         |
+| **Linux**   | **PulseAudio Monitor** ✅             |
 
-💡 **Pro Tip**: Skip the basic method and go straight to the recommended setup for reliable performance!
+💡 **Pro Tip**: Follow the platform-specific setup above for the best experience!
 
 ### 🔧 **Common Issues & Solutions**
 
@@ -582,13 +523,12 @@ If you're still having issues:
 
 ## 🎉 Conclusion
 
-Pluely now supports **multiple audio capture methods** to work with your setup:
+Pluely uses **system audio capture** to provide powerful transcription capabilities:
 
-- **🎤 Default Input**: Works immediately, no setup required
-- **🔊 System Audio**: Captures everything your computer plays (requires setup)
+- **🔊 System Audio**: Captures everything your computer plays
 - **🔍 Debug Tools**: Help troubleshoot and verify your configuration
 - **🎵 Audio Testing**: Verify audio levels and device detection
 
-**The key insight**: You don't need BlackHole or virtual devices to use Pluely - the "Default Input" method works out of the box for voice input. System audio capture is an advanced feature that requires additional setup but enables powerful use cases like meeting transcription and video analysis.
+**System audio capture** enables powerful use cases like meeting transcription, video analysis, and real-time captioning of any audio playing on your computer.
 
-Choose the method that best fits your needs and technical comfort level!
+Follow the platform-specific setup guide above to get started!

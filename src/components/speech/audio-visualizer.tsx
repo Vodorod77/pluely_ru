@@ -6,7 +6,7 @@ const AUDIO_CONFIG = {
   SMOOTHING: 0.8,
   MIN_BAR_HEIGHT: 2,
   MIN_BAR_WIDTH: 2,
-  BAR_SPACING: 1,
+  BAR_SPACING: 4,
   COLOR: {
     MIN_INTENSITY: 100, // Minimum gray value (darker)
     MAX_INTENSITY: 255, // Maximum gray value (brighter)
@@ -21,16 +21,18 @@ interface AudioVisualizerProps {
 export function AudioVisualizer({ isRecording }: AudioVisualizerProps) {
   const [stream, setStream] = useState<MediaStream | null>(null);
 
+  const getStream = async (isRecording: boolean) => {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: isRecording,
+    });
+    setStream(stream);
+  };
+
   // Get stream when recording starts
   useEffect(() => {
-    const getStream = async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      setStream(stream);
-    };
+    getStream(isRecording);
 
-    if (isRecording) {
-      getStream();
-    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRecording]);
 
   // Refs for managing audio context and animation
@@ -193,8 +195,8 @@ export function AudioVisualizer({ isRecording }: AudioVisualizerProps) {
   };
 
   return (
-    <div ref={containerRef} className="!h-[32px] w-full">
-      <canvas ref={canvasRef} className="h-full w-full px-16" />
+    <div ref={containerRef} className="!h-[32px] !w-full">
+      <canvas ref={canvasRef} className="h-full !w-full pl-8" />
     </div>
   );
 }

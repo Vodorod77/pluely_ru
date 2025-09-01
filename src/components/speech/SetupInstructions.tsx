@@ -69,14 +69,14 @@ export const SetupInstructions = ({
             Test your setup or try different capture methods
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <Button size="sm" variant="outline" asChild className="h-10">
             <a
               href="https://github.com/iamsrikanthnani/open-cluely/blob/main/SYSTEM_AUDIO_SETUP.md"
               target="_blank"
               className="flex items-center gap-2"
             >
-              📖 Complete Guide
+              📖 Setup Guide
             </a>
           </Button>
           <Button
@@ -108,7 +108,7 @@ export const SetupInstructions = ({
           onClick={startCapture}
           className="w-full h-10 flex items-center gap-2"
         >
-          🔄 Try System Audio Anyway
+          � Try System Audio Anyway
         </Button>
       </div>
 

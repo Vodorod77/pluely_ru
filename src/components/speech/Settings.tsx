@@ -29,8 +29,9 @@ export const Settings = ({
         <div>
           <h3 className="font-semibold text-xs">Audio Settings and Status</h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Configure voice detection and processing parameters and view current
-            status
+            Configure voice detection and processing parameters to balance
+            accuracy and efficiency. Higher sensitivity settings may increase
+            API calls and processing costs by detecting more speech segments.
           </p>
         </div>
         <Button
