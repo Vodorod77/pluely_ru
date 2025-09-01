@@ -70,6 +70,7 @@ pub fn run() {
             capture_to_base64,
             shortcuts::get_shortcuts,
             shortcuts::check_shortcuts_registered,
+            shortcuts::set_app_icon_visibility,
             audio::start_system_audio_capture,
             audio::stop_system_audio_capture,
             audio::get_audio_devices,

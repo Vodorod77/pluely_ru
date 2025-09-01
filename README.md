@@ -53,23 +53,6 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 </div>
 
-**🚀 Experience AI assistance that's lighter than a single photo, always visible, and instantly accessible without disrupting your workflow.**
-
-### 🎵 **Powerful Audio Capabilities**
-
-<div align="center">
-
-|    🎤 **Default Input**    | 🔊 **System Audio Capture** |
-| :------------------------: | :-------------------------: |
-|  ✅ **Works immediately**  | 🎯 **Captures everything**  |
-|     No setup required      |   Meetings, videos, music   |
-| Voice commands & dictation |  Perfect for transcription  |
-|  All platforms supported   |  Cross-platform compatible  |
-
-**[📖 Complete Audio Setup Guide](SYSTEM_AUDIO_SETUP.md)** • **Works on macOS, Windows & Linux**
-
-</div>
-
 #### 📊 **Pluely vs Original Cluely**
 
 |       Feature       |   🟢 **Pluely (Open Source)**   |      🔴 **Original Cluely**       |
@@ -83,14 +66,48 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 ---
 
-## 🚀 Future Developments
+## ⌨️ **Keyboard Shortcuts**
 
-Continuously working to enhance Pluely with these highly requested features:
+Pluely comes with powerful global keyboard shortcuts that work from anywhere on your system:
 
-### 🎯 **Top Priority Features**
+<div align="center">
 
-- **🎧 System Audio Capture** - Capture and transcribe audio from your computer applications, meetings, and system sounds
-- **⚡ Global Shortcuts** - Customizable keyboard shortcuts (Ctrl/Cmd + /) for quick show/hide functionality
+| **Shortcut**      | **macOS**         | **Windows/Linux**  | **Function**                                             |
+| :---------------- | :---------------- | :----------------- | :------------------------------------------------------- |
+| **Toggle Window** | `Cmd + \`         | `Ctrl + \`         | Show/Hide the main window + app icon (based on settings) |
+| **Voice Input**   | `Cmd + Shift + A` | `Ctrl + Shift + A` | Start voice recording                                    |
+| **Screenshot**    | `Cmd + Shift + S` | `Ctrl + Shift + S` | Capture screenshot                                       |
+| **System Audio**  | `Cmd + Shift + M` | `Ctrl + Shift + M` | Toggle system audio capture                              |
+
+</div>
+
+## 🎯 **App Icon Stealth Mode**
+
+**Complete stealth mode control integrated with main toggle:**
+
+- **Show Mode** (Default): App icon remains visible in dock/taskbar when window is hidden
+- **Hide Mode**: App icon completely disappears from dock/taskbar when window is hidden (app keeps running in background)
+- **Settings Control**: Configure dock/taskbar icon visibility in Settings → App Icon Visibility
+- **Auto-Integration**: Works automatically with main toggle shortcut (`Cmd+\` / `Ctrl+\`) based on your settings
+- **Cross-Platform**: Works seamlessly on macOS (ActivationPolicy::Accessory), Windows (skip_taskbar), and Linux (skip_taskbar)
+
+**Perfect for maximum discretion during sensitive meetings and conversations - the app icon disappears from dock/taskbar but app remains fully functional!**
+
+---
+
+## 🔊 **System Audio Capture**
+
+#### Why Setup Required?
+
+**🔒 Security by Design**: Operating systems block direct system audio access for privacy protection - this is universal across all platforms and applications.
+
+**⚙️ Quick Setup Process**:
+
+- **macOS**: Install BlackHole (free) + Audio MIDI Setup (5 min)
+- **Windows**: Enable built-in Stereo Mix OR install VB-Cable (free) (3 min)
+- **Linux**: Use built-in PulseAudio monitors (usually works out-of-box)
+
+**[📖 Complete Audio Setup Guide](SYSTEM_AUDIO_SETUP.md)** • **Step-by-step for all platforms**
 
 ---
 
@@ -363,6 +380,13 @@ Pluely offers **two powerful audio input methods**:
 - **Always on top** but never in the way
 - **Minimal design** - focus on content, not interface
 - **Dark/light theme** support
+
+### 👻 **Advanced Stealth Features**
+
+- **App Icon Stealth Mode** - Complete dock/taskbar invisibility for maximum discretion
+- **Intelligent Icon Management** - Automatically hide/show based on window visibility settings
+- **Cross-Platform Stealth** - Works seamlessly on macOS (Dock), Windows (Taskbar), and Linux (Panel)
+- **Global Keyboard Shortcuts** - Control app from anywhere without detection
 
 ### ⚡ **Real-Time Streaming**
 

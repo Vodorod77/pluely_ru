@@ -74,23 +74,28 @@ pub fn setup_global_shortcuts<R: Runtime>(app: &AppHandle<R>) -> Result<(), Box<
     Ok(())
 }
 
-/// Handle window toggle (hide/show) with input focus
+/// Handle window toggle (hide/show) with input focus and app icon management
 fn handle_toggle_window<R: Runtime>(window: &tauri::WebviewWindow<R>) {
     match window.is_visible() {
         Ok(true) => {
-            // Window is visible, hide it
+            // Window is visible, hide it and handle app icon based on user settings
             if let Err(e) = window.hide() {
                 eprintln!("Failed to hide window: {}", e);
             }
+            
+            // Handle app icon visibility based on user settings when hiding
+            handle_app_icon_on_window_hide(window);
         }
         Ok(false) => {
-            // Window is hidden, show it and focus input
+            // Window is hidden, show it, show app icon, and focus input
             if let Err(e) = window.show() {
                 eprintln!("Failed to show window: {}", e);
             }
             if let Err(e) = window.set_focus() {
                 eprintln!("Failed to focus window: {}", e);
             }
+            // Always show app icon when window is shown
+            handle_app_icon_on_window_show(window);
             
             // Emit event to focus text input
             if let Err(e) = window.emit("focus-text-input", json!({})) {
@@ -100,6 +105,22 @@ fn handle_toggle_window<R: Runtime>(window: &tauri::WebviewWindow<R>) {
         Err(e) => {
             eprintln!("Failed to check window visibility: {}", e);
         }
+    }
+}
+
+/// Handle app icon visibility when window is hidden
+fn handle_app_icon_on_window_hide<R: Runtime>(window: &tauri::WebviewWindow<R>) {
+    // Emit event to frontend to check user settings and handle app icon accordingly
+    if let Err(e) = window.emit("handle-app-icon-on-hide", json!({})) {
+        eprintln!("Failed to emit app icon hide event: {}", e);
+    }
+}
+
+/// Handle app icon visibility when window is shown
+fn handle_app_icon_on_window_show<R: Runtime>(window: &tauri::WebviewWindow<R>) {
+    // Always show app icon when window is shown
+    if let Err(e) = window.emit("handle-app-icon-on-show", json!({})) {
+        eprintln!("Failed to emit app icon show event: {}", e);
     }
 }
 
@@ -188,4 +209,66 @@ pub fn check_shortcuts_registered<R: Runtime>(app: AppHandle<R>) -> Result<bool,
     }
     
     Ok(true)
+}
+// Tauri command to set app icon visibility in dock/taskbar
+#[tauri::command]
+pub fn set_app_icon_visibility<R: Runtime>(
+    app: AppHandle<R>,
+    visible: bool,
+) -> Result<(), String> {
+    println!("Setting app icon visibility to: {}", visible);
+    
+    #[cfg(target_os = "macos")]
+    {
+        // On macOS, use activation policy to control dock icon
+        let policy = if visible {
+            println!("Setting macOS activation policy to Regular (visible)");
+            tauri::ActivationPolicy::Regular
+        } else {
+            println!("Setting macOS activation policy to Accessory (hidden)");
+            tauri::ActivationPolicy::Accessory
+        };
+        
+        app.set_activation_policy(policy)
+            .map_err(|e| {
+                eprintln!("Failed to set activation policy: {}", e);
+                format!("Failed to set activation policy: {}", e)
+            })?;
+        
+        println!("Successfully set macOS activation policy");
+    }
+    
+    #[cfg(target_os = "windows")]
+    {
+        // On Windows, control taskbar icon visibility
+        if let Some(window) = app.get_webview_window("main") {
+            println!("Setting Windows taskbar visibility to: {}", visible);
+            window.set_skip_taskbar(!visible)
+                .map_err(|e| {
+                    eprintln!("Failed to set taskbar visibility: {}", e);
+                    format!("Failed to set taskbar visibility: {}", e)
+                })?;
+            println!("Successfully set Windows taskbar visibility");
+        } else {
+            eprintln!("Main window not found on Windows");
+        }
+    }
+    
+    #[cfg(target_os = "linux")]
+    {
+        // On Linux, control panel icon visibility
+        if let Some(window) = app.get_webview_window("main") {
+            println!("Setting Linux panel visibility to: {}", visible);
+            window.set_skip_taskbar(!visible)
+                .map_err(|e| {
+                    eprintln!("Failed to set panel visibility: {}", e);
+                    format!("Failed to set panel visibility: {}", e)
+                })?;
+            println!("Successfully set Linux panel visibility");
+        } else {
+            eprintln!("Main window not found on Linux");
+        }
+    }
+    
+    Ok(())
 }

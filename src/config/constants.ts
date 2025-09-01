@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   SELECTED_AI_PROVIDER: "curl_selected_ai_provider",
   SELECTED_STT_PROVIDER: "curl_selected_stt_provider",
   SYSTEM_AUDIO_CONTEXT: "system_audio_context",
+  APP_ICON_TOGGLE: "app_icon_toggle",
 } as const;
 
 // Max number of files that can be attached to a message

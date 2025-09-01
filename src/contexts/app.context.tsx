@@ -5,7 +5,14 @@ import {
   STORAGE_KEYS,
 } from "@/config";
 import { safeLocalStorage } from "@/lib";
+import {
+  getAppIconToggleState,
+  setAppIconVisibility,
+  AppIconToggleState,
+} from "@/lib/storage";
 import { IContextType, ScreenshotConfig, TYPE_PROVIDER } from "@/types";
+import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import {
   ReactNode,
   createContext,
@@ -54,6 +61,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       autoPrompt: "Analyze this screenshot and provide insights",
       enabled: true,
     });
+
+  // App Icon Toggle State
+  const [appIconState, setAppIconState] = useState<AppIconToggleState>({
+    isVisible: true,
+  });
 
   // Function to load AI, STT, system prompt and screenshot config data from storage
   const loadData = () => {
@@ -133,11 +145,59 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (savedSelectedStt) {
       setSelectedSttProvider(JSON.parse(savedSelectedStt));
     }
+
+    // Load app icon state
+    const appIconToggleState = getAppIconToggleState();
+    setAppIconState(appIconToggleState);
   };
 
   // Load data on mount
   useEffect(() => {
     loadData();
+  }, []);
+
+  // Handle app icon visibility on initial load and when user changes setting
+  useEffect(() => {
+    const handleAppIconVisibility = async (isVisible: boolean) => {
+      try {
+        await invoke("set_app_icon_visibility", { visible: isVisible });
+      } catch (error) {
+        console.error("Failed to set app icon visibility:", error);
+      }
+    };
+
+    // Set app icon visibility based on loaded state
+    // This handles both initial load and user setting changes
+    handleAppIconVisibility(appIconState.isVisible);
+  }, [appIconState.isVisible]);
+
+  // Listen for app icon hide/show events when window is toggled
+  useEffect(() => {
+    const handleAppIconVisibility = async (isVisible: boolean) => {
+      try {
+        await invoke("set_app_icon_visibility", { visible: isVisible });
+      } catch (error) {
+        console.error("Failed to set app icon visibility:", error);
+      }
+    };
+
+    const unlistenHide = listen("handle-app-icon-on-hide", async () => {
+      const currentState = getAppIconToggleState();
+      // Only hide app icon if user has set it to hide mode
+      if (!currentState.isVisible) {
+        await handleAppIconVisibility(false);
+      }
+    });
+
+    const unlistenShow = listen("handle-app-icon-on-show", async () => {
+      // Always show app icon when window is shown, regardless of user setting
+      await handleAppIconVisibility(true);
+    });
+
+    return () => {
+      unlistenHide.then((fn) => fn());
+      unlistenShow.then((fn) => fn());
+    };
   }, []);
 
   // Listen to storage events for real-time sync (e.g., multi-tab)
@@ -149,7 +209,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         e.key === STORAGE_KEYS.CUSTOM_SPEECH_PROVIDERS ||
         e.key === STORAGE_KEYS.SELECTED_STT_PROVIDER ||
         e.key === STORAGE_KEYS.SYSTEM_PROMPT ||
-        e.key === STORAGE_KEYS.SCREENSHOT_CONFIG
+        e.key === STORAGE_KEYS.SCREENSHOT_CONFIG ||
+        e.key === STORAGE_KEYS.APP_ICON_TOGGLE
       ) {
         loadData();
       }
@@ -225,6 +286,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setSelectedSttProvider((prev) => ({ ...prev, provider, variables }));
   };
 
+  // App icon toggle handler
+  const toggleAppIconVisibility = async (isVisible: boolean) => {
+    const newState = setAppIconVisibility(isVisible);
+    setAppIconState(newState);
+
+    try {
+      await invoke("set_app_icon_visibility", { visible: isVisible });
+      // Reload data to ensure consistency
+      loadData();
+    } catch (error) {
+      console.error("Failed to toggle app icon visibility:", error);
+    }
+  };
+
   // Create the context value (extend IContextType accordingly)
   const value: IContextType = {
     systemPrompt,
@@ -239,6 +314,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     onSetSelectedSttProvider,
     screenshotConfiguration,
     setScreenshotConfiguration,
+    appIconState,
+    toggleAppIconVisibility,
     loadData,
   };
 

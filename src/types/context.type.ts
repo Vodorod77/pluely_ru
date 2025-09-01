@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import { ScreenshotConfig, TYPE_PROVIDER } from "@/types";
+import { AppIconToggleState } from "@/lib/storage";
 
 export type IContextType = {
   systemPrompt: string;
@@ -34,5 +35,7 @@ export type IContextType = {
   setScreenshotConfiguration: React.Dispatch<
     React.SetStateAction<ScreenshotConfig>
   >;
+  appIconState: AppIconToggleState;
+  toggleAppIconVisibility: (isVisible: boolean) => Promise<void>;
   loadData: () => void;
 };
