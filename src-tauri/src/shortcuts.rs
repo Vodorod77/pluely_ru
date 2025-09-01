@@ -272,3 +272,27 @@ pub fn set_app_icon_visibility<R: Runtime>(
     
     Ok(())
 }
+
+/// Tauri command to set always on top state
+#[tauri::command]
+pub fn set_always_on_top<R: Runtime>(
+    app: AppHandle<R>,
+    enabled: bool,
+) -> Result<(), String> {
+    println!("Setting always on top to: {}", enabled);
+    
+    if let Some(window) = app.get_webview_window("main") {
+        window.set_always_on_top(enabled)
+            .map_err(|e| {
+                eprintln!("Failed to set always on top: {}", e);
+                format!("Failed to set always on top: {}", e)
+            })?;
+        
+        println!("Successfully set always on top to: {}", enabled);
+    } else {
+        eprintln!("Main window not found");
+        return Err("Main window not found".to_string());
+    }
+    
+    Ok(())
+}

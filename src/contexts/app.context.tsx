@@ -6,9 +6,10 @@ import {
 } from "@/config";
 import { safeLocalStorage } from "@/lib";
 import {
-  getAppIconToggleState,
-  setAppIconVisibility,
-  AppIconToggleState,
+  getCustomizableState,
+  updateAppIconVisibility,
+  updateAlwaysOnTop,
+  CustomizableState,
 } from "@/lib/storage";
 import { IContextType, ScreenshotConfig, TYPE_PROVIDER } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
@@ -62,9 +63,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       enabled: true,
     });
 
-  // App Icon Toggle State
-  const [appIconState, setAppIconState] = useState<AppIconToggleState>({
-    isVisible: true,
+  // Unified Customizable State
+  const [customizable, setCustomizable] = useState<CustomizableState>({
+    appIcon: { isVisible: true },
+    alwaysOnTop: { isEnabled: true },
   });
 
   // Function to load AI, STT, system prompt and screenshot config data from storage
@@ -146,9 +148,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setSelectedSttProvider(JSON.parse(savedSelectedStt));
     }
 
-    // Load app icon state
-    const appIconToggleState = getAppIconToggleState();
-    setAppIconState(appIconToggleState);
+    // Load customizable state
+    const customizableState = getCustomizableState();
+    setCustomizable(customizableState);
   };
 
   // Load data on mount
@@ -156,20 +158,25 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     loadData();
   }, []);
 
-  // Handle app icon visibility on initial load and when user changes setting
+  // Handle customizable settings on state changes
   useEffect(() => {
-    const handleAppIconVisibility = async (isVisible: boolean) => {
+    const applyCustomizableSettings = async () => {
       try {
-        await invoke("set_app_icon_visibility", { visible: isVisible });
+        await Promise.all([
+          invoke("set_app_icon_visibility", {
+            visible: customizable.appIcon.isVisible,
+          }),
+          invoke("set_always_on_top", {
+            enabled: customizable.alwaysOnTop.isEnabled,
+          }),
+        ]);
       } catch (error) {
-        console.error("Failed to set app icon visibility:", error);
+        console.error("Failed to apply customizable settings:", error);
       }
     };
 
-    // Set app icon visibility based on loaded state
-    // This handles both initial load and user setting changes
-    handleAppIconVisibility(appIconState.isVisible);
-  }, [appIconState.isVisible]);
+    applyCustomizableSettings();
+  }, [customizable]);
 
   // Listen for app icon hide/show events when window is toggled
   useEffect(() => {
@@ -182,9 +189,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const unlistenHide = listen("handle-app-icon-on-hide", async () => {
-      const currentState = getAppIconToggleState();
+      const currentState = getCustomizableState();
       // Only hide app icon if user has set it to hide mode
-      if (!currentState.isVisible) {
+      if (!currentState.appIcon.isVisible) {
         await handleAppIconVisibility(false);
       }
     });
@@ -210,7 +217,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         e.key === STORAGE_KEYS.SELECTED_STT_PROVIDER ||
         e.key === STORAGE_KEYS.SYSTEM_PROMPT ||
         e.key === STORAGE_KEYS.SCREENSHOT_CONFIG ||
-        e.key === STORAGE_KEYS.APP_ICON_TOGGLE
+        e.key === STORAGE_KEYS.CUSTOMIZABLE
       ) {
         loadData();
       }
@@ -286,17 +293,26 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setSelectedSttProvider((prev) => ({ ...prev, provider, variables }));
   };
 
-  // App icon toggle handler
+  // Toggle handlers
   const toggleAppIconVisibility = async (isVisible: boolean) => {
-    const newState = setAppIconVisibility(isVisible);
-    setAppIconState(newState);
-
+    const newState = updateAppIconVisibility(isVisible);
+    setCustomizable(newState);
     try {
       await invoke("set_app_icon_visibility", { visible: isVisible });
-      // Reload data to ensure consistency
       loadData();
     } catch (error) {
       console.error("Failed to toggle app icon visibility:", error);
+    }
+  };
+
+  const toggleAlwaysOnTop = async (isEnabled: boolean) => {
+    const newState = updateAlwaysOnTop(isEnabled);
+    setCustomizable(newState);
+    try {
+      await invoke("set_always_on_top", { enabled: isEnabled });
+      loadData();
+    } catch (error) {
+      console.error("Failed to toggle always on top:", error);
     }
   };
 
@@ -314,8 +330,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     onSetSelectedSttProvider,
     screenshotConfiguration,
     setScreenshotConfiguration,
-    appIconState,
+    customizable,
     toggleAppIconVisibility,
+    toggleAlwaysOnTop,
     loadData,
   };
 

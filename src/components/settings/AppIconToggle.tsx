@@ -6,7 +6,7 @@ interface AppIconToggleProps {
 }
 
 export const AppIconToggle = ({ className }: AppIconToggleProps) => {
-  const { appIconState, toggleAppIconVisibility } = useApp();
+  const { customizable, toggleAppIconVisibility } = useApp();
 
   const handleSwitchChange = async (checked: boolean) => {
     await toggleAppIconVisibility(checked);
@@ -23,19 +23,19 @@ export const AppIconToggle = ({ className }: AppIconToggleProps) => {
         <div className="flex items-center space-x-3">
           <div>
             <Label className="text-sm font-medium">
-              {appIconState.isVisible
+              {!customizable.appIcon.isVisible
                 ? "Show Icon in Dock/Taskbar"
                 : "Hide Icon from Dock/Taskbar"}
             </Label>
             <p className="text-xs text-muted-foreground mt-1">
-              {appIconState.isVisible
-                ? "App icon stays visible when window is hidden (default)"
-                : "App icon disappears completely for maximum stealth"}
+              {`Toggle to make App Icon ${
+                !customizable.appIcon.isVisible ? "Visible" : "Hidden"
+              }`}
             </p>
           </div>
         </div>
         <Switch
-          checked={appIconState.isVisible}
+          checked={customizable.appIcon.isVisible}
           onCheckedChange={handleSwitchChange}
           aria-label="Toggle app icon visibility"
         />
