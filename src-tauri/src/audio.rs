@@ -94,10 +94,14 @@ fn samples_to_wav_b64(sample_rate: u32, mono_f32: &[f32]) -> Result<String, Stri
 fn select_system_audio_device() -> Result<Device, String> {
     let host = cpal::default_host();
     let devices = host.input_devices().map_err(|e| format!("enumerate devices failed: {}", e))?;
-    // Score devices heuristically by name
+    
+    // Collect device names for error reporting
+    let mut device_list = Vec::new();
     let mut scored: Vec<(i32, Device, String)> = Vec::new();
+    
     for dev in devices {
         let name = dev.name().unwrap_or_else(|_| "Unknown".to_string());
+        device_list.push(name.clone());
         let lower = name.to_lowercase();
         let score;
         // Windows specific
@@ -131,12 +135,26 @@ fn select_system_audio_device() -> Result<Device, String> {
         }
         scored.push((score, dev, name));
     }
+    
     scored.sort_by(|a, b| b.0.cmp(&a.0));
-    if let Some((_score, dev, _name)) = scored.into_iter().next() {
-        return Ok(dev);
+    
+    // Check if we found any high-scoring virtual audio devices
+    if let Some((score, dev, name)) = scored.iter().next() {
+        if *score >= 70 {
+            eprintln!("Selected virtual audio device: {}", name);
+            return Ok(dev.clone());
+        }
     }
-    // fallback: default input device
-    host.default_input_device().ok_or_else(|| "no input device".to_string())
+    
+    // If no high-scoring devices, try fallback to default input device
+    if let Some(default_device) = host.default_input_device() {
+        let default_name = default_device.name().unwrap_or_else(|_| "Default Input".to_string());
+        eprintln!("No virtual audio device found, using default: {}", default_name);
+        return Ok(default_device);
+    }
+    
+    // Return simple error message - let frontend handle detailed instructions
+    Err("SETUP_REQUIRED".to_string())
 }
 
 // Helper functions for audio testing

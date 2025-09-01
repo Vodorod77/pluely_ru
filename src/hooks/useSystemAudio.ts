@@ -396,9 +396,15 @@ export function useSystemAudio() {
           ? err.message
           : "Failed to start system audio capture";
 
-      // All errors are setup-related since we only support system audio
-      setSetupRequired(true);
-      setError(errorMessage);
+      // Check if this is a setup requirement error
+      if (errorMessage.includes("SETUP_REQUIRED")) {
+        setSetupRequired(true);
+        setError(""); // Clear error since we'll show setup instructions instead
+      } else {
+        // Other errors (permissions, device issues, etc.)
+        setSetupRequired(false);
+        setError(errorMessage);
+      }
     }
   }, []);
 
@@ -549,11 +555,22 @@ export function useSystemAudio() {
 
   useEffect(() => {
     const shouldOpenPopover =
-      capturing || setupRequired || isAIProcessing || !!lastAIResponse;
+      capturing ||
+      setupRequired ||
+      isAIProcessing ||
+      !!lastAIResponse ||
+      !!error;
     setIsPopoverOpen(shouldOpenPopover);
-    // Resize window when capturing state changes or setup is required
+    // Resize window when capturing state changes, setup is required, or there's an error
     resizeWindow(shouldOpenPopover);
-  }, [capturing, setupRequired, isAIProcessing, lastAIResponse, resizeWindow]);
+  }, [
+    capturing,
+    setupRequired,
+    isAIProcessing,
+    lastAIResponse,
+    error,
+    resizeWindow,
+  ]);
 
   // Cleanup on unmount
   useEffect(() => {

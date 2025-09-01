@@ -91,7 +91,7 @@ export const SystemAudio = ({
         </Button>
       </PopoverTrigger>
 
-      {capturing || setupRequired ? (
+      {capturing || setupRequired || error ? (
         <PopoverContent
           className="w-screen p-0 border overflow-hidden border-input/50"
           side="top"
@@ -109,6 +109,25 @@ export const SystemAudio = ({
               {/* Header - Hide when there are messages to save space */}
               {!lastTranscription && !lastAIResponse && (
                 <Header setupRequired={setupRequired} />
+              )}
+
+              {/* Error Display - Show simple error messages for non-setup issues */}
+              {error && !setupRequired && (
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <AlertCircleIcon className="w-5 h-5 text-red-500 mt-1 flex-shrink-0" />
+                    <div className="space-y-2 w-full">
+                      <div>
+                        <h3 className="font-semibold text-xs mb-1 text-red-700">
+                          Audio Capture Error
+                        </h3>
+                      </div>
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                        <p className="text-xs text-red-800">{error}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
 
               {setupRequired ? (
