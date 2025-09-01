@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
   CUSTOM_SPEECH_PROVIDERS: "curl_custom_speech_providers",
   SELECTED_AI_PROVIDER: "curl_selected_ai_provider",
   SELECTED_STT_PROVIDER: "curl_selected_stt_provider",
+  SYSTEM_AUDIO_CONTEXT: "system_audio_context",
 } as const;
 
 // Max number of files that can be attached to a message

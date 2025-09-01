@@ -16,6 +16,7 @@ import { Header } from "./Header";
 import { SetupInstructions } from "./SetupInstructions";
 import { OperationSection } from "./OperationSection";
 import { Settings } from "./Settings";
+import { Context } from "./Context";
 import { useSystemAudioType } from "@/hooks";
 
 export const SystemAudio = ({
@@ -39,6 +40,10 @@ export const SystemAudio = ({
   handleTestAudioLevels,
   isPopoverOpen,
   setIsPopoverOpen,
+  useSystemPrompt,
+  setUseSystemPrompt,
+  contextContent,
+  setContextContent,
 }: useSystemAudioType) => {
   const handleToggleCapture = async () => {
     if (capturing) {
@@ -92,12 +97,12 @@ export const SystemAudio = ({
 
       {capturing || setupRequired || error ? (
         <PopoverContent
-          className="w-screen p-0 border overflow-hidden border-input/50"
+          className="w-screen h-[calc(100vh-7rem)] p-0 border border-input/50 overflow-hidden"
           side="top"
           align="center"
           sideOffset={8}
         >
-          <ScrollArea className="h-[calc(100vh-7.2rem)]">
+          <ScrollArea className="h-full">
             <div
               className={`p-6 ${
                 !lastTranscription && !lastAIResponse
@@ -145,6 +150,13 @@ export const SystemAudio = ({
                     lastTranscription={lastTranscription}
                     lastAIResponse={lastAIResponse}
                     isAIProcessing={isAIProcessing}
+                  />
+                  {/* Context Settings */}
+                  <Context
+                    useSystemPrompt={useSystemPrompt}
+                    setUseSystemPrompt={setUseSystemPrompt}
+                    contextContent={contextContent}
+                    setContextContent={setContextContent}
                   />
                   {/* Audio Settings */}
                   <Settings

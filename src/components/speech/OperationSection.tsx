@@ -21,7 +21,7 @@ export const OperationSection = ({
             <BotIcon className="w-3 h-3" />
             <h3 className="font-semibold text-xs">{`AI Assistant - answering to "${lastTranscription}"`}</h3>
           </div>
-          <Card className="p-3 ">
+          <Card className="p-3 bg-transparent">
             {isAIProcessing && !lastAIResponse ? (
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full animate-pulse" />

@@ -5,7 +5,7 @@ import { listen } from "@tauri-apps/api/event";
 import { useApp } from "@/contexts";
 import { fetchSTT, fetchAIResponse } from "@/lib/functions";
 import { safeLocalStorage } from "@/lib";
-import { STORAGE_KEYS } from "@/config";
+import { DEFAULT_SYSTEM_PROMPT, STORAGE_KEYS } from "@/config";
 
 // Audio settings type
 export interface AudioSettings {
@@ -67,6 +67,10 @@ export function useSystemAudio() {
     []
   );
 
+  // Context management states
+  const [useSystemPrompt, setUseSystemPrompt] = useState<boolean>(true);
+  const [contextContent, setContextContent] = useState<string>("");
+
   const {
     selectedSttProvider,
     allSttProviders,
@@ -75,6 +79,22 @@ export function useSystemAudio() {
     systemPrompt,
   } = useApp();
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Load context settings from localStorage on mount
+  useEffect(() => {
+    const savedContext = safeLocalStorage.getItem(
+      STORAGE_KEYS.SYSTEM_AUDIO_CONTEXT
+    );
+    if (savedContext) {
+      try {
+        const parsed = JSON.parse(savedContext);
+        setUseSystemPrompt(parsed.useSystemPrompt ?? true);
+        setContextContent(parsed.contextContent ?? "");
+      } catch (error) {
+        console.error("Failed to load system audio context:", error);
+      }
+    }
+  }, []);
 
   // Check capture status on mount
   useEffect(() => {
@@ -301,6 +321,41 @@ export function useSystemAudio() {
     ]
   );
 
+  // Context management functions
+  const saveContextSettings = useCallback(
+    (usePrompt: boolean, content: string) => {
+      try {
+        const contextSettings = {
+          useSystemPrompt: usePrompt,
+          contextContent: content,
+        };
+        safeLocalStorage.setItem(
+          STORAGE_KEYS.SYSTEM_AUDIO_CONTEXT,
+          JSON.stringify(contextSettings)
+        );
+      } catch (error) {
+        console.error("Failed to save context settings:", error);
+      }
+    },
+    []
+  );
+
+  const updateUseSystemPrompt = useCallback(
+    (value: boolean) => {
+      setUseSystemPrompt(value);
+      saveContextSettings(value, contextContent);
+    },
+    [contextContent, saveContextSettings]
+  );
+
+  const updateContextContent = useCallback(
+    (content: string) => {
+      setContextContent(content);
+      saveContextSettings(useSystemPrompt, content);
+    },
+    [useSystemPrompt, saveContextSettings]
+  );
+
   // AI Processing function
   const processWithAI = useCallback(
     async (transcription: string) => {
@@ -340,13 +395,16 @@ export function useSystemAudio() {
 
         let fullResponse = "";
 
+        // Determine which prompt to use based on user selection
+        const effectiveSystemPrompt = useSystemPrompt
+          ? systemPrompt || DEFAULT_SYSTEM_PROMPT
+          : contextContent || DEFAULT_SYSTEM_PROMPT;
+
         // Use the fetchAIResponse function
         for await (const chunk of fetchAIResponse({
           provider,
           selectedProvider: selectedAIProvider,
-          systemPrompt:
-            systemPrompt ||
-            "You are a helpful AI assistant responding to voice queries. Provide concise, helpful responses.",
+          systemPrompt: effectiveSystemPrompt,
           history: messageHistory,
           userMessage: transcription,
           imagesBase64: [],
@@ -373,6 +431,8 @@ export function useSystemAudio() {
       systemPrompt,
       conversationHistory,
       saveCurrentConversation,
+      useSystemPrompt,
+      contextContent,
     ]
   );
 
@@ -617,5 +677,10 @@ export function useSystemAudio() {
     conversationHistory,
     // AI processing
     processWithAI,
+    // Context management
+    useSystemPrompt,
+    setUseSystemPrompt: updateUseSystemPrompt,
+    contextContent,
+    setContextContent: updateContextContent,
   };
 }
