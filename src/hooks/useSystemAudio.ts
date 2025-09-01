@@ -511,7 +511,6 @@ export function useSystemAudio() {
   const testAudioLevels = useCallback(async () => {
     try {
       const testResults = await invoke<string>("test_audio_levels");
-
       return testResults;
     } catch (err) {
       setError(
@@ -587,27 +586,6 @@ export function useSystemAudio() {
     };
   }, []);
 
-  const startDefaultCapture = useCallback(async () => {
-    try {
-      setError("");
-      setSetupRequired(false);
-
-      // Stop any existing capture first
-      try {
-        await invoke<string>("stop_system_audio_capture");
-      } catch (stopErr) {
-        // Ignore errors if nothing was running
-      }
-
-      await invoke<string>("start_default_audio_capture");
-      setCapturing(true);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to start audio capture"
-      );
-    }
-  }, []);
-
   return {
     capturing,
     isProcessing,
@@ -617,7 +595,6 @@ export function useSystemAudio() {
     error,
     setupRequired,
     startCapture,
-    startDefaultCapture,
     stopCapture,
     getAudioDevices,
     // Settings

@@ -27,7 +27,6 @@ export const SystemAudio = ({
   error,
   setupRequired,
   startCapture,
-  startDefaultCapture,
   stopCapture,
   settings,
   showSettings,
@@ -135,7 +134,6 @@ export const SystemAudio = ({
                 <SetupInstructions
                   handleDebugDevices={handleDebugDevices}
                   handleTestAudioLevels={handleTestAudioLevels}
-                  startDefaultCapture={startDefaultCapture}
                   startCapture={startCapture}
                   debugInfo={debugInfo}
                   testResults={testResults}

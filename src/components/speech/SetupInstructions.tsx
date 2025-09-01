@@ -5,7 +5,6 @@ import { getPlatformInstructions } from "@/lib";
 type Props = {
   handleDebugDevices: () => void;
   handleTestAudioLevels: () => void;
-  startDefaultCapture: () => void;
   startCapture: () => void;
   debugInfo: string;
   testResults: string;
@@ -14,7 +13,6 @@ type Props = {
 export const SetupInstructions = ({
   handleDebugDevices,
   handleTestAudioLevels,
-  startDefaultCapture,
   startCapture,
   debugInfo,
   testResults,
@@ -136,7 +134,7 @@ export const SetupInstructions = ({
             Test your setup or try different capture methods
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <Button size="sm" variant="outline" asChild className="h-10">
             <a
               href={platformInstructions.quickActions.setupGuideUrl}
@@ -163,20 +161,14 @@ export const SetupInstructions = ({
             🎵 Test Audio
           </Button>
           <Button
-            size="sm"
-            onClick={startDefaultCapture}
             variant="outline"
-            className="h-10 flex items-center gap-2"
+            size="sm"
+            onClick={startCapture}
+            className="w-full h-10 flex items-center gap-2"
           >
-            🎤 Use Microphone
+            � Try System Audio Anyway
           </Button>
         </div>
-        <Button
-          onClick={startCapture}
-          className="w-full h-10 flex items-center gap-2"
-        >
-          � Try System Audio Anyway
-        </Button>
       </div>
 
       {/* Debug Results */}

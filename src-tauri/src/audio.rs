@@ -2,7 +2,7 @@
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD as B64;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use cpal::{Device, SampleFormat, Stream, StreamConfig, SupportedStreamConfig};
+use cpal::{Device, SampleFormat, StreamConfig, SupportedStreamConfig};
 use hound::{WavSpec, WavWriter};
 use once_cell::sync::Lazy;
 use std::collections::VecDeque;
@@ -107,9 +107,10 @@ fn select_system_audio_device() -> Result<Device, String> {
         // Windows specific
         #[cfg(target_os = "windows")]
         {
-            if lower.contains("stereo mix") || lower.contains("what u hear") { score = 100; }
+            if lower.contains("stereo mix") || lower.contains("what u hear") || lower.contains("what you hear") { score = 100; }
             else if lower.contains("cable") { score = 90; }
-            else if lower.contains("voicemeeter") { score = 85; }
+            else if lower.contains("voicemeeter") || lower.contains("voicemeter") { score = 85; }
+            else if lower.contains("vb-audio") { score = 85; }
             else if lower.contains("virtual") || lower.contains("loopback") { score = 70; }
             else { score = 10; }
         }
@@ -119,12 +120,17 @@ fn select_system_audio_device() -> Result<Device, String> {
             if lower.contains("blackhole") { score = 100; }
             else if lower.contains("loopback") { score = 95; }
             else if lower.contains("soundflower") { score = 90; }
+            else if lower.contains("multi-output") { score = 85; }
+            else if lower.contains("aggregate") { score = 80; }
+            else if (lower.contains("speakers") || lower.contains("headphones")) && lower.contains("blackhole") { score = 95; }
             else { score = 10; }
         }
         // Linux specific
         #[cfg(target_os = "linux")]
         {
             if lower.contains("monitor") { score = 100; }
+            else if lower.contains("alsa_output") && lower.contains("monitor") { score = 100; }
+            else if lower.contains("pulse") && lower.contains("monitor") { score = 95; }
             else if lower.contains("loopback") { score = 80; }
             else { score = 10; }
         }
@@ -162,92 +168,7 @@ fn get_system_audio_device() -> Result<Device, String> {
     select_system_audio_device()
 }
 
-// Build a simple stream that emits audio levels
-fn build_level_probe_stream(
-    device: &Device,
-    config: &SupportedStreamConfig,
-    window: Window,
-) -> Result<Stream, String> {
-    let stream_config: StreamConfig = config.clone().into();
-    let err_fn = |err| eprintln!("level probe stream error: {}", err);
 
-    // Build a simple stream that emits audio levels
-    match config.sample_format() {
-        SampleFormat::F32 => {
-            device.build_input_stream(
-                &stream_config,
-                // move |data: &[f32], _| {
-                move |data: &[f32], _| {
-                    let mut sumsq = 0.0f32;
-                    let mut peak = 0.0f32;
-                    for &v in data {
-                        let a = v.abs();
-                        peak = peak.max(a);
-                        sumsq += v * v;
-                    }
-                    let rms = (sumsq / data.len() as f32).sqrt();
-
-                    // Emit audio levels to frontend
-                    if let Err(e) = window.emit("audio-level", (rms, peak)) {
-                        eprintln!("emit audio-level failed: {}", e);
-                    }
-                },
-                err_fn,
-                None,
-            )
-        }
-        SampleFormat::I16 => {
-            device.build_input_stream(
-                &stream_config,
-                move |data: &[i16], _| {
-                    // convert to f32 normalized
-                    let mut sumsq = 0.0f32;
-                    let mut peak = 0.0f32;
-                    for &v in data {
-                        let f32_val = v as f32 / i16::MAX as f32;
-                        let a = f32_val.abs();
-                        peak = peak.max(a);
-                        sumsq += f32_val * f32_val;
-                    }
-                    let rms = (sumsq / data.len() as f32).sqrt();
-
-                    if let Err(e) = window.emit("audio-level", (rms, peak)) {
-                        eprintln!("emit audio-level failed: {}", e);
-                    }
-                },
-                err_fn,
-                None,
-            )
-        }
-        SampleFormat::U16 => {
-            device.build_input_stream(
-                &stream_config,
-                move |data: &[u16], _| {
-                    let mut sumsq = 0.0f32;
-                    let mut peak = 0.0f32;
-                    for &v in data {
-                        // convert to f32 normalized
-                        let f32_val = (v as f32 - u16::MAX as f32 / 2.0) / (u16::MAX as f32 / 2.0);
-                        let a = f32_val.abs();
-                        peak = peak.max(a);
-                        sumsq += f32_val * f32_val;
-                    }
-                    let rms = (sumsq / data.len() as f32).sqrt();
-
-                    if let Err(e) = window.emit("audio-level", (rms, peak)) {
-                        eprintln!("emit audio-level failed: {}", e);
-                    }
-                },
-                err_fn,
-                None,
-                            )
-            }
-            _ => {
-                return Err(format!("Unsupported sample format for level probe: {:?}", config.sample_format()));
-            }
-        }
-        .map_err(|e| format!("build level probe stream failed: {}", e))
-}
 
 // The capture thread function
 // Builds the stream (inside the thread), keeps it alive, processes callbacks, waits for stop signal,
@@ -703,27 +624,125 @@ pub async fn debug_audio_devices() -> Result<String, String> {
     Ok(out)
 }
 
-// Test audio levels
 #[command]
-pub async fn test_audio_levels(seconds: u64, window: Window) -> Result<String, String> {
+pub async fn test_audio_levels() -> Result<String, String> {
     let device = get_system_audio_device()?;
-    let supported = device
-        .default_input_config()
-        .map_err(|e| format!("default_input_config: {e}"))?;
+    let config = device.default_input_config()
+        .map_err(|e| format!("Failed to get default input config: {}", e))?;
 
-    let sr = supported.sample_rate().0;
-    let ch = supported.channels();
+    let sample_rate = config.sample_rate().0;
+    let channels = config.channels();
+    let sample_format = config.sample_format();
 
-    let stream = build_level_probe_stream(&device, &supported, window)?;
-    stream.play().map_err(|e| format!("stream.play: {e}"))?;
+    // Create a temporary stream to test audio levels
+    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+    
+    let stream = match sample_format {
+        SampleFormat::F32 => {
+            device.build_input_stream(
+                &config.into(),
+                move |data: &[f32], _: &cpal::InputCallbackInfo| {
+                    // Calculate RMS for this chunk
+                    let sum_squares: f32 = data.iter().map(|&x| x * x).sum();
+                    let rms = (sum_squares / data.len() as f32).sqrt();
+                    let peak = data.iter().map(|&x| x.abs()).fold(0.0f32, f32::max);
+                    
+                    if let Err(_) = tx.send((rms, peak)) {
+                        // Channel closed, stop sending
+                    }
+                },
+                |_err| {},
+                None,
+            )
+        }
+        SampleFormat::I16 => {
+            device.build_input_stream(
+                &config.into(),
+                move |data: &[i16], _: &cpal::InputCallbackInfo| {
+                    // Convert to f32 and calculate RMS
+                    let f32_data: Vec<f32> = data.iter().map(|&x| x as f32 / 32768.0).collect();
+                    let sum_squares: f32 = f32_data.iter().map(|&x| x * x).sum();
+                    let rms = (sum_squares / f32_data.len() as f32).sqrt();
+                    let peak = f32_data.iter().map(|&x| x.abs()).fold(0.0f32, f32::max);
+                    
+                    if let Err(_) = tx.send((rms, peak)) {
+                        // Channel closed, stop sending
+                    }
+                },
+                |_err| {},
+                None,
+            )
+        }
+        SampleFormat::U16 => {
+            device.build_input_stream(
+                &config.into(),
+                move |data: &[u16], _: &cpal::InputCallbackInfo| {
+                    // Convert to f32 and calculate RMS
+                    let f32_data: Vec<f32> = data.iter().map(|&x| (x as f32 - 32768.0) / 32768.0).collect();
+                    let sum_squares: f32 = f32_data.iter().map(|&x| x * x).sum();
+                    let rms = (sum_squares / f32_data.len() as f32).sqrt();
+                    let peak = f32_data.iter().map(|&x| x.abs()).fold(0.0f32, f32::max);
+                    
+                    if let Err(_) = tx.send((rms, peak)) {
+                        // Channel closed, stop sending
+                    }
+                },
+                |_err| {},
+                None,
+            )
+        }
+        _ => {
+            return Err(format!("Unsupported sample format: {:?}", sample_format));
+        }
+    }.map_err(|e| format!("Failed to build test stream: {}", e))?;
 
-    // Sleep without holding any locks; then drop stream
-    std::thread::sleep(std::time::Duration::from_secs(seconds));
-    drop(stream);
-
+    // Start the stream and collect samples for 3 seconds
+    stream.play().map_err(|e| format!("Failed to start test stream: {}", e))?;
+    
+    let mut max_rms = 0.0f32;
+    let mut max_peak = 0.0f32;
+    let mut sample_count = 0;
+    let mut total_rms = 0.0f32;
+    
+    // Collect samples for 3 seconds
+    let start_time = std::time::Instant::now();
+    while start_time.elapsed().as_secs() < 3 {
+        if let Ok((rms, peak)) = rx.try_recv() {
+            max_rms = max_rms.max(rms);
+            max_peak = max_peak.max(peak);
+            total_rms += rms;
+            sample_count += 1;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(10));
+    }
+    
+    drop(stream); // Stop the stream
+    
+    let avg_rms = if sample_count > 0 { total_rms / sample_count as f32 } else { 0.0 };
+    
     Ok(format!(
-        "Level probe complete — device @ {} Hz, {} ch, duration {}s",
-        sr, ch, seconds
+        "Audio Level Test Results:\n\
+        Device: {}\n\
+        Sample Rate: {}Hz, Channels: {}\n\
+        Test Duration: 3 seconds\n\
+        Max RMS: {:.6}\n\
+        Max Peak: {:.6}\n\
+        Avg RMS: {:.6}\n\
+        Samples: {}\n\n\
+        Current VAD Threshold: 0.001\n\
+        Audio Detected: {}\n\n\
+        Recommendations:\n\
+        - If Max RMS < 0.001: Increase system volume or check BlackHole setup\n\
+        - If Max RMS > 0.01: Audio levels look good\n\
+        - If no audio: Check if applications are outputting to BlackHole", 
+        device.name().unwrap_or_else(|_| "Unknown".to_string()),
+        sample_rate, 
+        channels,
+        max_rms, 
+        max_peak, 
+        avg_rms,
+        sample_count,
+        if max_rms > 0.001 { "YES" } else { "NO" }
     ))
 }
 
