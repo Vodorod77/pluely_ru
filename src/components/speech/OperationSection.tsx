@@ -1,3 +1,4 @@
+import { Markdown } from "../Markdown";
 import { Card } from "../ui";
 import { BotIcon } from "lucide-react";
 
@@ -25,11 +26,11 @@ export const OperationSection = ({
             {isAIProcessing && !lastAIResponse ? (
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full animate-pulse" />
-                <p className="text-xs italic">Getting information...</p>
+                <p className="text-xs italic">Generating response...</p>
               </div>
             ) : (
               <p className="text-xs leading-relaxed whitespace-pre-wrap">
-                {lastAIResponse}
+                {lastAIResponse ? <Markdown>{lastAIResponse}</Markdown> : null}
                 {isAIProcessing && (
                   <span className="inline-block w-2 h-4 animate-pulse ml-1" />
                 )}

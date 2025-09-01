@@ -18,11 +18,17 @@ const DEFAULT_SCREENSHOT_SHORTCUT: &str = "cmd+shift+s";
 #[cfg(not(target_os = "macos"))]
 const DEFAULT_SCREENSHOT_SHORTCUT: &str = "ctrl+shift+s";
 
+#[cfg(target_os = "macos")]
+const DEFAULT_SYSTEM_AUDIO_SHORTCUT: &str = "cmd+shift+m";
+#[cfg(not(target_os = "macos"))]
+const DEFAULT_SYSTEM_AUDIO_SHORTCUT: &str = "ctrl+shift+m";
+
 /// Initialize global shortcuts for the application
 pub fn setup_global_shortcuts<R: Runtime>(app: &AppHandle<R>) -> Result<(), Box<dyn std::error::Error>> {
     let toggle_shortcut = DEFAULT_TOGGLE_SHORTCUT.parse::<Shortcut>()?;
     let audio_shortcut = DEFAULT_AUDIO_SHORTCUT.parse::<Shortcut>()?;
     let screenshot_shortcut = DEFAULT_SCREENSHOT_SHORTCUT.parse::<Shortcut>()?;
+    let system_audio_shortcut = DEFAULT_SYSTEM_AUDIO_SHORTCUT.parse::<Shortcut>()?;
 
      
     // Register global shortcuts
@@ -48,6 +54,13 @@ pub fn setup_global_shortcuts<R: Runtime>(app: &AppHandle<R>) -> Result<(), Box<
         }
     }).map_err(|e| format!("Failed to register screenshot shortcut: {}", e))?;
 
+    let app_handle = app.clone();
+    app.global_shortcut().on_shortcut(system_audio_shortcut, move |_app, _shortcut, event| {
+        if event.state() == ShortcutState::Pressed {
+            handle_system_audio_shortcut(&app_handle);
+        }
+    }).map_err(|e| format!("Failed to register system audio shortcut: {}", e))?;
+
     // Register all shortcuts
     app.global_shortcut().register(toggle_shortcut)
         .map_err(|e| format!("Failed to register toggle shortcut: {}", e))?;
@@ -55,6 +68,8 @@ pub fn setup_global_shortcuts<R: Runtime>(app: &AppHandle<R>) -> Result<(), Box<
         .map_err(|e| format!("Failed to register audio shortcut: {}", e))?;
     app.global_shortcut().register(screenshot_shortcut)
         .map_err(|e| format!("Failed to register screenshot shortcut: {}", e))?;
+    app.global_shortcut().register(system_audio_shortcut)
+        .map_err(|e| format!("Failed to register system audio shortcut: {}", e))?;
     
     Ok(())
 }
@@ -119,13 +134,35 @@ fn handle_screenshot_shortcut<R: Runtime>(app: &AppHandle<R>) {
     }
 }
 
+/// Handle system audio shortcut
+fn handle_system_audio_shortcut<R: Runtime>(app: &AppHandle<R>) {
+    if let Some(window) = app.get_webview_window("main") {
+        // Ensure window is visible
+        if let Ok(false) = window.is_visible() {
+            if let Err(e) = window.show() {
+                eprintln!("Failed to show window: {}", e);
+                return;
+            }
+            if let Err(e) = window.set_focus() {
+                eprintln!("Failed to focus window: {}", e);
+            }
+        }
+        
+        // Emit event to toggle system audio capture - frontend will determine current state
+        if let Err(e) = window.emit("toggle-system-audio", json!({})) {
+            eprintln!("Failed to emit system audio event: {}", e);
+        }
+    }
+}
+
 /// Tauri command to get current shortcuts
 #[tauri::command]
 pub fn get_shortcuts() -> serde_json::Value {
     json!({
         "toggle": DEFAULT_TOGGLE_SHORTCUT,
         "audio": DEFAULT_AUDIO_SHORTCUT,
-        "screenshot": DEFAULT_SCREENSHOT_SHORTCUT
+        "screenshot": DEFAULT_SCREENSHOT_SHORTCUT,
+        "systemAudio": DEFAULT_SYSTEM_AUDIO_SHORTCUT
     })
 }
 
@@ -136,6 +173,7 @@ pub fn check_shortcuts_registered<R: Runtime>(app: AppHandle<R>) -> Result<bool,
         DEFAULT_TOGGLE_SHORTCUT,
         DEFAULT_AUDIO_SHORTCUT,
         DEFAULT_SCREENSHOT_SHORTCUT,
+        DEFAULT_SYSTEM_AUDIO_SHORTCUT,
     ];
 
     for shortcut_str in shortcuts {

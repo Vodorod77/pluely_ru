@@ -10,7 +10,7 @@ export const Header = ({ setupRequired }: Props) => {
         <p className="text-xs text-muted-foreground mt-1">
           {setupRequired
             ? "Setup virtual audio device to capture system audio"
-            : "Real-time AI assistant using system audio, until and unless sound is detected from your audio speakers no api calls will be made"}
+            : "Real-time AI assistant using system audio, until and unless sound is detected from your audio speakers no api calls will be made (expect responses in ~2-4 seconds)"}
         </p>
       </div>
     </div>
