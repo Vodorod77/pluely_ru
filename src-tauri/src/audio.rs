@@ -15,9 +15,9 @@ use tokio;
 // Pluely: Default values for audio settings
 const DEFAULT_VAD_SENSITIVITY_RMS: f32 = 0.004; // sensitivity of the VAD algorithm
 const DEFAULT_SPEECH_PEAK_THRESHOLD: f32 = 0.01;  // sensitivity of the VAD algorithm
-const DEFAULT_SILENCE_CHUNKS: usize = 150;        // silence chunks threshold
-const DEFAULT_MIN_SPEECH_CHUNKS: usize = 20;      // min speech duration
-const DEFAULT_PRE_SPEECH_CHUNKS: usize = 20;      // pre-speech buffer size
+const DEFAULT_SILENCE_CHUNKS: usize = 47;         // silence chunks threshold (~1 second at 48kHz, ~1.08s at 44.1kHz)
+const DEFAULT_MIN_SPEECH_CHUNKS: usize = 15;      // min speech duration (~0.32s at 48kHz, ~0.35s at 44.1kHz)
+const DEFAULT_PRE_SPEECH_CHUNKS: usize = 15;      // pre-speech buffer size (~0.32s at 48kHz, ~0.35s at 44.1kHz)
 const ANALYSIS_CHUNK: usize = 1024;               // analysis window size for the VAD algorithm (1024 samples)
 
 // Pluely: Global, consolidated capture state
@@ -729,10 +729,10 @@ pub async fn test_audio_levels() -> Result<String, String> {
         Max Peak: {:.6}\n\
         Avg RMS: {:.6}\n\
         Samples: {}\n\n\
-        Current VAD Threshold: 0.001\n\
+        Current VAD Threshold: {:.4}\n\
         Audio Detected: {}\n\n\
         Recommendations:\n\
-        - If Max RMS < 0.001: Increase system volume or check BlackHole setup\n\
+        - If Max RMS < {:.4}: Increase system volume or check BlackHole setup\n\
         - If Max RMS > 0.01: Audio levels look good\n\
         - If no audio: Check if applications are outputting to BlackHole", 
         device.name().unwrap_or_else(|_| "Unknown".to_string()),
@@ -742,7 +742,9 @@ pub async fn test_audio_levels() -> Result<String, String> {
         max_peak, 
         avg_rms,
         sample_count,
-        if max_rms > 0.001 { "YES" } else { "NO" }
+        DEFAULT_VAD_SENSITIVITY_RMS,
+        if max_rms > DEFAULT_VAD_SENSITIVITY_RMS { "YES" } else { "NO" },
+        DEFAULT_VAD_SENSITIVITY_RMS
     ))
 }
 
@@ -815,8 +817,32 @@ pub async fn set_pre_speech_buffer_size(chunks: usize) -> Result<String, String>
 #[command]
 pub async fn get_vad_status() -> Result<String, String> {
     let st = STATE.lock().unwrap();
+    
+    // Calculate approximate timing based on typical sample rates
+    let chunk_duration_44k = ANALYSIS_CHUNK as f32 / 44100.0; // ~0.023 seconds
+    let chunk_duration_48k = ANALYSIS_CHUNK as f32 / 48000.0; // ~0.021 seconds
+    
+    let silence_time_44k = st.settings.silence_chunks_to_end as f32 * chunk_duration_44k;
+    let silence_time_48k = st.settings.silence_chunks_to_end as f32 * chunk_duration_48k;
+    
+    let min_speech_time_44k = st.settings.min_speech_chunks as f32 * chunk_duration_44k;
+    let min_speech_time_48k = st.settings.min_speech_chunks as f32 * chunk_duration_48k;
+    
     Ok(format!(
-        "Capturing: {} | VAD RMS: {:.4} | Peak Thr: {:.4}",
-        st.is_capturing, st.settings.vad_sensitivity_rms, st.settings.speech_peak_threshold
+        "VAD Status:\n\
+        Capturing: {}\n\
+        VAD RMS Sensitivity: {:.4}\n\
+        Speech Peak Threshold: {:.4}\n\
+        Silence Chunks to End: {} (~{:.2}s @ 44.1kHz, ~{:.2}s @ 48kHz)\n\
+        Min Speech Chunks: {} (~{:.2}s @ 44.1kHz, ~{:.2}s @ 48kHz)\n\
+        Pre-speech Chunks: {}\n\
+        Analysis Chunk Size: {} samples",
+        st.is_capturing,
+        st.settings.vad_sensitivity_rms,
+        st.settings.speech_peak_threshold,
+        st.settings.silence_chunks_to_end, silence_time_44k, silence_time_48k,
+        st.settings.min_speech_chunks, min_speech_time_44k, min_speech_time_48k,
+        st.settings.pre_speech_chunks,
+        ANALYSIS_CHUNK
     ))
 }

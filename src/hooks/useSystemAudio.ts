@@ -37,9 +37,9 @@ interface ChatConversation {
 const DEFAULT_SETTINGS: AudioSettings = {
   vadSensitivity: 0.004,
   speechThreshold: 0.01,
-  silenceThreshold: 150,
-  minSpeechDuration: 20,
-  preSpeechBufferSize: 20,
+  silenceThreshold: 47,
+  minSpeechDuration: 15,
+  preSpeechBufferSize: 15,
 };
 
 export type useSystemAudioType = ReturnType<typeof useSystemAudio>;
