@@ -43,7 +43,9 @@ jobs:
           sudo apt-get install -y \
             libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev \
             libappindicator3-dev librsvg2-dev patchelf \
-            libgtk-3-dev pkg-config ca-certificates
+            libgtk-3-dev pkg-config ca-certificates \
+            libasound2-dev fuse libfuse2 wget file \
+            libglib2.0-dev libgdk-pixbuf2.0-dev libcairo-gobject2
           sudo update-ca-certificates -f
 
       - name: Create environment file
@@ -64,5 +66,5 @@ jobs:
           releaseBody: "Download binaries for your OS. macOS users: If blocked, go to System Settings > Privacy & Security > Security section, find 'pluely was blocked' message, click 'Allow Anyway', then reopen the app."
           releaseDraft: true
           prerelease: false
-          args: ${{ matrix.args }}
           includeUpdaterJson: true
+          args: ${{ matrix.args }}
