@@ -5,6 +5,8 @@ import {
   Trash2,
   Calendar,
   Loader2,
+  Download,
+  Check,
 } from "lucide-react";
 import {
   Popover,
@@ -33,6 +35,9 @@ export const ChatHistory = ({
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
   >(null);
+  const [downloadedConversations, setDownloadedConversations] = useState<
+    Set<string>
+  >(new Set());
   const { resizeWindow } = useWindowResize();
 
   // Load conversations when component mounts or popover opens
@@ -57,6 +62,59 @@ export const ChatHistory = ({
         detail: conversationId,
       })
     );
+  };
+
+  const handleDownloadConversation = (
+    conversation: ChatConversation,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+
+    setDownloadedConversations((prev) => new Set(prev).add(conversation.id));
+
+    setTimeout(() => {
+      setDownloadedConversations((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(conversation.id);
+        return newSet;
+      });
+    }, 2000);
+
+    // Convert conversation to markdown format
+    let markdown = `# ${conversation.title}\n\n`;
+    markdown += `**Created:** ${new Date(
+      conversation.createdAt
+    ).toLocaleString()}\n`;
+    markdown += `**Updated:** ${new Date(
+      conversation.updatedAt
+    ).toLocaleString()}\n`;
+    markdown += `**Messages:** ${conversation.messages.length}\n\n---\n\n`;
+
+    conversation.messages.forEach((message, index) => {
+      const roleLabel = message.role.toUpperCase();
+      markdown += `## ${roleLabel}: ${message.content}\n`;
+
+      if (index < conversation.messages.length - 1) {
+        markdown += "\n";
+      }
+    });
+
+    // Create filename with max 16 characters from title
+    const sanitizedTitle = conversation.title
+      .replace(/[^a-z0-9]/gi, "_")
+      .toLowerCase();
+    const filename = `${sanitizedTitle.substring(0, 16)}.md`;
+
+    // Create and download the file
+    const blob = new Blob([markdown], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   const handleSelectConversation = (conversation: ChatConversation) => {
@@ -180,6 +238,21 @@ export const ChatHistory = ({
                               <span className="text-xs">Loading...</span>
                             </div>
                           )}
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="cursor-pointer h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                            onClick={(e) =>
+                              handleDownloadConversation(conversation, e)
+                            }
+                            title="Download conversation as markdown"
+                          >
+                            {downloadedConversations.has(conversation.id) ? (
+                              <Check className="h-3 w-3 text-green-600" />
+                            ) : (
+                              <Download className="h-3 w-3" />
+                            )}
+                          </Button>
                           <Button
                             size="icon"
                             variant="ghost"
