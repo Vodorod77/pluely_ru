@@ -180,8 +180,13 @@ export function useSystemAudio() {
                 setLastTranscription(transcription);
                 setError("");
 
+                // Determine which prompt to use based on user selection
+                const effectiveSystemPrompt = useSystemPrompt
+                  ? systemPrompt || DEFAULT_SYSTEM_PROMPT
+                  : contextContent || DEFAULT_SYSTEM_PROMPT;
+
                 // Send transcription to AI for processing
-                await processWithAI(transcription);
+                await processWithAI(transcription, effectiveSystemPrompt);
               }
             } catch (err) {
               setError(
@@ -359,7 +364,7 @@ export function useSystemAudio() {
 
   // AI Processing function
   const processWithAI = useCallback(
-    async (transcription: string) => {
+    async (transcription: string, prompt: string) => {
       // Check if AI provider is configured
       if (!selectedAIProvider.provider) {
         setError("No AI provider selected. Please select one in settings.");
@@ -396,16 +401,11 @@ export function useSystemAudio() {
 
         let fullResponse = "";
 
-        // Determine which prompt to use based on user selection
-        const effectiveSystemPrompt = useSystemPrompt
-          ? systemPrompt || DEFAULT_SYSTEM_PROMPT
-          : contextContent || DEFAULT_SYSTEM_PROMPT;
-
         // Use the fetchAIResponse function
         for await (const chunk of fetchAIResponse({
           provider,
           selectedProvider: selectedAIProvider,
-          systemPrompt: effectiveSystemPrompt,
+          systemPrompt: prompt,
           history: messageHistory,
           userMessage: transcription,
           imagesBase64: [],

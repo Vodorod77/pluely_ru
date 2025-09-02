@@ -84,7 +84,9 @@ fn handle_toggle_window<R: Runtime>(window: &tauri::WebviewWindow<R>) {
             }
             
             // Handle app icon visibility based on user settings when hiding
-            handle_app_icon_on_window_hide(window);
+            if let Err(e) = set_app_icon_visibility(window.app_handle().clone(), false) {
+                eprintln!("Failed to set app icon visibility: {}", e);
+            }
         }
         Ok(false) => {
             // Window is hidden, show it, show app icon, and focus input
@@ -95,7 +97,10 @@ fn handle_toggle_window<R: Runtime>(window: &tauri::WebviewWindow<R>) {
                 eprintln!("Failed to focus window: {}", e);
             }
             // Always show app icon when window is shown
-            handle_app_icon_on_window_show(window);
+            // Handle app icon visibility based on user settings when showing
+            if let Err(e) = set_app_icon_visibility(window.app_handle().clone(), true) {
+                eprintln!("Failed to set app icon visibility: {}", e);
+            }
             
             // Emit event to focus text input
             if let Err(e) = window.emit("focus-text-input", json!({})) {
@@ -108,21 +113,6 @@ fn handle_toggle_window<R: Runtime>(window: &tauri::WebviewWindow<R>) {
     }
 }
 
-/// Handle app icon visibility when window is hidden
-fn handle_app_icon_on_window_hide<R: Runtime>(window: &tauri::WebviewWindow<R>) {
-    // Emit event to frontend to check user settings and handle app icon accordingly
-    if let Err(e) = window.emit("handle-app-icon-on-hide", json!({})) {
-        eprintln!("Failed to emit app icon hide event: {}", e);
-    }
-}
-
-/// Handle app icon visibility when window is shown
-fn handle_app_icon_on_window_show<R: Runtime>(window: &tauri::WebviewWindow<R>) {
-    // Always show app icon when window is shown
-    if let Err(e) = window.emit("handle-app-icon-on-show", json!({})) {
-        eprintln!("Failed to emit app icon show event: {}", e);
-    }
-}
 
 /// Handle audio shortcut
 fn handle_audio_shortcut<R: Runtime>(app: &AppHandle<R>) {

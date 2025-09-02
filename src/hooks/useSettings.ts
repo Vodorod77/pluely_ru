@@ -86,58 +86,6 @@ export const useSettings = () => {
     }
   }, [selectedSttProvider.provider]);
 
-  // useEffect(() => {
-  //   // Update the previous provider reference
-  //   const prevProvider = prevAIProviderRef.current;
-  //   prevAIProviderRef.current = selectedAIProvider.provider;
-
-  //   // Handle case when switching FROM openai to another provider
-  //   if (
-  //     prevProvider === "openai" &&
-  //     selectedAIProvider.provider !== "openai" &&
-  //     selectedSttProvider.provider === "openai-whisper"
-  //   ) {
-  //     // Reset STT provider when AI provider is changed from openai
-  //     setLocalSTTApiKey("");
-  //     onSetSelectedSttProvider({
-  //       provider: "",
-  //       apiKey: "",
-  //       model: "",
-  //     });
-  //     return;
-  //   }
-
-  //   // Handle case when AI provider is openai and STT is openai-whisper
-  //   if (
-  //     selectedAIProvider.provider === "openai" &&
-  //     selectedSttProvider.provider === "openai-whisper"
-  //   ) {
-  //     const provider = SPEECH_TO_TEXT_PROVIDERS.find(
-  //       (p) => p.id === "openai-whisper"
-  //     );
-
-  //     setLocalSTTApiKey(selectedSttProvider.apiKey);
-  //     submitSTTApiKey();
-  //     onSetSelectedSttProvider({
-  //       ...selectedSttProvider,
-  //       apiKey: selectedAIProvider.variables.api_key,
-  //       model: provider?.request.fields.model || "whisper-1",
-  //     });
-  //   }
-  // }, [
-  //   selectedAIProvider.variables.api_key,
-  //   selectedAIProvider.provider,
-  //   selectedSttProvider.provider,
-  // ]);
-
-  // Auto-close on focus loss disabled to prevent interruptions during form interactions
-  // Settings should be closed manually via the toggle button for better UX
-  // useWindowFocus({
-  //   onFocusLost: () => {
-  //     setIsPopoverOpen(false);
-  //   },
-  // });
-
   const handleDeleteAllChatsConfirm = () => {
     safeLocalStorage.removeItem(STORAGE_KEYS.CHAT_HISTORY);
     setShowDeleteConfirmDialog(false);
