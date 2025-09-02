@@ -11,6 +11,7 @@ export const STORAGE_KEYS = {
   SELECTED_STT_PROVIDER: "curl_selected_stt_provider",
   SYSTEM_AUDIO_CONTEXT: "system_audio_context",
   CUSTOMIZABLE: "customizable",
+  PLUELY_API_ENABLED: "pluely_api_enabled",
 } as const;
 
 // Max number of files that can be attached to a message

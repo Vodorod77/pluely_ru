@@ -39,4 +39,6 @@ export type IContextType = {
   toggleAppIconVisibility: (isVisible: boolean) => Promise<void>;
   toggleAlwaysOnTop: (isEnabled: boolean) => Promise<void>;
   loadData: () => void;
+  pluelyApiEnabled: boolean;
+  setPluelyApiEnabled: (enabled: boolean) => void;
 };

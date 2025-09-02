@@ -69,6 +69,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     alwaysOnTop: { isEnabled: true },
   });
 
+  // Pluely API State
+  const [pluelyApiEnabled, setPluelyApiEnabledState] = useState<boolean>(
+    safeLocalStorage.getItem(STORAGE_KEYS.PLUELY_API_ENABLED) === "true"
+  );
+
   // Function to load AI, STT, system prompt and screenshot config data from storage
   const loadData = () => {
     // Load system prompt
@@ -151,6 +156,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     // Load customizable state
     const customizableState = getCustomizableState();
     setCustomizable(customizableState);
+
+    // Load Pluely API enabled state
+    const savedPluelyApiEnabled = safeLocalStorage.getItem(
+      STORAGE_KEYS.PLUELY_API_ENABLED
+    );
+    if (savedPluelyApiEnabled !== null) {
+      setPluelyApiEnabledState(savedPluelyApiEnabled === "true");
+    }
   };
 
   // Load data on mount
@@ -316,6 +329,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const setPluelyApiEnabled = (enabled: boolean) => {
+    setPluelyApiEnabledState(enabled);
+    safeLocalStorage.setItem(STORAGE_KEYS.PLUELY_API_ENABLED, String(enabled));
+  };
+
   // Create the context value (extend IContextType accordingly)
   const value: IContextType = {
     systemPrompt,
@@ -334,6 +352,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     toggleAppIconVisibility,
     toggleAlwaysOnTop,
     loadData,
+    pluelyApiEnabled,
+    setPluelyApiEnabled,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

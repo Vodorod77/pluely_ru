@@ -2,6 +2,8 @@
 mod window;
 mod shortcuts;
 mod audio;
+mod activate;
+mod api;
 
 #[cfg(target_os = "macos")]
 use tauri_plugin_macos_permissions;
@@ -63,6 +65,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_keychain::init())
         .invoke_handler(tauri::generate_handler![
             greet, 
             get_app_version,
@@ -83,7 +86,16 @@ pub fn run() {
             audio::reset_audio_settings,
             audio::get_vad_status,
             audio::debug_audio_devices,
-            audio::test_audio_levels
+            audio::test_audio_levels,
+            activate::activate_license_api,
+            activate::mask_license_key_cmd,
+            activate::get_checkout_url,
+            activate::secure_storage_save,
+            activate::secure_storage_get,
+            activate::secure_storage_remove,
+            api::transcribe_audio,
+            api::chat_stream,
+            api::check_license_status
         ])
         .setup(|app| {
             // Setup main window positioning
