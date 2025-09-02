@@ -44,6 +44,8 @@ export const SystemAudio = ({
   setUseSystemPrompt,
   contextContent,
   setContextContent,
+  startNewConversation,
+  conversation,
 }: useSystemAudioType) => {
   const handleToggleCapture = async () => {
     if (capturing) {
@@ -150,6 +152,8 @@ export const SystemAudio = ({
                     lastTranscription={lastTranscription}
                     lastAIResponse={lastAIResponse}
                     isAIProcessing={isAIProcessing}
+                    conversation={conversation}
+                    startNewConversation={startNewConversation}
                   />
                   {/* Context Settings */}
                   <Context

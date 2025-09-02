@@ -4,8 +4,12 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useApp } from "@/contexts";
 import { fetchSTT, fetchAIResponse } from "@/lib/functions";
-import { safeLocalStorage } from "@/lib";
 import { DEFAULT_SYSTEM_PROMPT, STORAGE_KEYS } from "@/config";
+import {
+  generateConversationTitle,
+  safeLocalStorage,
+  saveConversation,
+} from "@/lib";
 
 // Audio settings type
 export interface AudioSettings {
@@ -25,7 +29,7 @@ interface ChatMessage {
 }
 
 // Conversation interface (reusing from useCompletion)
-interface ChatConversation {
+export interface ChatConversation {
   id: string;
   title: string;
   messages: ChatMessage[];
@@ -60,13 +64,13 @@ export function useSystemAudio() {
   const [debugInfo, setDebugInfo] = useState<string>("");
   const [testResults, setTestResults] = useState<string>("");
 
-  // Conversation management states
-  const [currentConversationId, setCurrentConversationId] = useState<
-    string | null
-  >(null);
-  const [conversationHistory, setConversationHistory] = useState<ChatMessage[]>(
-    []
-  );
+  const [conversation, setConversation] = useState<ChatConversation>({
+    id: "",
+    title: "",
+    messages: [],
+    createdAt: 0,
+    updatedAt: 0,
+  });
 
   // Context management states
   const [useSystemPrompt, setUseSystemPrompt] = useState<boolean>(true);
@@ -212,121 +216,6 @@ export function useSystemAudio() {
     };
   }, [capturing, selectedSttProvider, allSttProviders]);
 
-  // Conversation management functions
-  const generateConversationTitle = useCallback(
-    (userMessage: string): string => {
-      const words = userMessage.trim().split(" ").slice(0, 6);
-      return (
-        words.join(" ") +
-        (words.length < userMessage.trim().split(" ").length ? "..." : "")
-      );
-    },
-    []
-  );
-
-  const saveConversation = useCallback((conversation: ChatConversation) => {
-    try {
-      const existingData = safeLocalStorage.getItem(STORAGE_KEYS.CHAT_HISTORY);
-      let conversations: ChatConversation[] = [];
-
-      if (existingData) {
-        conversations = JSON.parse(existingData);
-      }
-
-      const existingIndex = conversations.findIndex(
-        (c) => c.id === conversation.id
-      );
-      if (existingIndex >= 0) {
-        conversations[existingIndex] = conversation;
-      } else {
-        conversations.push(conversation);
-      }
-
-      safeLocalStorage.setItem(
-        STORAGE_KEYS.CHAT_HISTORY,
-        JSON.stringify(conversations)
-      );
-    } catch (error) {
-      console.error("Failed to save conversation:", error);
-    }
-  }, []);
-
-  const getConversation = useCallback((id: string): ChatConversation | null => {
-    try {
-      const existingData = safeLocalStorage.getItem(STORAGE_KEYS.CHAT_HISTORY);
-      if (!existingData) return null;
-
-      const conversations: ChatConversation[] = JSON.parse(existingData);
-      return conversations.find((c) => c.id === id) || null;
-    } catch (error) {
-      console.error("Failed to get conversation:", error);
-      return null;
-    }
-  }, []);
-
-  const saveCurrentConversation = useCallback(
-    (userMessage: string, assistantResponse: string) => {
-      const conversationId =
-        currentConversationId ||
-        `sysaudio_conv_${Date.now()}_${Math.random()
-          .toString(36)
-          .substr(2, 9)}`;
-      const timestamp = Date.now();
-
-      // Create system audio message (user role but with system audio identifier)
-      const systemAudioMsg: ChatMessage = {
-        id: `msg_${timestamp}_system`,
-        role: "system",
-        content: `🎤 System Audio: ${userMessage}`,
-        timestamp,
-      };
-
-      const assistantMsg: ChatMessage = {
-        id: `msg_${timestamp}_assistant`,
-        role: "assistant",
-        content: assistantResponse,
-        timestamp: timestamp + 1,
-      };
-
-      const newMessages = [
-        ...conversationHistory,
-        systemAudioMsg,
-        assistantMsg,
-      ];
-      const title =
-        conversationHistory.length === 0
-          ? `🎤 ${generateConversationTitle(userMessage)}`
-          : undefined;
-
-      const conversation: ChatConversation = {
-        id: conversationId,
-        title:
-          title ||
-          (currentConversationId
-            ? getConversation(currentConversationId)?.title ||
-              `🎤 ${generateConversationTitle(userMessage)}`
-            : `🎤 ${generateConversationTitle(userMessage)}`),
-        messages: newMessages,
-        createdAt: currentConversationId
-          ? getConversation(currentConversationId)?.createdAt || timestamp
-          : timestamp,
-        updatedAt: timestamp,
-      };
-
-      saveConversation(conversation);
-
-      setCurrentConversationId(conversationId);
-      setConversationHistory(newMessages);
-    },
-    [
-      currentConversationId,
-      conversationHistory,
-      generateConversationTitle,
-      getConversation,
-      saveConversation,
-    ]
-  );
-
   // Context management functions
   const saveContextSettings = useCallback(
     (usePrompt: boolean, content: string) => {
@@ -394,7 +283,7 @@ export function useSystemAudio() {
         setError("");
 
         // Prepare message history for the AI
-        const messageHistory = conversationHistory.map((msg) => ({
+        const messageHistory = conversation.messages.map((msg) => ({
           role: msg.role,
           content: msg.content,
         }));
@@ -416,7 +305,26 @@ export function useSystemAudio() {
 
         if (fullResponse) {
           // Save the conversation after successful completion
-          saveCurrentConversation(transcription, fullResponse);
+          setConversation((prev) => ({
+            ...prev,
+            messages: [
+              {
+                id: `msg_${Date.now()}_user`,
+                role: "user" as const,
+                content: transcription,
+                timestamp: Date.now(),
+              },
+              {
+                id: `msg_${Date.now()}_assistant`,
+                role: "assistant" as const,
+                content: fullResponse,
+                timestamp: Date.now(),
+              },
+              ...prev.messages,
+            ],
+            updatedAt: Date.now(),
+            title: prev.title || generateConversationTitle(transcription),
+          }));
         }
       } catch (err) {
         setError(
@@ -426,15 +334,7 @@ export function useSystemAudio() {
         setIsAIProcessing(false);
       }
     },
-    [
-      selectedAIProvider,
-      allAiProviders,
-      systemPrompt,
-      conversationHistory,
-      saveCurrentConversation,
-      useSystemPrompt,
-      contextContent,
-    ]
+    [selectedAIProvider, allAiProviders, conversation.messages]
   );
 
   const startCapture = useCallback(async () => {
@@ -451,6 +351,18 @@ export function useSystemAudio() {
 
       await invoke<string>("start_system_audio_capture");
       setCapturing(true);
+
+      // Always generate a new conversation ID when starting capture
+      const conversationId = `sysaudio_conv_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+      setConversation({
+        id: conversationId,
+        title: "",
+        messages: [],
+        createdAt: 0,
+        updatedAt: 0,
+      });
     } catch (err) {
       const errorMessage =
         err instanceof Error
@@ -658,6 +570,34 @@ export function useSystemAudio() {
     };
   }, []);
 
+  useEffect(() => {
+    saveConversation(conversation);
+  }, [conversation.messages.length, conversation.title, conversation.id]);
+
+  const startNewConversation = useCallback(() => {
+    setConversation({
+      id: `sysaudio_conv_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`,
+      title: "",
+      messages: [],
+      createdAt: 0,
+      updatedAt: 0,
+    });
+    setLastTranscription("");
+    setLastAIResponse("");
+    setError("");
+    setSetupRequired(false);
+    setIsProcessing(false);
+    setIsAIProcessing(false);
+    setIsPopoverOpen(false);
+    setShowSettings(false);
+    setSettings(DEFAULT_SETTINGS);
+    setDebugInfo("");
+    setTestResults("");
+    setUseSystemPrompt(true);
+  }, []);
+
   return {
     capturing,
     isProcessing,
@@ -685,8 +625,8 @@ export function useSystemAudio() {
     isPopoverOpen,
     setIsPopoverOpen,
     // Conversation management
-    currentConversationId,
-    conversationHistory,
+    conversation,
+    setConversation,
     // AI processing
     processWithAI,
     // Context management
@@ -694,5 +634,6 @@ export function useSystemAudio() {
     setUseSystemPrompt: updateUseSystemPrompt,
     contextContent,
     setContextContent: updateContextContent,
+    startNewConversation,
   };
 }
