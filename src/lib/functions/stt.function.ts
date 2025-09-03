@@ -31,14 +31,13 @@ async function fetchPluelySTT(audio: File | Blob): Promise<string> {
       return response.error || "Transcription failed";
     }
   } catch (error) {
-    return `Pluely STT Error: ${
-      error instanceof Error ? error.message : "Unknown error"
-    }`;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return `Pluely STT Error: ${errorMessage}`;
   }
 }
 
 export interface STTParams {
-  provider: TYPE_PROVIDER;
+  provider: TYPE_PROVIDER | undefined;
   selectedProvider: {
     provider: string;
     variables: Record<string, string>;

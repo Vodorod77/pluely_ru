@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { useApp } from "@/contexts";
 import { floatArrayToWav } from "@/lib/utils";
+import { shouldUsePluelyAPI } from "@/lib/functions/pluely.api";
 
 interface AutoSpeechVADProps {
   submit: UseCompletionReturn["submit"];
@@ -28,8 +29,14 @@ export const AutoSpeechVAD = ({
       try {
         setIsTranscribing(true);
 
+        // convert float32array to blob
+        const audioBlob = floatArrayToWav(audio, 16000, "wav");
+
+        let transcription: string;
+        const usePluelyAPI = await shouldUsePluelyAPI();
+
         // Check if we have a configured speech provider
-        if (!selectedSttProvider.provider) {
+        if (!selectedSttProvider.provider && !usePluelyAPI) {
           console.warn("No speech provider selected");
           setState((prev: any) => ({
             ...prev,
@@ -43,7 +50,7 @@ export const AutoSpeechVAD = ({
           (p) => p.id === selectedSttProvider.provider
         );
 
-        if (!providerConfig) {
+        if (!providerConfig && !usePluelyAPI) {
           console.warn("Selected speech provider configuration not found");
           setState((prev: any) => ({
             ...prev,
@@ -53,14 +60,9 @@ export const AutoSpeechVAD = ({
           return;
         }
 
-        // convert float32array to blob
-        const audioBlob = floatArrayToWav(audio, 16000, "wav");
-
-        let transcription: string;
-
         // Use the fetchSTT function for all providers
         transcription = await fetchSTT({
-          provider: providerConfig,
+          provider: usePluelyAPI ? undefined : providerConfig,
           selectedProvider: selectedSttProvider,
           audio: audioBlob,
         });

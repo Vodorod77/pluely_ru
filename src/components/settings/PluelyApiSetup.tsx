@@ -99,7 +99,7 @@ export const PluelyApiSetup = () => {
             },
             {
               key: INSTANCE_ID_STORAGE_KEY,
-              value: response.instance.name, // Store the UUID instance name
+              value: response.instance.id,
             },
           ],
         });

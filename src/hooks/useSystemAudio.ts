@@ -10,6 +10,7 @@ import {
   safeLocalStorage,
   saveConversation,
 } from "@/lib";
+import { shouldUsePluelyAPI } from "@/lib/functions/pluely.api";
 
 // Audio settings type
 export interface AudioSettings {
@@ -145,8 +146,17 @@ export function useSystemAudio() {
 
               const base64Audio = event.payload as string;
 
+              // Convert base64 to blob
+              const binaryString = atob(base64Audio);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+              }
+              const audioBlob = new Blob([bytes], { type: "audio/wav" });
+
+              const usePluelyAPI = await shouldUsePluelyAPI();
               // Check if we have a configured speech provider
-              if (!selectedSttProvider.provider) {
+              if (!selectedSttProvider.provider && !usePluelyAPI) {
                 setError(
                   "No speech provider selected. Please select one in settings."
                 );
@@ -157,22 +167,14 @@ export function useSystemAudio() {
                 (p) => p.id === selectedSttProvider.provider
               );
 
-              if (!providerConfig) {
+              if (!providerConfig && !usePluelyAPI) {
                 setError(
                   "Speech provider configuration not found. Please check your settings."
                 );
                 return;
               }
 
-              // Convert base64 to blob
-              const binaryString = atob(base64Audio);
-              const bytes = new Uint8Array(binaryString.length);
-              for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-              }
-              const audioBlob = new Blob([bytes], { type: "audio/wav" });
               setIsProcessing(true);
-
               // Send to STT
               const transcription = await fetchSTT({
                 provider: providerConfig,
@@ -254,22 +256,6 @@ export function useSystemAudio() {
   // AI Processing function
   const processWithAI = useCallback(
     async (transcription: string, prompt: string) => {
-      // Check if AI provider is configured
-      if (!selectedAIProvider.provider) {
-        setError("No AI provider selected. Please select one in settings.");
-        return;
-      }
-
-      const provider = allAiProviders.find(
-        (p) => p.id === selectedAIProvider.provider
-      );
-      if (!provider) {
-        setError(
-          "AI provider configuration not found. Please check your settings."
-        );
-        return;
-      }
-
       // Cancel any existing AI request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -290,9 +276,26 @@ export function useSystemAudio() {
 
         let fullResponse = "";
 
+        const usePluelyAPI = await shouldUsePluelyAPI();
+        // Check if AI provider is configured
+        if (!selectedAIProvider.provider && !usePluelyAPI) {
+          setError("No AI provider selected. Please select one in settings.");
+          return;
+        }
+
+        const provider = allAiProviders.find(
+          (p) => p.id === selectedAIProvider.provider
+        );
+        if (!provider && !usePluelyAPI) {
+          setError(
+            "AI provider configuration not found. Please check your settings."
+          );
+          return;
+        }
+
         // Use the fetchAIResponse function
         for await (const chunk of fetchAIResponse({
-          provider,
+          provider: usePluelyAPI ? undefined : provider,
           selectedProvider: selectedAIProvider,
           systemPrompt: prompt,
           history: messageHistory,

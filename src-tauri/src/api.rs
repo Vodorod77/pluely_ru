@@ -124,6 +124,23 @@ pub async fn transcribe_audio(
         .await
         .map_err(|e| format!("Failed to make audio request: {}", e))?;
     
+    // Check if the response is successful
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown server error".to_string());
+        
+        // Try to parse error as JSON to get a more specific error message
+        if let Ok(error_json) = serde_json::from_str::<serde_json::Value>(&error_text) {
+            if let Some(error_msg) = error_json.get("error").and_then(|e| e.as_str()) {
+                return Err(format!("Server error ({}): {}", status, error_msg));
+            } else if let Some(message) = error_json.get("message").and_then(|m| m.as_str()) {
+                return Err(format!("Server error ({}): {}", status, message));
+            }
+        }
+        
+        return Err(format!("Server error ({}): {}", status, error_text));
+    }
+    
     let audio_response: AudioResponse = response
         .json()
         .await
@@ -173,8 +190,19 @@ pub async fn chat_stream(
     
     // Check if the response is successful
     if !response.status().is_success() {
-        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-        return Err(format!("Chat API error: {}", error_text));
+        let status = response.status();
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown server error".to_string());
+        
+        // Try to parse error as JSON to get a more specific error message
+        if let Ok(error_json) = serde_json::from_str::<serde_json::Value>(&error_text) {
+            if let Some(error_msg) = error_json.get("error").and_then(|e| e.as_str()) {
+                return Err(format!("Server error ({}): {}", status, error_msg));
+            } else if let Some(message) = error_json.get("message").and_then(|m| m.as_str()) {
+                return Err(format!("Server error ({}): {}", status, message));
+            }
+        }
+        
+        return Err(format!("Server error ({}): {}", status, error_text));
     }
     
     // Handle streaming response

@@ -87,14 +87,13 @@ async function* fetchPluelyAIResponse(params: {
       unlistenComplete();
     }
   } catch (error) {
-    yield `Pluely API Error: ${
-      error instanceof Error ? error.message : "Unknown error"
-    }`;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    yield `Pluely API Error: ${errorMessage}`;
   }
 }
 
 export async function* fetchAIResponse(params: {
-  provider: TYPE_PROVIDER;
+  provider: TYPE_PROVIDER | undefined;
   selectedProvider: {
     provider: string;
     variables: Record<string, string>;

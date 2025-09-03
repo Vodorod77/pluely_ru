@@ -6,6 +6,7 @@ import { useApp } from "@/contexts";
 import { fetchAIResponse, safeLocalStorage } from "@/lib";
 import { STORAGE_KEYS } from "@/config";
 import { invoke } from "@tauri-apps/api/core";
+import { shouldUsePluelyAPI } from "@/lib/functions/pluely.api";
 
 // Types for completion
 interface AttachedFile {
@@ -121,26 +122,6 @@ export const useCompletion = () => {
     async (speechText?: string) => {
       const input = speechText || state.input;
 
-      // Check if AI provider is configured
-      if (!selectedAIProvider.provider) {
-        setState((prev) => ({
-          ...prev,
-          error: "Please select an AI provider in settings",
-        }));
-        return;
-      }
-
-      const provider = allAiProviders.find(
-        (p) => p.id === selectedAIProvider.provider
-      );
-      if (!provider) {
-        setState((prev) => ({
-          ...prev,
-          error: "Invalid provider selected",
-        }));
-        return;
-      }
-
       if (!input.trim()) {
         return;
       }
@@ -185,9 +166,30 @@ export const useCompletion = () => {
 
         let fullResponse = "";
 
+        const usePluelyAPI = await shouldUsePluelyAPI();
+        // Check if AI provider is configured
+        if (!selectedAIProvider.provider && !usePluelyAPI) {
+          setState((prev) => ({
+            ...prev,
+            error: "Please select an AI provider in settings",
+          }));
+          return;
+        }
+
+        const provider = allAiProviders.find(
+          (p) => p.id === selectedAIProvider.provider
+        );
+        if (!provider && !usePluelyAPI) {
+          setState((prev) => ({
+            ...prev,
+            error: "Invalid provider selected",
+          }));
+          return;
+        }
+
         // Use the fetchAIResponse function
         for await (const chunk of fetchAIResponse({
-          provider,
+          provider: usePluelyAPI ? undefined : provider,
           selectedProvider: selectedAIProvider,
           systemPrompt: systemPrompt || undefined,
           history: messageHistory,
@@ -476,26 +478,6 @@ export const useCompletion = () => {
           size: base64.length,
         };
 
-        // Check if AI provider is configured
-        if (!selectedAIProvider.provider) {
-          setState((prev) => ({
-            ...prev,
-            error: "Please select an AI provider in settings",
-          }));
-          return;
-        }
-
-        const provider = allAiProviders.find(
-          (p) => p.id === selectedAIProvider.provider
-        );
-        if (!provider) {
-          setState((prev) => ({
-            ...prev,
-            error: "Invalid provider selected",
-          }));
-          return;
-        }
-
         // Cancel any existing request
         if (abortControllerRef.current) {
           abortControllerRef.current.abort();
@@ -520,9 +502,30 @@ export const useCompletion = () => {
 
           let fullResponse = "";
 
+          const usePluelyAPI = await shouldUsePluelyAPI();
+          // Check if AI provider is configured
+          if (!selectedAIProvider.provider && !usePluelyAPI) {
+            setState((prev) => ({
+              ...prev,
+              error: "Please select an AI provider in settings",
+            }));
+            return;
+          }
+
+          const provider = allAiProviders.find(
+            (p) => p.id === selectedAIProvider.provider
+          );
+          if (!provider && !usePluelyAPI) {
+            setState((prev) => ({
+              ...prev,
+              error: "Invalid provider selected",
+            }));
+            return;
+          }
+
           // Use the fetchAIResponse function with image
           for await (const chunk of fetchAIResponse({
-            provider,
+            provider: usePluelyAPI ? undefined : provider,
             selectedProvider: selectedAIProvider,
             systemPrompt: systemPrompt || undefined,
             history: messageHistory,
