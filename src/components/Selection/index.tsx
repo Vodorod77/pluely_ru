@@ -15,7 +15,7 @@ export const Selection = ({
   isLoading = false,
   disabled = false,
 }: {
-  selected: string;
+  selected?: string;
   onChange: (value: any) => void;
   options: { label: string; value: string; isCustom?: boolean }[] | [];
   placeholder?: string;
@@ -23,7 +23,7 @@ export const Selection = ({
   disabled?: boolean;
 }) => {
   return (
-    <Select value={selected} onValueChange={(value) => onChange(value)}>
+    <Select value={selected || ""} onValueChange={(value) => onChange(value)}>
       <SelectTrigger
         disabled={isLoading || disabled}
         className="w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"

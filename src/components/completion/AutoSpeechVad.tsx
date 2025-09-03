@@ -27,8 +27,6 @@ export const AutoSpeechVAD = ({
     startOnLoad: true,
     onSpeechEnd: async (audio) => {
       try {
-        setIsTranscribing(true);
-
         // convert float32array to blob
         const audioBlob = floatArrayToWav(audio, 16000, "wav");
 
@@ -59,6 +57,8 @@ export const AutoSpeechVAD = ({
           }));
           return;
         }
+
+        setIsTranscribing(true);
 
         // Use the fetchSTT function for all providers
         transcription = await fetchSTT({

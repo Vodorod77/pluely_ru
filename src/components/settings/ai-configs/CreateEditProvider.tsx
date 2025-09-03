@@ -5,9 +5,11 @@ import {
   TextInput,
   Switch,
   Textarea,
+  Selection,
 } from "@/components";
-import { PlusIcon, SaveIcon, SparklesIcon } from "lucide-react";
+import { PlusIcon, SaveIcon } from "lucide-react";
 import { useCustomAiProviders } from "@/hooks";
+import { useApp } from "@/contexts";
 
 interface CreateEditProviderProps {
   customProviderHook?: ReturnType<typeof useCustomAiProviders>;
@@ -16,6 +18,7 @@ interface CreateEditProviderProps {
 export const CreateEditProvider = ({
   customProviderHook,
 }: CreateEditProviderProps) => {
+  const { allAiProviders } = useApp();
   // Use the provided hook instance or create a new one
   const hookInstance = customProviderHook || useCustomAiProviders();
 
@@ -52,15 +55,23 @@ export const CreateEditProvider = ({
               title={editingProvider ? `Edit Provider}` : "Add Custom Provider"}
               description="Create a custom AI provider to use with your AI-powered applications."
             />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleAutoFill("openai")}
-              className="flex items-center gap-2"
-            >
-              <SparklesIcon className="h-4 w-4" />
-              Auto-fill with OpenAI
-            </Button>
+
+            <div className="w-[120px]">
+              <Selection
+                options={allAiProviders
+                  ?.filter((provider) => !provider?.isCustom)
+                  .map((provider) => {
+                    return {
+                      label: provider?.id || "AI Provider",
+                      value: provider?.id || "AI Provider",
+                    };
+                  })}
+                placeholder={"Auto-fill"}
+                onChange={(value) => {
+                  handleAutoFill(value);
+                }}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -5,9 +5,11 @@ import {
   TextInput,
   Switch,
   Textarea,
+  Selection,
 } from "@/components";
-import { PlusIcon, SaveIcon, SparklesIcon } from "lucide-react";
+import { PlusIcon, SaveIcon } from "lucide-react";
 import { useCustomSttProviders } from "@/hooks";
+import { useApp } from "@/contexts";
 
 interface CreateEditProviderProps {
   customProviderHook?: ReturnType<typeof useCustomSttProviders>;
@@ -16,6 +18,7 @@ interface CreateEditProviderProps {
 export const CreateEditProvider = ({
   customProviderHook,
 }: CreateEditProviderProps) => {
+  const { allSttProviders } = useApp();
   // Use the provided hook instance or create a new one
   const hookInstance = customProviderHook || useCustomSttProviders();
 
@@ -56,15 +59,22 @@ export const CreateEditProvider = ({
               }
               description="Create a custom STT provider to use with your STT-powered applications."
             />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleAutoFill("openai-whisper")}
-              className="flex items-center gap-2"
-            >
-              <SparklesIcon className="h-4 w-4" />
-              Auto-fill with OpenAI STT
-            </Button>
+            <div className="w-[120px]">
+              <Selection
+                options={allSttProviders
+                  ?.filter((provider) => !provider?.isCustom)
+                  .map((provider) => {
+                    return {
+                      label: provider?.id || "STT Provider",
+                      value: provider?.id || "STT Provider",
+                    };
+                  })}
+                placeholder={"Auto-fill"}
+                onChange={(value) => {
+                  handleAutoFill(value);
+                }}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

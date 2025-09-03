@@ -41,17 +41,15 @@ export const AI_PROVIDERS = [
   },
   {
     id: "gemini",
-    curl: `curl "https://generativelanguage.googleapis.com/v1beta/models/{{MODEL}}:generateContent" \\
-  -H "x-goog-api-key: {{API_KEY}}" \\
+    curl: `curl "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" \\
+  -H "Authorization: Bearer {{API_KEY}}" \\
   -H "Content-Type: application/json" \\
-  -X POST \\
-  --no-buffer \\
   -d '{
-    "system_instruction": {"parts": [{"text": "{{SYSTEM_PROMPT}}"}]},
-    "contents": [{"role": "user", "parts": [{"text": "{{TEXT}}"}, {"inline_data": {"mime_type": "image/png", "data": "{{IMAGE}}"}}]}]
-  }'`,
-    responseContentPath: "candidates[0].content.parts[0].text",
-    streaming: false,
+    "model": "{{MODEL}}",
+    "messages": [{"role": "system", "content": "{{SYSTEM_PROMPT}}"}, {"role": "user", "content": [{"type": "text", "text": "{{TEXT}}"}, {"type": "image_url", "image_url": {"url": "data:image/png;base64,{{IMAGE}}"}}]}]
+  }'}`,
+    responseContentPath: "choices[0].message.content",
+    streaming: true,
   },
   {
     id: "mistral",
@@ -99,6 +97,17 @@ export const AI_PROVIDERS = [
     "model": "{{MODEL}}",
     "messages": [{"role": "system", "content": "{{SYSTEM_PROMPT}}"}, {"role": "user", "content": [{"type": "text", "text": "{{TEXT}}"}, {"type": "image_url", "image_url": {"url": "data:image/png;base64,{{IMAGE}}"}}]}]
   }'`,
+    responseContentPath: "choices[0].message.content",
+    streaming: true,
+  },
+  {
+    id: "ollama",
+    curl: `curl -X POST http://localhost:11434/v1/chat/completions \\
+    -H "Authorization: Bearer {{API_KEY}}" \\
+    -H "Content-Type: application/json" \\
+    -d '{
+    "model": "{{MODEL}}",
+    "messages": [{"role": "system", "content": "{{SYSTEM_PROMPT}}"}, {"role": "user", "content": [{"type": "text", "text": "{{TEXT}}"}, {"type": "image_url", "image_url": {"url": "data:image/png;base64,{{IMAGE}}"}}]}]`,
     responseContentPath: "choices[0].message.content",
     streaming: true,
   },

@@ -1,7 +1,8 @@
 import { Button, Header, Input, Selection, TextInput } from "@/components";
 import { UseSettingsReturn } from "@/types";
-import curl2Json from "@bany/curl-to-json";
+import curl2Json, { ResultJSON } from "@bany/curl-to-json";
 import { KeyIcon, TrashIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export const Providers = ({
   allSttProviders,
@@ -9,6 +10,21 @@ export const Providers = ({
   onSetSelectedSttProvider,
   sttVariables,
 }: UseSettingsReturn) => {
+  const [localSelectedProvider, setLocalSelectedProvider] =
+    useState<ResultJSON | null>(null);
+
+  useEffect(() => {
+    if (selectedSttProvider?.provider) {
+      const provider = allSttProviders?.find(
+        (p) => p?.id === selectedSttProvider?.provider
+      );
+      if (provider) {
+        const json = curl2Json(provider?.curl);
+        setLocalSelectedProvider(json as ResultJSON);
+      }
+    }
+  }, [selectedSttProvider?.provider]);
+
   const findKeyAndValue = (key: string) => {
     return sttVariables?.find((v) => v?.key === key);
   };
@@ -51,7 +67,14 @@ export const Providers = ({
           }}
         />
       </div>
-
+      {localSelectedProvider ? (
+        <Header
+          title={`Method: ${
+            localSelectedProvider?.method || "Invalid"
+          }, Endpoint: ${localSelectedProvider?.url || "Invalid"}`}
+          description={`If you want to use different url or method, you can always create a custom provider.`}
+        />
+      ) : null}
       {findKeyAndValue("api_key") ? (
         <div className="space-y-2">
           <Header

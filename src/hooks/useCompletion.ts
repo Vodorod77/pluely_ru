@@ -140,13 +140,6 @@ export const useCompletion = () => {
 
       abortControllerRef.current = new AbortController();
 
-      setState((prev) => ({
-        ...prev,
-        isLoading: true,
-        error: null,
-        response: "",
-      }));
-
       try {
         // Prepare message history for the AI
         const messageHistory = state.conversationHistory.map((msg) => ({
@@ -187,6 +180,12 @@ export const useCompletion = () => {
           return;
         }
 
+        setState((prev) => ({
+          ...prev,
+          isLoading: true,
+          error: null,
+          response: "",
+        }));
         // Use the fetchAIResponse function
         for await (const chunk of fetchAIResponse({
           provider: usePluelyAPI ? undefined : provider,
@@ -485,14 +484,6 @@ export const useCompletion = () => {
 
         abortControllerRef.current = new AbortController();
 
-        setState((prev) => ({
-          ...prev,
-          input: prompt,
-          isLoading: true,
-          error: null,
-          response: "",
-        }));
-
         try {
           // Prepare message history for the AI
           const messageHistory = state.conversationHistory.map((msg) => ({
@@ -522,6 +513,14 @@ export const useCompletion = () => {
             }));
             return;
           }
+
+          setState((prev) => ({
+            ...prev,
+            input: prompt,
+            isLoading: true,
+            error: null,
+            response: "",
+          }));
 
           // Use the fetchAIResponse function with image
           for await (const chunk of fetchAIResponse({
