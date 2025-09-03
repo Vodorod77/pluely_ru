@@ -34,7 +34,7 @@
   "bundle": {
     "active": true,
     "createUpdaterArtifacts": true,
-    "targets": ["deb", "rpm", "dmg", "msi", "nsis"],
+    "targets": "all",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -43,42 +43,7 @@
       "icons/icon.ico"
     ],
     "resources": ["info.plist", "pluely.desktop"],
-    "macOS": { "minimumSystemVersion": "10.13" },
-    "windows": {
-      "certificateThumbprint": null,
-      "digestAlgorithm": "sha256",
-      "timestampUrl": "",
-      "webviewInstallMode": { "type": "downloadBootstrapper" },
-      "allowDowngrades": false,
-      "wix": {
-        "language": "en-US",
-        "template": null,
-        "fragmentPaths": [],
-        "componentGroupRefs": [],
-        "componentRefs": [],
-        "featureGroupRefs": [],
-        "featureRefs": [],
-        "mergeRefs": []
-      },
-      "nsis": {
-        "template": null,
-        "languages": ["English"],
-        "customLanguageFiles": {},
-        "displayLanguageSelector": false
-      }
-    },
-    "linux": {
-      "deb": {
-        "depends": [
-          "libasound2-dev",
-          "libpulse-dev",
-          "libwebkit2gtk-4.0-37",
-          "libgtk-3-0",
-          "libayatana-appindicator3-1"
-        ],
-        "desktopTemplate": "pluely.desktop"
-      }
-    }
+    "macOS": { "minimumSystemVersion": "10.13" }
   },
   "plugins": {
     "updater": {

@@ -5,23 +5,26 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 use uuid::Uuid;
 
-// Helper function to load environment variables
-fn load_env_vars() {
-    let _ = dotenv::dotenv();
-}
-
 fn get_payment_endpoint() -> Result<String, String> {
-    load_env_vars();
+    if let Ok(endpoint) = env::var("PAYMENT_ENDPOINT") {
+        return Ok(endpoint);
+    }
     
-    env::var("PAYMENT_ENDPOINT")
-        .map_err(|_| "PAYMENT_ENDPOINT environment variable not set. Please create a .env file in the project root with PAYMENT_ENDPOINT=your_api_endpoint".to_string())
+    match option_env!("PAYMENT_ENDPOINT") {
+        Some(endpoint) => Ok(endpoint.to_string()),
+        None => Err("PAYMENT_ENDPOINT environment variable not set. Please ensure it's set during the build process.".to_string())
+    }
 }
 
 fn get_api_access_key() -> Result<String, String> {
-    load_env_vars();
+     if let Ok(key) = env::var("API_ACCESS_KEY") {
+        return Ok(key);
+    }
     
-    env::var("API_ACCESS_KEY")
-        .map_err(|_| "API_ACCESS_KEY environment variable not set. Please add API_ACCESS_KEY=your_access_key to your .env file".to_string())
+     match option_env!("API_ACCESS_KEY") {
+        Some(key) => Ok(key.to_string()),
+        None => Err("API_ACCESS_KEY environment variable not set. Please ensure it's set during the build process.".to_string())
+    }
 }
 
 // Secure storage functions using Tauri's app data directory
