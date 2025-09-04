@@ -355,24 +355,6 @@ export function useSystemAudio() {
       setError("");
       setSetupRequired(false);
 
-      const usePluelyAPI = await shouldUsePluelyAPI();
-      // Check if we have a configured speech provider
-      if (!selectedSttProvider.provider && !usePluelyAPI) {
-        setError("No AI provider selected. Please select one in settings.");
-        return;
-      }
-
-      const providerConfig = allSttProviders.find(
-        (p) => p.id === selectedSttProvider.provider
-      );
-
-      if (!providerConfig && !usePluelyAPI) {
-        setError(
-          "AI provider configuration not found. Please check your settings."
-        );
-        return;
-      }
-
       // Stop any existing capture first
       try {
         await invoke<string>("stop_system_audio_capture");

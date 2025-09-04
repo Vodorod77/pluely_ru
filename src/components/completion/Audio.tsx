@@ -12,14 +12,14 @@ export const Audio = ({
   submit,
   setState,
 }: UseCompletionReturn) => {
-  const { selectedSttProvider } = useApp();
+  const { selectedSttProvider, pluelyApiEnabled } = useApp();
 
   const speechProviderStatus = selectedSttProvider.provider;
 
   return (
     <Popover open={micOpen} onOpenChange={setMicOpen}>
       <PopoverTrigger asChild>
-        {speechProviderStatus && enableVAD ? (
+        {(pluelyApiEnabled || speechProviderStatus) && enableVAD ? (
           <AutoSpeechVAD
             submit={submit}
             setState={setState}
@@ -42,7 +42,9 @@ export const Audio = ({
       <PopoverContent
         side="top"
         align="center"
-        className={`w-80 p-3 ${speechProviderStatus ? "hidden" : ""}`}
+        className={`w-80 p-3 ${
+          pluelyApiEnabled || speechProviderStatus ? "hidden" : ""
+        }`}
         sideOffset={8}
       >
         <div className="text-sm select-none">

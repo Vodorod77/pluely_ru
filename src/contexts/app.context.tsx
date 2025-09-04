@@ -332,6 +332,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const setPluelyApiEnabled = (enabled: boolean) => {
     setPluelyApiEnabledState(enabled);
     safeLocalStorage.setItem(STORAGE_KEYS.PLUELY_API_ENABLED, String(enabled));
+    loadData();
   };
 
   // Create the context value (extend IContextType accordingly)

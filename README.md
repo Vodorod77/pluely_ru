@@ -1,5 +1,7 @@
 # Pluely 🚀
 
+[<img src="/images/app-img.png" width="100%" alt="pluely"/>](https://pluely.com/)
+
 [![Open Source](https://img.shields.io/badge/Open%20Source-❤️-blue)](https://github.com/iamsrikanthnani/pluely)
 [![Tauri](https://img.shields.io/badge/Built%20with-Tauri-orange)](https://tauri.app/)
 [![React](https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript-blue)](https://reactjs.org/)
@@ -27,11 +29,11 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 ### 🚀 **Get the Latest Release**
 
-[![Download for macOS](https://img.shields.io/badge/Download%20for-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/iamsrikanthnani/pluely/releases/latest) &nbsp; [![Download for Linux](https://img.shields.io/badge/Download%20for-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/iamsrikanthnani/pluely/releases/latest) &nbsp; [![Download for Windows](https://img.shields.io/badge/Download%20for-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/iamsrikanthnani/pluely/releases/latest)
+[![Download for macOS](https://img.shields.io/badge/Download%20for-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://pluely.com/download/macos) &nbsp; [![Download for Linux](https://img.shields.io/badge/Download%20for-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://pluely.com/download/linux) &nbsp; [![Download for Windows](https://img.shields.io/badge/Download%20for-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://pluely.com/download/windows)
 
-[![GitHub Release](https://img.shields.io/github/v/release/iamsrikanthnani/pluely?style=for-the-badge&logo=github&label=Latest%20Version)](https://github.com/iamsrikanthnani/pluely/releases/latest) &nbsp; [![GitHub Downloads](https://img.shields.io/github/downloads/iamsrikanthnani/pluely/total?style=for-the-badge&logo=github&label=Total%20Downloads)](https://github.com/iamsrikanthnani/pluely/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/iamsrikanthnani/pluely?style=for-the-badge&logo=github&label=Latest%20Version)](https://pluely.com/releases) &nbsp; [![GitHub Downloads](https://img.shields.io/github/downloads/iamsrikanthnani/pluely/total?style=for-the-badge&logo=github&label=Total%20Downloads)](https://pluely.com/downloads)
 
-**Available formats:** `.dmg` (macOS) • `.msi` (Windows) • `.deb` (Linux)
+**Available formats:** `.dmg` (macOS) • `.msi` (Windows) • `.exe` (Windows) • `.deb` (Linux) • `.rpm` (Linux) • `.AppImage` (Linux)
 
 </div>
 
@@ -66,6 +68,8 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 ---
 
+# Features
+
 ## ⌨️ **Keyboard Shortcuts**
 
 Pluely comes with powerful global keyboard shortcuts that work from anywhere on your system:
@@ -81,6 +85,18 @@ Pluely comes with powerful global keyboard shortcuts that work from anywhere on 
 
 </div>
 
+## 🎯 **Always on TOP**
+
+**Control whether the Pluely window stays above all other applications for instant access:**
+
+- **Enabled:** : Window always appears on top of other applications
+- **Disabled**: Window behaves like normal applications
+- **Settings Control**: Toggle in Settings → Always On Top Mode
+- **Independent Control:**: Works separately from stealth features
+- **Perfect for**: Quick access during meetings, presentations, or when you need instant AI assistance
+
+**Perfect for instant access during sensitive meetings and conversations - window stays above all applications for seamless AI assistance!**
+
 ## 🎯 **App Icon Stealth Mode**
 
 **Complete stealth mode control integrated with main toggle:**
@@ -95,7 +111,18 @@ Pluely comes with powerful global keyboard shortcuts that work from anywhere on 
 
 ---
 
-## 🔊 **System Audio Capture**
+## 🎯 **System Audio Capture**
+
+**Transform any audio on your system into an intelligent AI assistant with real-time transcription and contextual help:**
+
+- **Real-Time AI Assistant**: 8 specialized modes for meetings, interviews, presentations, learning, and more
+- **Background Processing**: Captures system audio continuously with smart context detection
+- **Multi-Scenario Support**: Meeting insights, interview help, translation, presentation coaching, and learning assistance
+- **Cross-Platform**: Works on macOS, Windows, and Linux with platform-specific audio routing
+- **Settings Control**: Toggle system audio capture in Settings → Audio section
+- **AI Integration**: Seamlessly connects transcription to AI models for instant responses
+
+**Turn any audio into your personal AI assistant - from Zoom calls to podcasts, get intelligent help in real-time!**
 
 #### Why Setup Required?
 
