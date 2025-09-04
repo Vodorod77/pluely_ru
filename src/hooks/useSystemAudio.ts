@@ -181,6 +181,16 @@ export function useSystemAudio() {
                 selectedProvider: selectedSttProvider,
                 audio: audioBlob,
               });
+              // if pluely stt error, set error and return
+              if (transcription.includes("Pluely STT Error")) {
+                setError(transcription);
+                setIsProcessing(false);
+                setCapturing(false);
+                setIsAIProcessing(false);
+                setIsPopoverOpen(true);
+                setLastTranscription("");
+                return;
+              }
 
               if (transcription && transcription.trim()) {
                 setLastTranscription(transcription);
@@ -656,5 +666,7 @@ export function useSystemAudio() {
     contextContent,
     setContextContent: updateContextContent,
     startNewConversation,
+    // Window resize
+    resizeWindow,
   };
 }

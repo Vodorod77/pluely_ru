@@ -46,6 +46,7 @@ export const SystemAudio = ({
   setContextContent,
   startNewConversation,
   conversation,
+  resizeWindow,
 }: useSystemAudioType) => {
   const handleToggleCapture = async () => {
     if (capturing) {
@@ -114,7 +115,12 @@ export const SystemAudio = ({
             >
               {/* Header - Hide when there are messages to save space */}
               {!lastTranscription && !lastAIResponse && (
-                <Header setupRequired={setupRequired} />
+                <Header
+                  setupRequired={setupRequired}
+                  setIsPopoverOpen={setIsPopoverOpen}
+                  resizeWindow={resizeWindow}
+                  capturing={capturing}
+                />
               )}
 
               {/* Error Display - Show simple error messages for non-setup issues */}
