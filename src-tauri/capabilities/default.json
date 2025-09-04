@@ -9,6 +9,13 @@
     "opener:default",
     "updater:default",
     "macos-permissions:default",
+    "keychain:default",
+    "keychain:allow-get-item",
+    "keychain:allow-save-item",
+    "keychain:allow-remove-item",
+    "global-shortcut:allow-is-registered",
+    "global-shortcut:allow-register",
+    "global-shortcut:allow-unregister",
     {
       "identifier": "http:default",
       "allow": [{ "url": "http://**" }, { "url": "https://**" }]

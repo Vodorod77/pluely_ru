@@ -28,6 +28,7 @@ export const Input = ({
   response,
   cancel,
   scrollAreaRef,
+  inputRef,
 }: UseCompletionReturn) => {
   return (
     <div className="relative flex-1">
@@ -42,6 +43,7 @@ export const Input = ({
         <PopoverTrigger asChild className="!border-none">
           <div className="relative select-none">
             <InputComponent
+              ref={inputRef}
               placeholder="Ask me anything..."
               value={input}
               onChange={(e) => setInput(e.target.value)}

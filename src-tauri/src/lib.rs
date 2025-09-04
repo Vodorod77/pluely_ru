@@ -1,5 +1,10 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod window;
+mod shortcuts;
+mod audio;
+mod activate;
+mod api;
+
 #[cfg(target_os = "macos")]
 use tauri_plugin_macos_permissions;
 use xcap::Monitor;
@@ -59,23 +64,56 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .plugin(tauri_plugin_keychain::init())
         .invoke_handler(tauri::generate_handler![
             greet, 
             get_app_version,
             set_window_height,
-            capture_to_base64
+            capture_to_base64,
+            shortcuts::get_shortcuts,
+            shortcuts::check_shortcuts_registered,
+            shortcuts::set_app_icon_visibility,
+            shortcuts::set_always_on_top,
+            audio::start_system_audio_capture,
+            audio::stop_system_audio_capture,
+            audio::get_audio_devices,
+            audio::set_vad_sensitivity,
+            audio::set_speech_threshold,
+            audio::set_silence_threshold,
+            audio::set_min_speech_duration,
+            audio::set_pre_speech_buffer_size,
+            audio::reset_audio_settings,
+            audio::get_vad_status,
+            audio::debug_audio_devices,
+            audio::test_audio_levels,
+            activate::activate_license_api,
+            activate::mask_license_key_cmd,
+            activate::get_checkout_url,
+            activate::secure_storage_save,
+            activate::secure_storage_get,
+            activate::secure_storage_remove,
+            api::transcribe_audio,
+            api::chat_stream,
+            api::check_license_status
         ])
         .setup(|app| {
             // Setup main window positioning
             window::setup_main_window(app).expect("Failed to setup main window");
+            
+            // Setup global shortcuts
+            if let Err(e) = shortcuts::setup_global_shortcuts(app.handle()) {
+                eprintln!("Failed to setup global shortcuts: {}", e);
+            }
+            
             Ok(())
         });
 
-        // Add macOS-specific permissions plugin
-        #[cfg(target_os = "macos")]
-        {
-            builder = builder.plugin(tauri_plugin_macos_permissions::init());
-        }
+    // Add macOS-specific permissions plugin
+    #[cfg(target_os = "macos")]
+    {
+        builder = builder.plugin(tauri_plugin_macos_permissions::init());
+    }
 
     builder
         .run(tauri::generate_context!())

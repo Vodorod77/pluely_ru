@@ -5,6 +5,7 @@ import {
   CheckCircle,
   AlertCircle,
   ExternalLink,
+  Loader2,
 } from "lucide-react";
 import {
   Button,
@@ -25,7 +26,8 @@ type UpdateState =
   | "installing"
   | "ready"
   | "error"
-  | "uptodate";
+  | "uptodate"
+  | "failed";
 
 interface DownloadProgress {
   downloaded: number;
@@ -60,8 +62,7 @@ export const Updater = () => {
     } catch (err) {
       console.error("Failed to check for updates:", err);
       setUpdateState("error");
-      // Keep the popover open so user can try again
-      setIsPopoverOpen(true);
+      setIsPopoverOpen(false);
     }
   };
 
@@ -111,7 +112,7 @@ export const Updater = () => {
       }, 2000);
     } catch (err) {
       console.error("Failed to download/install update:", err);
-      setUpdateState("error");
+      setUpdateState("failed");
       // Keep the popover open so user can try again
       setIsPopoverOpen(true);
     }
@@ -199,7 +200,7 @@ export const Updater = () => {
   };
 
   // Only show updater when there's an update available or during active operations
-  if (updateState === "uptodate" || updateState === "checking") {
+  if (updateState === "uptodate" || updateState === "error") {
     return null;
   }
 
@@ -210,10 +211,15 @@ export const Updater = () => {
           size="icon"
           onClick={handleTriggerClick}
           className="cursor-pointer"
+          disabled={updateState === "checking"}
           title={`Update available: ${update?.version}`}
           aria-label={`Update available: ${update?.version}`}
         >
-          <Download className="h-4 w-4" />
+          {updateState === "checking" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Download className="h-4 w-4" />
+          )}
         </Button>
       </PopoverTrigger>
 
@@ -255,7 +261,7 @@ export const Updater = () => {
             onClick={getButtonOnClick()}
             disabled={getButtonDisabled()}
             className="w-full"
-            variant={updateState === "error" ? "destructive" : "default"}
+            variant={updateState === "failed" ? "destructive" : "default"}
           >
             {getButtonContent()}
           </Button>
@@ -264,7 +270,7 @@ export const Updater = () => {
             <p className="text-xs text-muted-foreground">
               Having trouble downloading?{" "}
               <a
-                href={update?.rawJson?.release_url as string}
+                href={"https://pluely.com/downloads?ref=pluely-app"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-700 underline inline-flex items-center gap-1"

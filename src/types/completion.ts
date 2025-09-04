@@ -34,33 +34,15 @@ export interface CompletionState {
 }
 
 // Provider-related types
-export interface Provider {
-  id: string;
-  name: string;
-  baseUrl: string;
-  chatEndpoint: string;
-  authType: "bearer" | "x-api-key" | "query";
-  authParam?: string;
-  defaultModel: string;
-  response: {
-    contentPath: string;
-    usagePath: string;
-  };
-  input: {
-    text: {
-      placement: string;
-      exampleStructure: any;
-    };
-    image: {
-      type: string;
-      placement: string;
-      exampleStructure: any;
-    };
-  };
-  models: {
-    endpoint: string;
-    method: string;
-    responsePath: string;
-    idKey: string;
-  } | null;
+export interface Message {
+  role: "system" | "user" | "assistant";
+  content:
+    | string
+    | Array<{
+        type: string;
+        text?: string;
+        image_url?: { url: string };
+        source?: any;
+        inline_data?: any;
+      }>;
 }

@@ -6,11 +6,14 @@ import {
 } from "@/config";
 import { safeLocalStorage } from "@/lib";
 import {
-  IContextType,
-  ScreenshotConfig,
-  TYPE_AI_PROVIDER,
-  TYPE_STT_PROVIDER,
-} from "@/types";
+  getCustomizableState,
+  updateAppIconVisibility,
+  updateAlwaysOnTop,
+  CustomizableState,
+} from "@/lib/storage";
+import { IContextType, ScreenshotConfig, TYPE_PROVIDER } from "@/types";
+import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import {
   ReactNode,
   createContext,
@@ -30,31 +33,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   );
 
   // AI Providers
-  const [customAiProviders, setCustomAiProviders] = useState<
-    TYPE_AI_PROVIDER[]
-  >([]);
+  const [customAiProviders, setCustomAiProviders] = useState<TYPE_PROVIDER[]>(
+    []
+  );
   const [selectedAIProvider, setSelectedAIProvider] = useState<{
     provider: string;
-    apiKey: string;
-    model: string;
+    variables: Record<string, string>;
   }>({
     provider: "",
-    apiKey: "",
-    model: "",
+    variables: {},
   });
 
   // STT Providers
-  const [customSttProviders, setCustomSttProviders] = useState<
-    TYPE_STT_PROVIDER[]
-  >([]);
+  const [customSttProviders, setCustomSttProviders] = useState<TYPE_PROVIDER[]>(
+    []
+  );
   const [selectedSttProvider, setSelectedSttProvider] = useState<{
     provider: string;
-    apiKey: string;
-    model: string;
+    variables: Record<string, string>;
   }>({
     provider: "",
-    apiKey: "",
-    model: "",
+    variables: {},
   });
 
   const [screenshotConfiguration, setScreenshotConfiguration] =
@@ -63,6 +62,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       autoPrompt: "Analyze this screenshot and provide insights",
       enabled: true,
     });
+
+  // Unified Customizable State
+  const [customizable, setCustomizable] = useState<CustomizableState>({
+    appIcon: { isVisible: true },
+    alwaysOnTop: { isEnabled: true },
+  });
+
+  // Pluely API State
+  const [pluelyApiEnabled, setPluelyApiEnabledState] = useState<boolean>(
+    safeLocalStorage.getItem(STORAGE_KEYS.PLUELY_API_ENABLED) === "true"
+  );
 
   // Function to load AI, STT, system prompt and screenshot config data from storage
   const loadData = () => {
@@ -97,7 +107,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     // Load custom AI providers
     const savedAi = safeLocalStorage.getItem(STORAGE_KEYS.CUSTOM_AI_PROVIDERS);
-    let aiList: TYPE_AI_PROVIDER[] = [];
+    let aiList: TYPE_PROVIDER[] = [];
     if (savedAi) {
       try {
         const parsed = JSON.parse(savedAi);
@@ -110,38 +120,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
     setCustomAiProviders(aiList);
 
-    // Load selected AI provider
-    const savedSelectedAi = safeLocalStorage.getItem(
-      STORAGE_KEYS.SELECTED_AI_PROVIDER
-    );
-    let selectedAiObj = {
-      provider: AI_PROVIDERS[0]?.id || "",
-      apiKey: "",
-      model: AI_PROVIDERS[0]?.defaultModel || "",
-    };
-    if (savedSelectedAi) {
-      try {
-        const parsed = JSON.parse(savedSelectedAi);
-        if (typeof parsed === "object" && parsed !== null) {
-          selectedAiObj = {
-            provider: parsed.provider || "",
-            apiKey: parsed.apiKey || "",
-            model: parsed.model || "",
-          };
-        } else if (typeof parsed === "string") {
-          selectedAiObj = { provider: parsed, apiKey: "", model: "" };
-        }
-      } catch {
-        selectedAiObj = { provider: savedSelectedAi, apiKey: "", model: "" };
-      }
-    }
-    setSelectedAIProvider(selectedAiObj);
-
-    // Load custom STT providers
+    // Load custom AI providers
     const savedStt = safeLocalStorage.getItem(
       STORAGE_KEYS.CUSTOM_SPEECH_PROVIDERS
     );
-    let sttList: TYPE_STT_PROVIDER[] = [];
+    let sttList: TYPE_PROVIDER[] = [];
     if (savedStt) {
       try {
         const parsed = JSON.parse(savedStt);
@@ -149,42 +132,92 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           sttList = parsed.map((p) => ({ ...p, isCustom: true }));
         }
       } catch {
-        console.warn("Failed to parse custom STT providers");
+        console.warn("Failed to parse custom AI providers");
       }
     }
     setCustomSttProviders(sttList);
+
+    // Load selected AI provider
+    const savedSelectedAi = safeLocalStorage.getItem(
+      STORAGE_KEYS.SELECTED_AI_PROVIDER
+    );
+    if (savedSelectedAi) {
+      setSelectedAIProvider(JSON.parse(savedSelectedAi));
+    }
 
     // Load selected STT provider
     const savedSelectedStt = safeLocalStorage.getItem(
       STORAGE_KEYS.SELECTED_STT_PROVIDER
     );
-    let selectedSttObj = {
-      provider: SPEECH_TO_TEXT_PROVIDERS[0]?.id || "",
-      apiKey: "",
-      model: "",
-    };
     if (savedSelectedStt) {
-      try {
-        const parsed = JSON.parse(savedSelectedStt);
-        if (typeof parsed === "object" && parsed !== null) {
-          selectedSttObj = {
-            provider: parsed.provider || "",
-            apiKey: parsed.apiKey || "",
-            model: parsed.model || "",
-          };
-        } else if (typeof parsed === "string") {
-          selectedSttObj = { provider: parsed, apiKey: "", model: "" };
-        }
-      } catch {
-        selectedSttObj = { provider: savedSelectedStt, apiKey: "", model: "" };
-      }
+      setSelectedSttProvider(JSON.parse(savedSelectedStt));
     }
-    setSelectedSttProvider(selectedSttObj);
+
+    // Load customizable state
+    const customizableState = getCustomizableState();
+    setCustomizable(customizableState);
+
+    // Load Pluely API enabled state
+    const savedPluelyApiEnabled = safeLocalStorage.getItem(
+      STORAGE_KEYS.PLUELY_API_ENABLED
+    );
+    if (savedPluelyApiEnabled !== null) {
+      setPluelyApiEnabledState(savedPluelyApiEnabled === "true");
+    }
   };
 
   // Load data on mount
   useEffect(() => {
     loadData();
+  }, []);
+
+  // Handle customizable settings on state changes
+  useEffect(() => {
+    const applyCustomizableSettings = async () => {
+      try {
+        await Promise.all([
+          invoke("set_app_icon_visibility", {
+            visible: customizable.appIcon.isVisible,
+          }),
+          invoke("set_always_on_top", {
+            enabled: customizable.alwaysOnTop.isEnabled,
+          }),
+        ]);
+      } catch (error) {
+        console.error("Failed to apply customizable settings:", error);
+      }
+    };
+
+    applyCustomizableSettings();
+  }, [customizable]);
+
+  // Listen for app icon hide/show events when window is toggled
+  useEffect(() => {
+    const handleAppIconVisibility = async (isVisible: boolean) => {
+      try {
+        await invoke("set_app_icon_visibility", { visible: isVisible });
+      } catch (error) {
+        console.error("Failed to set app icon visibility:", error);
+      }
+    };
+
+    const unlistenHide = listen("handle-app-icon-on-hide", async () => {
+      const currentState = getCustomizableState();
+      // Only hide app icon if user has set it to hide mode
+      if (!currentState.appIcon.isVisible) {
+        await handleAppIconVisibility(false);
+      }
+    });
+
+    const unlistenShow = listen("handle-app-icon-on-show", async () => {
+      // Always show app icon when window is shown, regardless of user setting
+      await handleAppIconVisibility(true);
+    });
+
+    return () => {
+      unlistenHide.then((fn) => fn());
+      unlistenShow.then((fn) => fn());
+    };
   }, []);
 
   // Listen to storage events for real-time sync (e.g., multi-tab)
@@ -196,7 +229,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         e.key === STORAGE_KEYS.CUSTOM_SPEECH_PROVIDERS ||
         e.key === STORAGE_KEYS.SELECTED_STT_PROVIDER ||
         e.key === STORAGE_KEYS.SYSTEM_PROMPT ||
-        e.key === STORAGE_KEYS.SCREENSHOT_CONFIG
+        e.key === STORAGE_KEYS.SCREENSHOT_CONFIG ||
+        e.key === STORAGE_KEYS.CUSTOMIZABLE
       ) {
         loadData();
       }
@@ -225,53 +259,80 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [selectedSttProvider]);
 
-  // @ts-ignore
   // Computed all AI providers
-  const allAiProviders: TYPE_AI_PROVIDER[] = [
+  const allAiProviders: TYPE_PROVIDER[] = [
     ...AI_PROVIDERS,
     ...customAiProviders,
   ];
 
-  // @ts-ignore
   // Computed all STT providers
-  const allSttProviders: TYPE_STT_PROVIDER[] = [
+  const allSttProviders: TYPE_PROVIDER[] = [
     ...SPEECH_TO_TEXT_PROVIDERS,
     ...customSttProviders,
   ];
 
   const onSetSelectedAIProvider = ({
     provider,
-    apiKey,
-    model,
+    variables,
   }: {
     provider: string;
-    apiKey: string;
-    model: string;
+    variables: Record<string, string>;
   }) => {
     if (provider && !allAiProviders.some((p) => p.id === provider)) {
       console.warn(`Invalid AI provider ID: ${provider}`);
       return;
     }
 
-    setSelectedAIProvider((prev) => ({ ...prev, provider, apiKey, model }));
+    setSelectedAIProvider((prev) => ({
+      ...prev,
+      provider,
+      variables,
+    }));
   };
 
   // Setter for selected STT with validation
   const onSetSelectedSttProvider = ({
     provider,
-    apiKey,
-    model,
+    variables,
   }: {
     provider: string;
-    apiKey: string;
-    model: string;
+    variables: Record<string, string>;
   }) => {
     if (provider && !allSttProviders.some((p) => p.id === provider)) {
       console.warn(`Invalid STT provider ID: ${provider}`);
       return;
     }
 
-    setSelectedSttProvider((prev) => ({ ...prev, provider, apiKey, model }));
+    setSelectedSttProvider((prev) => ({ ...prev, provider, variables }));
+  };
+
+  // Toggle handlers
+  const toggleAppIconVisibility = async (isVisible: boolean) => {
+    const newState = updateAppIconVisibility(isVisible);
+    setCustomizable(newState);
+    try {
+      await invoke("set_app_icon_visibility", { visible: isVisible });
+      loadData();
+    } catch (error) {
+      console.error("Failed to toggle app icon visibility:", error);
+    }
+  };
+
+  const toggleAlwaysOnTop = async (isEnabled: boolean) => {
+    const newState = updateAlwaysOnTop(isEnabled);
+    setCustomizable(newState);
+    try {
+      await invoke("set_always_on_top", { enabled: isEnabled });
+      loadData();
+    } catch (error) {
+      console.error("Failed to toggle always on top:", error);
+    }
+  };
+
+  const setPluelyApiEnabled = (enabled: boolean) => {
+    setPluelyApiEnabledState(enabled);
+    safeLocalStorage.setItem(STORAGE_KEYS.PLUELY_API_ENABLED, String(enabled));
+    loadData();
   };
 
   // Create the context value (extend IContextType accordingly)
@@ -288,7 +349,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     onSetSelectedSttProvider,
     screenshotConfiguration,
     setScreenshotConfiguration,
+    customizable,
+    toggleAppIconVisibility,
+    toggleAlwaysOnTop,
     loadData,
+    pluelyApiEnabled,
+    setPluelyApiEnabled,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

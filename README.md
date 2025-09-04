@@ -1,5 +1,7 @@
 # Pluely 🚀
 
+[<img src="/images/app-img.png" width="100%" alt="pluely"/>](https://pluely.com/)
+
 [![Open Source](https://img.shields.io/badge/Open%20Source-❤️-blue)](https://github.com/iamsrikanthnani/pluely)
 [![Tauri](https://img.shields.io/badge/Built%20with-Tauri-orange)](https://tauri.app/)
 [![React](https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript-blue)](https://reactjs.org/)
@@ -27,11 +29,11 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 ### 🚀 **Get the Latest Release**
 
-[![Download for macOS](https://img.shields.io/badge/Download%20for-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/iamsrikanthnani/pluely/releases/latest) &nbsp; [![Download for Linux](https://img.shields.io/badge/Download%20for-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/iamsrikanthnani/pluely/releases/latest) &nbsp; [![Download for Windows](https://img.shields.io/badge/Download%20for-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/iamsrikanthnani/pluely/releases/latest)
+[![Download for macOS](https://img.shields.io/badge/Download%20for-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://pluely.com/download/macos) &nbsp; [![Download for Linux](https://img.shields.io/badge/Download%20for-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://pluely.com/download/linux) &nbsp; [![Download for Windows](https://img.shields.io/badge/Download%20for-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://pluely.com/download/windows)
 
-[![GitHub Release](https://img.shields.io/github/v/release/iamsrikanthnani/pluely?style=for-the-badge&logo=github&label=Latest%20Version)](https://github.com/iamsrikanthnani/pluely/releases/latest) &nbsp; [![GitHub Downloads](https://img.shields.io/github/downloads/iamsrikanthnani/pluely/total?style=for-the-badge&logo=github&label=Total%20Downloads)](https://github.com/iamsrikanthnani/pluely/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/iamsrikanthnani/pluely?style=for-the-badge&logo=github&label=Latest%20Version)](https://pluely.com/releases) &nbsp; [![GitHub Downloads](https://img.shields.io/github/downloads/iamsrikanthnani/pluely/total?style=for-the-badge&logo=github&label=Total%20Downloads)](https://pluely.com/downloads)
 
-**Available formats:** `.dmg` (macOS) • `.msi` (Windows) • `.deb` (Linux)
+**Available formats:** `.dmg` (macOS) • `.msi` (Windows) • `.exe` (Windows) • `.deb` (Linux) • `.rpm` (Linux) • `.AppImage` (Linux)
 
 </div>
 
@@ -53,8 +55,6 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 </div>
 
-**🚀 Experience AI assistance that's lighter than a single photo, always visible, and instantly accessible without disrupting your workflow.**
-
 #### 📊 **Pluely vs Original Cluely**
 
 |       Feature       |   🟢 **Pluely (Open Source)**   |      🔴 **Original Cluely**       |
@@ -68,14 +68,73 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 ---
 
-## 🚀 Future Developments
+# Features
 
-Continuously working to enhance Pluely with these highly requested features:
+## ⌨️ **Keyboard Shortcuts**
 
-### 🎯 **Top Priority Features**
+Pluely comes with powerful global keyboard shortcuts that work from anywhere on your system:
 
-- **🎧 System Audio Capture** - Capture and transcribe audio from your computer applications, meetings, and system sounds
-- **⚡ Global Shortcuts** - Customizable keyboard shortcuts (Ctrl/Cmd + /) for quick show/hide functionality
+<div align="center">
+
+| **Shortcut**      | **macOS**         | **Windows/Linux**  | **Function**                                             |
+| :---------------- | :---------------- | :----------------- | :------------------------------------------------------- |
+| **Toggle Window** | `Cmd + \`         | `Ctrl + \`         | Show/Hide the main window + app icon (based on settings) |
+| **Voice Input**   | `Cmd + Shift + A` | `Ctrl + Shift + A` | Start voice recording                                    |
+| **Screenshot**    | `Cmd + Shift + S` | `Ctrl + Shift + S` | Capture screenshot                                       |
+| **System Audio**  | `Cmd + Shift + M` | `Ctrl + Shift + M` | Toggle system audio capture                              |
+
+</div>
+
+## 🎯 **Always on TOP**
+
+**Control whether the Pluely window stays above all other applications for instant access:**
+
+- **Enabled:** : Window always appears on top of other applications
+- **Disabled**: Window behaves like normal applications
+- **Settings Control**: Toggle in Settings → Always On Top Mode
+- **Independent Control:**: Works separately from stealth features
+- **Perfect for**: Quick access during meetings, presentations, or when you need instant AI assistance
+
+**Perfect for instant access during sensitive meetings and conversations - window stays above all applications for seamless AI assistance!**
+
+## 🎯 **App Icon Stealth Mode**
+
+**Complete stealth mode control integrated with main toggle:**
+
+- **Show Mode** (Default): App icon remains visible in dock/taskbar when window is hidden
+- **Hide Mode**: App icon completely disappears from dock/taskbar when window is hidden (app keeps running in background)
+- **Settings Control**: Configure dock/taskbar icon visibility in Settings → App Icon Visibility
+- **Auto-Integration**: Works automatically with main toggle shortcut (`Cmd+\` / `Ctrl+\`) based on your settings
+- **Cross-Platform**: Works seamlessly on macOS (ActivationPolicy::Accessory), Windows (skip_taskbar), and Linux (skip_taskbar)
+
+**Perfect for maximum discretion during sensitive meetings and conversations - the app icon disappears from dock/taskbar but app remains fully functional!**
+
+---
+
+## 🎯 **System Audio Capture**
+
+**Transform any audio on your system into an intelligent AI assistant with real-time transcription and contextual help:**
+
+- **Real-Time AI Assistant**: 8 specialized modes for meetings, interviews, presentations, learning, and more
+- **Background Processing**: Captures system audio continuously with smart context detection
+- **Multi-Scenario Support**: Meeting insights, interview help, translation, presentation coaching, and learning assistance
+- **Cross-Platform**: Works on macOS, Windows, and Linux with platform-specific audio routing
+- **Settings Control**: Toggle system audio capture in Settings → Audio section
+- **AI Integration**: Seamlessly connects transcription to AI models for instant responses
+
+**Turn any audio into your personal AI assistant - from Zoom calls to podcasts, get intelligent help in real-time!**
+
+#### Why Setup Required?
+
+**🔒 Security by Design**: Operating systems block direct system audio access for privacy protection - this is universal across all platforms and applications.
+
+**⚙️ Quick Setup Process**:
+
+- **macOS**: Install BlackHole (free) + Audio MIDI Setup (5 min)
+- **Windows**: Enable built-in Stereo Mix OR install VB-Cable (free) (3 min)
+- **Linux**: Use built-in PulseAudio monitors (usually works out-of-box)
+
+**[📖 Complete Audio Setup Guide](SYSTEM_AUDIO_SETUP.md)** • **Step-by-step for all platforms**
 
 ---
 
@@ -319,10 +378,23 @@ Connect to any AI provider with built-in support for:
 
 ### 🎤 **Advanced Speech-to-Text**
 
+Pluely offers **two powerful audio input methods**:
+
+#### 🎤 **Default Input** (Microphone)
+
 - **Voice Activity Detection (VAD)** using `@ricky0123/vad-react`
-- **OpenAI Whisper integration** for accurate transcription
-- **Real-time audio processing** with automatic speech detection
-- **Seamless voice input** - just speak and get AI responses
+- **Real-time voice commands** - just speak and get AI responses
+- **Works immediately** - no setup required on any platform
+
+#### 🔊 **System Audio Capture** (Everything Your Computer Plays)
+
+- **Meeting transcription** - capture Zoom, Teams, Google Meet audio
+- **Video analysis** - transcribe YouTube, educational content, podcasts
+- **Real-time processing** with automatic speech detection
+- **Cross-platform support** - works on macOS, Windows, Linux
+- **Setup required** - see [System Audio Setup Guide](SYSTEM_AUDIO_SETUP.md)
+
+**With any industry-leading STT providers**: OpenAI Whisper, Groq, ElevenLabs, Google, Deepgram, and more!
 
 ### 📎 **Multi-Modal Input**
 
@@ -336,11 +408,118 @@ Connect to any AI provider with built-in support for:
 - **Minimal design** - focus on content, not interface
 - **Dark/light theme** support
 
+### 👻 **Advanced Stealth Features**
+
+- **App Icon Stealth Mode** - Complete dock/taskbar invisibility for maximum discretion
+- **Intelligent Icon Management** - Automatically hide/show based on window visibility settings
+- **Cross-Platform Stealth** - Works seamlessly on macOS (Dock), Windows (Taskbar), and Linux (Panel)
+- **Global Keyboard Shortcuts** - Control app from anywhere without detection
+
 ### ⚡ **Real-Time Streaming**
 
 - **Chunked streaming** - see responses as they're generated
 - **Cancellable requests** - stop generation anytime
 - **Error handling** with retry mechanisms
+
+---
+
+## 🌍 Cross-Platform Compatibility
+
+Pluely works seamlessly across all major operating systems with comprehensive audio capture support.
+
+### 🎯 **Audio Capture Methods**
+
+Pluely offers **multiple audio capture options** to work with any setup:
+
+#### 🎤 **Default Input Capture** (Works Immediately)
+
+- ✅ **No setup required** - works out of the box on all platforms
+- ✅ **Uses your microphone** for voice input and commands
+- ✅ **Perfect for**: Voice dictation, personal notes, voice commands
+- ✅ **Supported**: macOS, Windows, Linux
+
+#### 🔊 **System Audio Capture** (Advanced Setup)
+
+- 🎯 **Captures everything your computer plays** - meetings, videos, music
+- 🎯 **Perfect for**: Meeting transcription, video analysis, system audio monitoring
+- ⚙️ **Requires**: Virtual audio device setup (platform-specific)
+- ✅ **Supported**: macOS, Windows, Linux
+
+### 🖥️ **Platform Support Matrix**
+
+| Platform       | Default Input | System Audio | Virtual Audio Solutions                                          |
+| -------------- | ------------- | ------------ | ---------------------------------------------------------------- |
+| **🍎 macOS**   | ✅ Built-in   | ✅ Supported | BlackHole (free), Loopback ($109), SoundFlower                   |
+| **🪟 Windows** | ✅ Built-in   | ✅ Supported | Stereo Mix (built-in), VB-Audio Cable (free), VoiceMeeter (free) |
+| **🐧 Linux**   | ✅ Built-in   | ✅ Supported | PulseAudio Monitors (built-in), ALSA Loopback                    |
+
+### 🎵 **System Audio Capture Capabilities**
+
+Once configured, system audio capture enables transcription of:
+
+- 🎥 **Meeting Audio**: Zoom, Teams, Google Meet, Discord, Slack
+- 🎬 **Video Content**: YouTube, Netflix, Twitch, educational videos
+- 🎵 **Music & Podcasts**: Spotify, Apple Music, podcast apps
+- 🎮 **Game Audio**: Game commentary, streaming content
+- 📞 **VoIP Calls**: Skype, WhatsApp calls, phone calls
+- 📱 **Any System Audio**: Everything your computer plays
+
+### 🛠️ **Setup Difficulty by Platform**
+
+#### 🍎 **macOS Setup**
+
+- **Default Input**: ✅ **Instant** - no setup required
+- **System Audio**: ⚙️ **Easy** - install BlackHole, configure Multi-Output
+- **Time**: ~5 minutes for system audio setup
+- **Best Option**: BlackHole (free) or Loopback (paid but easier)
+
+#### 🪟 **Windows Setup**
+
+- **Default Input**: ✅ **Instant** - no setup required
+- **System Audio**: ⚙️ **Easy** - enable Stereo Mix or install VB-Cable
+- **Time**: ~3 minutes for system audio setup
+- **Best Option**: Stereo Mix (built-in) or VB-Audio Cable (free)
+
+#### 🐧 **Linux Setup**
+
+- **Default Input**: ✅ **Instant** - no setup required
+- **System Audio**: ⚙️ **Easy** - PulseAudio monitors usually work out-of-box
+- **Time**: ~2 minutes for system audio setup
+- **Best Option**: PulseAudio Monitor devices (usually pre-configured)
+
+### 🔧 **Built-in Debug & Testing Tools**
+
+Pluely includes comprehensive debugging tools for all platforms:
+
+- **🔍 Device Debug**: Shows all available audio devices with detailed analysis
+- **🎵 Audio Level Testing**: 3-second audio level test with real-time feedback
+- **📊 Real-time Monitoring**: Live RMS/Peak audio level display in console
+- **🎯 Smart Device Detection**: Automatically selects best available device
+- **🔄 Auto-Recovery**: Handles device conflicts and "already running" errors
+
+### 📚 **Comprehensive Documentation**
+
+- **📖 [SYSTEM_AUDIO_SETUP.md](SYSTEM_AUDIO_SETUP.md)**: Complete setup guide for all platforms
+- **🎯 Platform-specific instructions**: Step-by-step guides with screenshots
+- **🔧 Troubleshooting**: Common issues and solutions for each OS
+- **💡 Pro Tips**: Best practices and optimization recommendations
+
+### 🚀 **Quick Start (Any Platform)**
+
+1. **Download Pluely** for your platform from [releases](https://github.com/iamsrikanthnani/pluely/releases/latest)
+2. **Install & Launch** the application
+3. **Click the audio button** (headphones icon) in the interface
+4. **Choose your method**:
+   - **"🎤 Default Input"** - works immediately, no setup
+   - **"🔄 System Audio"** - requires virtual audio setup (see [guide](SYSTEM_AUDIO_SETUP.md))
+5. **Start speaking or play audio** - transcription begins automatically!
+
+### 🎉 **Why Cross-Platform Matters**
+
+- **🌐 Universal Access**: Use Pluely on any device, anywhere
+- **🔄 Consistent Experience**: Same features and UI across all platforms
+- **🛠️ Flexible Setup**: Multiple audio solutions to fit any environment
+- **📈 Future-Proof**: Built with Tauri for native performance on all platforms
 
 ---
 
@@ -351,6 +530,8 @@ Connect to any AI provider with built-in support for:
 - **Node.js** (v18 or higher)
 - **Rust** (latest stable)
 - **npm** or **yarn**
+
+> **🎵 Audio Capabilities**: The built app includes full cross-platform audio support with both microphone input and system audio capture. See [SYSTEM_AUDIO_SETUP.md](SYSTEM_AUDIO_SETUP.md) for platform-specific setup guides.
 
 ### Quick Start
 
@@ -620,6 +801,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 🔗 Links
 
+- **🎵 Audio Setup Guide**: [SYSTEM_AUDIO_SETUP.md](SYSTEM_AUDIO_SETUP.md) - Complete cross-platform audio configuration
 - **Website**: [cluely.com](https://cluely.com/) (Original Cluely)
 - **Documentation**: [GitHub Wiki](https://github.com/iamsrikanthnani/pluely/wiki)
 - **Issues**: [GitHub Issues](https://github.com/iamsrikanthnani/pluely/issues)

@@ -12,17 +12,14 @@ export const Audio = ({
   submit,
   setState,
 }: UseCompletionReturn) => {
-  const { selectedSttProvider } = useApp();
+  const { selectedSttProvider, pluelyApiEnabled } = useApp();
 
-  const speechProviderStatus =
-    selectedSttProvider.apiKey &&
-    selectedSttProvider.provider &&
-    selectedSttProvider.model;
+  const speechProviderStatus = selectedSttProvider.provider;
 
   return (
     <Popover open={micOpen} onOpenChange={setMicOpen}>
       <PopoverTrigger asChild>
-        {speechProviderStatus && enableVAD ? (
+        {(pluelyApiEnabled || speechProviderStatus) && enableVAD ? (
           <AutoSpeechVAD
             submit={submit}
             setState={setState}
@@ -45,7 +42,9 @@ export const Audio = ({
       <PopoverContent
         side="top"
         align="center"
-        className={`w-80 p-3 ${speechProviderStatus ? "hidden" : ""}`}
+        className={`w-80 p-3 ${
+          pluelyApiEnabled || speechProviderStatus ? "hidden" : ""
+        }`}
         sideOffset={8}
       >
         <div className="text-sm select-none">
@@ -57,13 +56,9 @@ export const Audio = ({
               <>
                 <div className="mt-2 flex flex-row gap-1 items-center text-orange-600">
                   <InfoIcon size={16} />
-                  {selectedSttProvider.apiKey ? null : (
-                    <p>API KEY IS MISSING</p>
-                  )}
                   {selectedSttProvider.provider ? null : (
                     <p>PROVIDER IS MISSING</p>
                   )}
-                  {selectedSttProvider.model ? null : <p>MODEL IS MISSING</p>}
                 </div>
 
                 <span className="block mt-2">

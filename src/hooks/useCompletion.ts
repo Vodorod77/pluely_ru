@@ -1,10 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useWindowResize } from "./useWindow";
-import { useWindowFocus } from "@/hooks";
+import { useGlobalShortcuts, useWindowFocus } from "@/hooks";
 import { MAX_FILES } from "@/config";
 import { useApp } from "@/contexts";
 import { fetchAIResponse, safeLocalStorage } from "@/lib";
 import { STORAGE_KEYS } from "@/config";
+import { invoke } from "@tauri-apps/api/core";
+import { shouldUsePluelyAPI } from "@/lib/functions/pluely.api";
 
 // Types for completion
 interface AttachedFile {
@@ -48,6 +50,7 @@ export const useCompletion = () => {
     screenshotConfiguration,
     setScreenshotConfiguration,
   } = useApp();
+  const globalShortcuts = useGlobalShortcuts();
 
   const [state, setState] = useState<CompletionState>({
     input: "",
@@ -62,6 +65,8 @@ export const useCompletion = () => {
   const [enableVAD, setEnableVAD] = useState(false);
   const [messageHistoryOpen, setMessageHistoryOpen] = useState(false);
   const [isFilesPopoverOpen, setIsFilesPopoverOpen] = useState(false);
+  const [isScreenshotLoading, setIsScreenshotLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { resizeWindow } = useWindowResize();
 
@@ -117,35 +122,6 @@ export const useCompletion = () => {
     async (speechText?: string) => {
       const input = speechText || state.input;
 
-      // Check if AI provider is configured
-      if (!selectedAIProvider.provider || !selectedAIProvider.apiKey) {
-        setState((prev) => ({
-          ...prev,
-          error: "Please configure your AI provider and API key in settings",
-        }));
-        return;
-      }
-
-      const provider = allAiProviders.find(
-        (p) => p.id === selectedAIProvider.provider
-      );
-      if (!provider) {
-        setState((prev) => ({
-          ...prev,
-          error: "Invalid provider selected",
-        }));
-        return;
-      }
-
-      const model = selectedAIProvider.model || provider.defaultModel;
-      if (!model) {
-        setState((prev) => ({
-          ...prev,
-          error: "Please select a model in settings",
-        }));
-        return;
-      }
-
       if (!input.trim()) {
         return;
       }
@@ -164,13 +140,6 @@ export const useCompletion = () => {
 
       abortControllerRef.current = new AbortController();
 
-      setState((prev) => ({
-        ...prev,
-        isLoading: true,
-        error: null,
-        response: "",
-      }));
-
       try {
         // Prepare message history for the AI
         const messageHistory = state.conversationHistory.map((msg) => ({
@@ -179,26 +148,52 @@ export const useCompletion = () => {
         }));
 
         // Handle image attachments
-        let imageBase64: string | undefined;
+        const imagesBase64: string[] = [];
         if (state.attachedFiles.length > 0) {
-          const firstImage = state.attachedFiles[0];
-          if (firstImage.type.startsWith("image/")) {
-            imageBase64 = firstImage.base64;
-          }
+          state.attachedFiles.forEach((file) => {
+            if (file.type.startsWith("image/")) {
+              imagesBase64.push(file.base64);
+            }
+          });
         }
 
         let fullResponse = "";
 
+        const usePluelyAPI = await shouldUsePluelyAPI();
+        // Check if AI provider is configured
+        if (!selectedAIProvider.provider && !usePluelyAPI) {
+          setState((prev) => ({
+            ...prev,
+            error: "Please select an AI provider in settings",
+          }));
+          return;
+        }
+
+        const provider = allAiProviders.find(
+          (p) => p.id === selectedAIProvider.provider
+        );
+        if (!provider && !usePluelyAPI) {
+          setState((prev) => ({
+            ...prev,
+            error: "Invalid provider selected",
+          }));
+          return;
+        }
+
+        setState((prev) => ({
+          ...prev,
+          isLoading: true,
+          error: null,
+          response: "",
+        }));
         // Use the fetchAIResponse function
         for await (const chunk of fetchAIResponse({
-          provider,
-          apiKey: selectedAIProvider.apiKey,
+          provider: usePluelyAPI ? undefined : provider,
+          selectedProvider: selectedAIProvider,
           systemPrompt: systemPrompt || undefined,
           history: messageHistory,
           userMessage: input,
-          model,
-          stream: true,
-          imageBase64,
+          imagesBase64,
         })) {
           fullResponse += chunk;
           setState((prev) => ({
@@ -463,6 +458,14 @@ export const useCompletion = () => {
   };
 
   const handleScreenshotSubmit = async (base64: string, prompt?: string) => {
+    if (state.attachedFiles.length >= MAX_FILES) {
+      setState((prev) => ({
+        ...prev,
+        error: `You can only upload ${MAX_FILES} files`,
+      }));
+      return;
+    }
+
     try {
       if (prompt) {
         // Auto mode: Submit directly to AI with screenshot
@@ -474,49 +477,12 @@ export const useCompletion = () => {
           size: base64.length,
         };
 
-        // Check if AI provider is configured
-        if (!selectedAIProvider.provider || !selectedAIProvider.apiKey) {
-          setState((prev) => ({
-            ...prev,
-            error: "Please configure your AI provider and API key in settings",
-          }));
-          return;
-        }
-
-        const provider = allAiProviders.find(
-          (p) => p.id === selectedAIProvider.provider
-        );
-        if (!provider) {
-          setState((prev) => ({
-            ...prev,
-            error: "Invalid provider selected",
-          }));
-          return;
-        }
-
-        const model = selectedAIProvider.model || provider.defaultModel;
-        if (!model) {
-          setState((prev) => ({
-            ...prev,
-            error: "Please select a model in settings",
-          }));
-          return;
-        }
-
         // Cancel any existing request
         if (abortControllerRef.current) {
           abortControllerRef.current.abort();
         }
 
         abortControllerRef.current = new AbortController();
-
-        setState((prev) => ({
-          ...prev,
-          input: prompt,
-          isLoading: true,
-          error: null,
-          response: "",
-        }));
 
         try {
           // Prepare message history for the AI
@@ -527,16 +493,43 @@ export const useCompletion = () => {
 
           let fullResponse = "";
 
+          const usePluelyAPI = await shouldUsePluelyAPI();
+          // Check if AI provider is configured
+          if (!selectedAIProvider.provider && !usePluelyAPI) {
+            setState((prev) => ({
+              ...prev,
+              error: "Please select an AI provider in settings",
+            }));
+            return;
+          }
+
+          const provider = allAiProviders.find(
+            (p) => p.id === selectedAIProvider.provider
+          );
+          if (!provider && !usePluelyAPI) {
+            setState((prev) => ({
+              ...prev,
+              error: "Invalid provider selected",
+            }));
+            return;
+          }
+
+          setState((prev) => ({
+            ...prev,
+            input: prompt,
+            isLoading: true,
+            error: null,
+            response: "",
+          }));
+
           // Use the fetchAIResponse function with image
           for await (const chunk of fetchAIResponse({
-            provider,
-            apiKey: selectedAIProvider.apiKey,
+            provider: usePluelyAPI ? undefined : provider,
+            selectedProvider: selectedAIProvider,
             systemPrompt: systemPrompt || undefined,
             history: messageHistory,
             userMessage: prompt,
-            model,
-            stream: true,
-            imageBase64: base64,
+            imagesBase64: [base64],
           })) {
             fullResponse += chunk;
             setState((prev) => ({
@@ -670,12 +663,54 @@ export const useCompletion = () => {
     }
   }, [state.response]);
 
+  const captureScreenshot = async () => {
+    if (!screenshotConfiguration.enabled || !handleScreenshotSubmit) return;
+    setIsScreenshotLoading(true);
+    try {
+      const base64 = await invoke("capture_to_base64");
+
+      if (screenshotConfiguration.mode === "auto") {
+        // Auto mode: Submit directly to AI with the configured prompt
+        handleScreenshotSubmit(
+          base64 as string,
+          screenshotConfiguration.autoPrompt
+        );
+      } else if (screenshotConfiguration.mode === "manual") {
+        // Manual mode: Add to attached files without prompt
+        handleScreenshotSubmit(base64 as string);
+      }
+    } catch (error) {
+      console.error("Failed to capture screenshot:", error);
+    } finally {
+      setIsScreenshotLoading(false);
+    }
+  };
+
+  const toggleRecording = () => {
+    setEnableVAD(!enableVAD);
+    setMicOpen(!micOpen);
+  };
+
   useWindowFocus({
     onFocusLost: () => {
       setMicOpen(false);
       setMessageHistoryOpen(false);
     },
   });
+
+  // register callbacks for global shortcuts
+  useEffect(() => {
+    globalShortcuts.registerAudioCallback(toggleRecording);
+    globalShortcuts.registerInputRef(inputRef.current);
+    globalShortcuts.registerScreenshotCallback(captureScreenshot);
+  }, [
+    globalShortcuts.registerAudioCallback,
+    globalShortcuts.registerInputRef,
+    globalShortcuts.registerScreenshotCallback,
+    toggleRecording,
+    captureScreenshot,
+    inputRef,
+  ]);
 
   return {
     input: state.input,
@@ -714,5 +749,8 @@ export const useCompletion = () => {
     isFilesPopoverOpen,
     setIsFilesPopoverOpen,
     onRemoveAllFiles,
+    inputRef,
+    captureScreenshot,
+    isScreenshotLoading,
   };
 };

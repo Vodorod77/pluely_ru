@@ -116,6 +116,13 @@ export interface UseCompletionReturn {
   setIsFilesPopoverOpen: Dispatch<SetStateAction<boolean>>;
   /** Function to remove all files and close the files popover */
   onRemoveAllFiles: () => void;
+
+  /** Ref for the input element */
+  inputRef: RefObject<HTMLInputElement | null>;
+  /** Function to capture a screenshot */
+  captureScreenshot: () => Promise<void>;
+  /** Whether a screenshot is currently loading */
+  isScreenshotLoading: boolean;
 }
 
 /**

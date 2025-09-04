@@ -1,15 +1,15 @@
 import {
   Card,
-  Label,
   Button,
   Header,
-  Selection,
   TextInput,
   Switch,
+  Textarea,
+  Selection,
 } from "@/components";
-import { PlusIcon, SaveIcon, SparklesIcon } from "lucide-react";
+import { PlusIcon, SaveIcon } from "lucide-react";
 import { useCustomAiProviders } from "@/hooks";
-import { AUTH_TYPES } from "@/lib";
+import { useApp } from "@/contexts";
 
 interface CreateEditProviderProps {
   customProviderHook?: ReturnType<typeof useCustomAiProviders>;
@@ -18,6 +18,7 @@ interface CreateEditProviderProps {
 export const CreateEditProvider = ({
   customProviderHook,
 }: CreateEditProviderProps) => {
+  const { allAiProviders } = useApp();
   // Use the provided hook instance or create a new one
   const hookInstance = customProviderHook || useCustomAiProviders();
 
@@ -31,10 +32,6 @@ export const CreateEditProvider = ({
     handleSave,
     setErrors,
     handleAutoFill,
-    customHeaderName,
-    setCustomHeaderName,
-    queryParamName,
-    setQueryParamName,
   } = hookInstance;
 
   return (
@@ -55,284 +52,191 @@ export const CreateEditProvider = ({
         <Card className="p-4 border border-input/50 ">
           <div className="flex justify-between items-center">
             <Header
-              title={
-                editingProvider
-                  ? `Edit ${formData.name || "Provider"}`
-                  : "Add Custom Provider"
-              }
+              title={editingProvider ? `Edit Provider}` : "Add Custom Provider"}
               description="Create a custom AI provider to use with your AI-powered applications."
             />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleAutoFill("openai")}
-              className="flex items-center gap-2"
-            >
-              <SparklesIcon className="h-4 w-4" />
-              Auto-fill with OpenAI
-            </Button>
+
+            <div className="w-[120px]">
+              <Selection
+                options={allAiProviders
+                  ?.filter((provider) => !provider?.isCustom)
+                  .map((provider) => {
+                    return {
+                      label: provider?.id || "AI Provider",
+                      value: provider?.id || "AI Provider",
+                    };
+                  })}
+                placeholder={"Auto-fill"}
+                onChange={(value) => {
+                  handleAutoFill(value);
+                }}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Basic Configuration */}
-            <div className="space-y-3">
-              <TextInput
-                label="Provider Name *"
-                placeholder="My Custom Provider"
-                value={formData.name}
-                onChange={(value) =>
-                  setFormData((prev) => ({ ...prev, name: value }))
-                }
-                error={errors.name}
-                notes="The name of your custom AI provider."
-              />
-
-              <TextInput
-                label="Base URL *"
-                placeholder="https://api.example.com"
-                value={formData.baseUrl}
-                onChange={(value) =>
-                  setFormData((prev) => ({ ...prev, baseUrl: value }))
-                }
-                error={errors.baseUrl}
-                notes="The base URL of your custom AI provider."
-              />
-
-              <TextInput
-                label="Chat Endpoint *"
-                placeholder="/v1/chat/completions"
-                value={formData.chatEndpoint}
-                onChange={(value) =>
-                  setFormData((prev) => ({ ...prev, chatEndpoint: value }))
-                }
-                error={errors.chatEndpoint}
-                notes="The chat endpoint of your custom AI provider."
-              />
-
-              <div className="space-y-1">
-                <Label className="text-xs font-medium">Auth Type *</Label>
-                <Selection
-                  selected={formData.authType}
-                  onChange={(value) =>
-                    setFormData((prev) => ({ ...prev, authType: value }))
-                  }
-                  options={AUTH_TYPES.map((type) => ({
-                    label: type,
-                    value: type,
-                  }))}
-                />
-                <p className="text-xs text-muted-foreground">
-                  header is used to authenticate the API request.
-                </p>
-              </div>
-
-              {formData.authType === "custom" && (
-                <TextInput
-                  label="Custom Header Name"
-                  placeholder="x-api-key"
-                  value={customHeaderName}
-                  onChange={setCustomHeaderName}
-                  error={errors.customHeaderName}
-                  notes="The custom header name for the API key. This is used to authenticate the API request."
-                />
-              )}
-
-              {formData.authType === "query" && (
-                <TextInput
-                  label="Query Parameter Name"
-                  placeholder="api_key"
-                  value={queryParamName}
-                  onChange={setQueryParamName}
-                  error={errors.queryParamName}
-                  notes="The query parameter name for the API key. This is used to authenticate the API request."
-                />
-              )}
-
-              <TextInput
-                label="Default Model"
-                placeholder="gpt-4"
-                value={formData.defaultModel}
-                onChange={(value) =>
-                  setFormData((prev) => ({ ...prev, defaultModel: value }))
-                }
-                error={errors.defaultModel}
-                notes="The default model to use for the AI provider."
-              />
-
-              <div className="flex justify-between items-center space-x-2">
-                <Header
-                  title="Streaming"
-                  description="streaming is used to stream the response from the AI provider."
-                />
-                <Switch
-                  checked={formData.streaming}
-                  onCheckedChange={(checked) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      streaming: checked,
-                    }))
-                  }
-                />
-              </div>
-            </div>
-
-            {/* Response Configuration */}
-            <div className="space-y-3">
+            <div className="space-y-1">
               <Header
-                title="Response Configuration"
-                description="Configure how responses are handled from the AI provider."
+                title="Curl Command *"
+                description="The curl command to use with the AI provider."
               />
-
-              <TextInput
-                label="Content Path"
-                placeholder="choices[0].message.content"
-                value={(formData as any).response?.contentPath || ""}
-                onChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    response: { ...(prev as any).response, contentPath: value },
-                  }))
-                }
-                error={(errors as any).response?.contentPath}
-                notes="The path to extract content from the API response. Examples: choices[0].message.content, text, candidates[0].content.parts[0].text"
-              />
-
-              <TextInput
-                label="Usage Path"
-                placeholder="usage"
-                value={(formData as any).response?.usagePath || ""}
-                onChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    response: { ...(prev as any).response, usagePath: value },
-                  }))
-                }
-                error={(errors as any).response?.usagePath}
-                notes="The path to extract usage information from the API response. Examples: usage, usageMetadata, meta.usage"
-              />
-            </div>
-          </div>
-
-          {/* Input Configuration */}
-          <div className="space-y-4">
-            <Header
-              title="Input Configuration"
-              description="Configure how input data is structured for the AI provider."
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Text Input Configuration */}
-              <div className="space-y-3">
-                <Header
-                  title="Text Input"
-                  description="Configure text message structure."
-                />
-
-                <TextInput
-                  label="Text Messages Format"
-                  placeholder='[{"role": "user", "content": "Hello"}]'
-                  value={
-                    JSON.stringify((formData as any).input?.text?.messages) ||
-                    "[]"
-                  }
-                  onChange={(value) => {
-                    try {
-                      const parsed = JSON.parse(value || "[]");
-                      setFormData((prev) => ({
-                        ...prev,
-                        input: {
-                          ...(prev as any).input,
-                          text: {
-                            ...(prev as any).input?.text,
-                            messages: Array.isArray(parsed) ? parsed : [],
-                          },
-                        },
-                      }));
-                    } catch (e) {
-                      // Invalid JSON, keep current value
+              <Textarea
+                className="h-74 font-mono text-sm"
+                placeholder={`curl --location 'http://127.0.0.1:1337/v1/chat/completions' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer YOUR_API_KEY or {{API_KEY}}' \
+--data '{
+        "model": "your-model-name or {{MODEL}}",
+        "messages": [
+            {
+                "role": "system",
+                "content": "{{SYSTEM_PROMPT}}"
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "{{TEXT}}"
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": "data:image/jpeg;base64,{{IMAGE}}"
+                        }
                     }
-                  }}
-                  error={(errors as any).input?.text?.messages}
-                  notes={`JSON array of message object for user role and content fields. Example: [{"role": "user", "content": "Hello"}]`}
-                />
-              </div>
+                ]
+            }
+        ]
+    }'`}
+                value={formData.curl}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, curl: e.target.value }))
+                }
+              />
 
-              {/* Image Input Configuration */}
-              <div className="space-y-3">
-                <Header
-                  title="Image Input"
-                  description="Configure image input structure."
-                />
-
-                <div className="space-y-1">
-                  <Label className="text-xs font-medium">Image Type</Label>
-                  <Selection
-                    selected={(formData as any).input?.image?.type || ""}
-                    onChange={(value) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        input: {
-                          ...(prev as any).input,
-                          image: (prev as any).input?.image
-                            ? {
-                                ...(prev as any).input.image,
-                                type: value,
-                              }
-                            : {
-                                type: value,
-                                messages: [],
-                              },
-                        },
-                      }))
-                    }
-                    options={[
-                      { label: "base64", value: "base64" },
-                      { label: "url", value: "url" },
-                      { label: "url_or_base64", value: "url_or_base64" },
-                      { label: "none", value: "none" },
-                    ]}
-                  />
+              {/* Variable Instructions */}
+              <div className="bg-muted/50 p-4 rounded-lg space-y-4">
+                <div className="bg-card border p-3 rounded-lg">
+                  <p className="text-sm font-medium text-primary mb-2">
+                    💡 Important: You can add custom variables or directly
+                    include your API keys/values
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    The type of image input supported by the provider.
+                    No need to enter variables separately when selecting the
+                    provider - you can embed them directly in the curl command
+                    (e.g., replace YOUR_API_KEY with your actual key or use{" "}
+                    <code className="bg-muted px-1 rounded text-xs">
+                      {"{{MODEL}}"}
+                    </code>{" "}
+                    for model name).
                   </p>
                 </div>
 
-                {formData.input?.image?.type !== "none" && (
-                  <TextInput
-                    label="Image Messages Format"
-                    placeholder='[{"role": "user", "content": []}]'
-                    value={
-                      (formData as any).input?.image?.messages
-                        ? JSON.stringify((formData as any).input.image.messages)
-                        : "[]"
-                    }
-                    onChange={(value) => {
-                      try {
-                        const parsed = JSON.parse(value || "[]");
-                        setFormData((prev) => ({
-                          ...prev,
-                          input: {
-                            ...(prev as any).input,
-                            image: (prev as any).input?.image
-                              ? {
-                                  ...(prev as any).input.image,
-                                  messages: Array.isArray(parsed) ? parsed : [],
-                                }
-                              : {
-                                  type: "",
-                                  messages: Array.isArray(parsed) ? parsed : [],
-                                },
-                          },
-                        }));
-                      } catch (e) {
-                        // Invalid JSON, keep current value
-                      }
-                    }}
-                    error={(errors as any).input?.image?.messages}
-                    notes="JSON array of image message objects with role and content fields. Examples: OpenAI format, Claude format, etc."
-                  />
-                )}
+                <h4 className="text-sm font-semibold text-foreground">
+                  ⚠️ Required Variables for AI Providers:
+                </h4>
+                <div className="grid grid-cols-1 gap-3 text-sm">
+                  <div className="flex items-center gap-3 p-3 bg-card border rounded-lg">
+                    <code className="bg-muted px-2 py-1 rounded font-mono text-xs">
+                      {"{{TEXT}}"}
+                    </code>
+                    <span className="text-foreground font-medium">
+                      → REQUIRED: User's text input
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-card border rounded-lg">
+                    <code className="bg-muted px-2 py-1 rounded font-mono text-xs">
+                      {"{{IMAGE}}"}
+                    </code>
+                    <span className="text-muted-foreground">
+                      → Base64 image data (without data:image/jpeg;base64
+                      prefix)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 p-3 bg-card border rounded-lg">
+                    <code className="bg-muted px-2 py-1 rounded font-mono text-xs">
+                      {"{{SYSTEM_PROMPT}}"}
+                    </code>
+                    <span className="text-muted-foreground">
+                      → System prompt/instructions(optional)
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    <strong className="text-foreground">Quick Setup:</strong>{" "}
+                    Replace{" "}
+                    <code className="bg-muted px-1 rounded text-xs">
+                      YOUR_API_KEY
+                    </code>{" "}
+                    with your actual API key directly in the curl command.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong className="text-foreground">
+                      Custom Variables:
+                    </strong>{" "}
+                    You can add your own variables using the same{" "}
+                    <code className="bg-muted px-1 rounded text-xs">
+                      {"{{VARIABLE_NAME}}"}
+                    </code>{" "}
+                    format and they'll be available for configuration when you
+                    select this provider.
+                  </p>
+                  <p className="text-xs text-muted-foreground italic">
+                    💡 Tip: Use the required variables (
+                    <code className="bg-muted px-1 rounded text-xs">
+                      {"{{TEXT}}"}
+                    </code>
+                    ,{" "}
+                    <code className="bg-muted px-1 rounded text-xs">
+                      {"{{SYSTEM_PROMPT}}"}
+                    </code>
+                    ) for basic functionality. Add{" "}
+                    <code className="bg-muted px-1 rounded text-xs">
+                      {"{{IMAGE}}"}
+                    </code>{" "}
+                    only if your provider supports image input.
+                  </p>
+                </div>
               </div>
+            </div>
+            <div className="flex justify-between items-center space-x-2">
+              <Header
+                title="Streaming"
+                description="streaming is used to stream the response from the AI provider."
+              />
+              <Switch
+                checked={formData.streaming}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    streaming: checked,
+                  }))
+                }
+              />
+            </div>
+            {/* Response Configuration */}
+            <div className="space-y-2">
+              <Header
+                title="Response Content Path *"
+                description="The path to extract content from the API response."
+              />
+
+              <TextInput
+                placeholder="choices[0].message.content"
+                value={formData.responseContentPath || ""}
+                onChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    responseContentPath: value,
+                  }))
+                }
+                error={errors.responseContentPath}
+                notes="The path to extract content from the API response. Examples: choices[0].message.content, text, candidates[0].content.parts[0].text"
+              />
             </div>
           </div>
 
@@ -346,11 +250,7 @@ export const CreateEditProvider = ({
             </Button>
             <Button
               onClick={handleSave}
-              disabled={
-                !formData.name.trim() ||
-                !formData.baseUrl.trim() ||
-                !formData.chatEndpoint.trim()
-              }
+              disabled={!formData.curl.trim()}
               className="h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
             >
               <SaveIcon className="h-4 w-4 mr-2" />

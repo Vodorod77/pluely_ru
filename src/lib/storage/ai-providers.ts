@@ -1,7 +1,7 @@
 import { STORAGE_KEYS } from "@/config";
-import { TYPE_AI_PROVIDER } from "@/types";
+import { TYPE_PROVIDER } from "@/types";
 
-export function getCustomAiProviders(): TYPE_AI_PROVIDER[] {
+export function getCustomAiProviders(): TYPE_PROVIDER[] {
   try {
     if (typeof window === "undefined") return [];
     const saved = localStorage.getItem(STORAGE_KEYS.CUSTOM_AI_PROVIDERS);
@@ -9,11 +9,7 @@ export function getCustomAiProviders(): TYPE_AI_PROVIDER[] {
     const parsed = JSON.parse(saved);
     if (!Array.isArray(parsed)) return [];
     return parsed.filter(
-      (p: any) =>
-        p.id &&
-        p.isCustom &&
-        typeof p.name === "string" &&
-        typeof p.baseUrl === "string"
+      (p: any) => p.id && p.isCustom && typeof p.curl === "string"
     );
   } catch (error) {
     console.error("Error retrieving custom AI providers:", error);
@@ -21,7 +17,7 @@ export function getCustomAiProviders(): TYPE_AI_PROVIDER[] {
   }
 }
 
-export function setCustomAiProviders(providers: TYPE_AI_PROVIDER[]): void {
+export function setCustomAiProviders(providers: TYPE_PROVIDER[]): void {
   try {
     if (typeof window === "undefined") return;
     localStorage.setItem(
@@ -34,14 +30,14 @@ export function setCustomAiProviders(providers: TYPE_AI_PROVIDER[]): void {
 }
 
 export function addCustomAiProvider(
-  newProvider: Omit<TYPE_AI_PROVIDER, "id" | "isCustom">
-): TYPE_AI_PROVIDER | null {
+  newProvider: Omit<TYPE_PROVIDER, "id" | "isCustom">
+): TYPE_PROVIDER | null {
   try {
     const providers = getCustomAiProviders();
-    const id = `custom-ai-${
-      newProvider?.name?.toLowerCase() || new Date().toISOString()
-    }`;
-    const provider: TYPE_AI_PROVIDER = {
+    const id = `custom-${Date.now()}-${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    const provider: TYPE_PROVIDER = {
       ...newProvider,
       id,
       isCustom: true,
@@ -57,7 +53,7 @@ export function addCustomAiProvider(
 
 export function updateCustomAiProvider(
   id: string,
-  updates: Partial<TYPE_AI_PROVIDER>
+  updates: Partial<TYPE_PROVIDER>
 ): boolean {
   try {
     const providers = getCustomAiProviders();

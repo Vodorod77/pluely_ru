@@ -1,27 +1,21 @@
 import { STORAGE_KEYS } from "@/config";
-import { TYPE_STT_PROVIDER } from "@/types";
+import { TYPE_PROVIDER } from "@/types";
 
-export function getCustomSttProviders(): TYPE_STT_PROVIDER[] {
+export function getCustomSttProviders(): TYPE_PROVIDER[] {
   try {
     if (typeof window === "undefined") return [];
     const saved = localStorage.getItem(STORAGE_KEYS.CUSTOM_SPEECH_PROVIDERS);
     if (!saved) return [];
     const parsed = JSON.parse(saved);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (p: any) =>
-        p.id &&
-        p.isCustom &&
-        typeof p.name === "string" &&
-        typeof p.baseUrl === "string"
-    );
+    return parsed.filter((p: any) => p.id && p.isCustom);
   } catch (error) {
     console.error("Error retrieving custom STT providers:", error);
     return [];
   }
 }
 
-export function setCustomSttProviders(providers: TYPE_STT_PROVIDER[]): void {
+export function setCustomSttProviders(providers: TYPE_PROVIDER[]): void {
   try {
     if (typeof window === "undefined") return;
     localStorage.setItem(
@@ -34,23 +28,15 @@ export function setCustomSttProviders(providers: TYPE_STT_PROVIDER[]): void {
 }
 
 export function addCustomSttProvider(
-  newProvider: Omit<TYPE_STT_PROVIDER, "id" | "isCustom">
-): TYPE_STT_PROVIDER | null {
+  newProvider: Omit<TYPE_PROVIDER, "id" | "isCustom">
+): TYPE_PROVIDER | null {
   try {
     const providers = getCustomSttProviders();
     const id = `custom-stt-${Date.now()}`;
-    const provider: TYPE_STT_PROVIDER = {
+    const provider: TYPE_PROVIDER = {
       ...newProvider,
       id,
       isCustom: true,
-      name: newProvider.name,
-      baseUrl: newProvider.baseUrl,
-      endpoint: newProvider.endpoint,
-      method: newProvider.method,
-      request: newProvider.request,
-      response: newProvider.response,
-      authType: newProvider.authType,
-      streaming: newProvider.streaming,
     };
     providers.push(provider);
     setCustomSttProviders(providers);
@@ -63,7 +49,7 @@ export function addCustomSttProvider(
 
 export function updateCustomSttProvider(
   id: string,
-  updates: Partial<TYPE_STT_PROVIDER>
+  updates: Partial<TYPE_PROVIDER>
 ): boolean {
   try {
     const providers = getCustomSttProviders();

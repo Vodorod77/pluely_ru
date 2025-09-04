@@ -2,9 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <!-- Microphone Access -->
+  <!-- Microphone Access - Only for voice input, NOT for system audio capture -->
   <key>NSMicrophoneUsageDescription</key>
-  <string>Pluely needs access to your microphone for voice conversations and audio input functionality</string>
+  <string>Pluely needs access to your microphone for voice input functionality. System audio capture uses virtual audio devices and does not access your microphone.</string>
   
   <!-- Speech Recognition -->
   <key>NSSpeechRecognitionUsageDescription</key>
@@ -18,6 +18,10 @@
   <key>NSScreenCaptureUsageDescription</key>
   <string>Pluely needs access to screen capture for screenshot functionality</string>
   
+<!-- system audio -->
+  <key>NSScreenRecordingUsageDescription</key>
+  <string>Pluely needs access to system audio for system audio capture functionality</string>
+
   <!-- Privacy - Audio Processing -->
   <key>NSPrivacyAccessedAPITypes</key>
   <array>

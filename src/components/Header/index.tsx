@@ -1,15 +1,18 @@
 import { Label } from "@/components";
+import { cn } from "@/lib/utils";
 
 interface HeaderProps {
   title: string;
   description: string;
   isMainTitle?: boolean;
+  titleClassName?: string;
 }
 
 export const Header = ({
   title,
   description,
   isMainTitle = false,
+  titleClassName,
 }: HeaderProps) => {
   return (
     <div
@@ -18,7 +21,10 @@ export const Header = ({
       }`}
     >
       <Label
-        className={`font-semibold ${isMainTitle ? "text-lg" : "text-sm "}`}
+        className={`${cn(
+          "font-semibold",
+          isMainTitle ? "text-lg" : "text-sm "
+        )} ${titleClassName}`}
       >
         {title}
       </Label>
