@@ -137,10 +137,10 @@ Experience the seamless input flow that prioritizes speed and simplicity:
 
 <div>
 
-|                                   Input 1                                    |                                 Paste image 2                                  |
-| :--------------------------------------------------------------------------: | :----------------------------------------------------------------------------: |
-|  <img src="images/input1.gif" alt="Pluely interactive input" width="400"/>   | <img src="images/input2.gif" alt="Pluely input image paste demo" width="400"/> |
-| _Ultra-smooth text input that appears instantly for immediate AI assistance_ |    _Paste any images directly for instant AI analysis and contextual help_     |
+|                                   Input 1                                    |                                    Paste image 2                                    |
+| :--------------------------------------------------------------------------: | :---------------------------------------------------------------------------------: |
+|   <img src="images/input.gif" alt="Pluely interactive input" width="400"/>   | <img src="images/paste-image.gif" alt="Pluely input image paste demo" width="400"/> |
+| _Ultra-smooth text input that appears instantly for immediate AI assistance_ |       _Paste any images directly for instant AI analysis and contextual help_       |
 
 </div>
 
