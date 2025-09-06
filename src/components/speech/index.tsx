@@ -100,12 +100,12 @@ export const SystemAudio = ({
 
       {capturing || setupRequired || error ? (
         <PopoverContent
-          className="w-screen h-[calc(100vh-7rem)] p-0 border border-input/50 overflow-hidden"
-          side="top"
-          align="center"
+          align="end"
+          side="bottom"
+          className="select-none w-screen p-0 border overflow-hidden border-input/50"
           sideOffset={8}
         >
-          <ScrollArea className="h-full">
+          <ScrollArea className="h-[calc(100vh-4rem)]">
             <div
               className={`p-6 ${
                 !lastTranscription && !lastAIResponse

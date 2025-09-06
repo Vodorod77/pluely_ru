@@ -89,121 +89,128 @@ Pluely comes with powerful global keyboard shortcuts that work from anywhere on 
 
 </div>
 
-## 🎯 **Always on TOP**
+## 🎯 **System Audio Capture**
+
+_Note: Pluely system audio capture is actively in development and improving._
+
+**Everything Your Computer Plays: Transform any audio on your system into an intelligent AI assistant with real-time transcription and contextual help:**
+
+<img src="images/system-audio.gif" alt="pluely system audio capture" width="600"/>
+
+- **Real-Time AI Assistant:** 8 specialized modes for meetings, interviews, presentations, learning, and more
+- **Background Processing:** Captures system audio continuously with smart context detection
+- **Multi-Scenario Support:** Meeting insights, interview help, translation, presentation coaching, and learning assistance
+- **Cross-Platform:** Works on macOS, Windows, and Linux with platform-specific audio routing
+- **Settings Control:** Toggle system audio capture in Settings → Audio section
+- **AI Integration:** Seamlessly connects transcription & completion to AI models for instant responses
+
+#### Why Setup Required?
+
+**🔒 Security by Design:** Operating systems block direct system audio access for privacy protection - this is universal across all platforms and applications.
+
+**⚙️ Quick Setup Process:**
+
+- **macOS:** Install BlackHole (free) + Audio MIDI Setup (5 min)
+- **Windows:** Enable built-in Stereo Mix OR install VB-Cable (free) (3 min)
+- **Linux:** Use built-in PulseAudio monitors (usually works out-of-box)
+
+**[📖 Complete Audio Setup Guide](SYSTEM_AUDIO_SETUP.md)** • **Step-by-step for all platforms**
+
+## 🎯 **Microphone Audio Capture**
+
+**Voice Input: Transform your speech into an intelligent AI assistant with real-time transcription and contextual help:**
+
+<img src="images/microphone-capture.gif" alt="pluely input audio capture" width="600"/>
+
+- **Voice Activity Detection:** Uses advanced VAD technology for automatic speech detection
+- **Real-Time Processing:** Instant speech-to-text conversion with immediate AI responses
+- **Keyboard Shortcuts:** Quick voice input with `Cmd+Shift+A` (macOS) or `Ctrl+Shift+A` (Windows/Linux)
+- **No Setup Required:** Works immediately on any platform without additional configuration
+- **Multi-STT Provider Support:** Choose from OpenAI Whisper, Groq, ElevenLabs, Google, Deepgram, and more
+- **AI Integration:** Seamlessly connects transcription to AI models for instant contextual responses
+
+## 🎯 **Interactive Input**
+
+**Smooth, instant input that appears first for quick AI help - paste any images directly:**
+
+Experience the seamless input flow that prioritizes speed and simplicity:
+
+<div>
+
+|                                   Input 1                                    |                                 Paste image 2                                  |
+| :--------------------------------------------------------------------------: | :----------------------------------------------------------------------------: |
+|  <img src="images/input1.gif" alt="Pluely interactive input" width="400"/>   | <img src="images/input2.gif" alt="Pluely input image paste demo" width="400"/> |
+| _Ultra-smooth text input that appears instantly for immediate AI assistance_ |    _Paste any images directly for instant AI analysis and contextual help_     |
+
+</div>
+
+- **Instant Focus:** Input automatically appears first whenever you show the window
+- **Smooth Experience:** Ultra-responsive text input without any lag or delays
+- **Image Pasting:** Paste any images directly from clipboard for instant AI analysis
+- **Quick Access:** Always ready for immediate help with seamless hide/show transitions
+- **Simple Interface:** Clean, distraction-free input that prioritizes speed
+- **Smart Positioning:** Input field stays focused for continuous conversation flow
+
+## 🎯 **Screenshot Capture**
+
+**Capture and analyze screenshots with intelligent auto/manual modes for instant AI assistance:**
+
+Experience two powerful screenshot modes that adapt to your workflow:
+
+<div>
+
+|                                               Manual Mode Screenshot                                                |
+| :-----------------------------------------------------------------------------------------------------------------: |
+|                     <img src="images/leet-code.gif" alt="Manual Mode Screenshot" width="600"/>                      |
+| _Perfect for coding challenges - capture LeetCode problems and get step-by-step solutions with your custom prompts_ |
+
+|                                                Auto Mode Screenshot                                                |
+| :----------------------------------------------------------------------------------------------------------------: |
+|                       <img src="images/youtube.gif" alt="Auto Mode Screenshot" width="600"/>                       |
+| _Ideal for single image - automatically analyze image content with your predefined AI prompt for instant insights_ |
+
+</div>
+
+- **Manual Mode:** Capture multiple screenshots submit to AI analysis, with a prompt
+- **Auto Mode:** Screenshots automatically submit to AI using your saved custom prompt with instant analysis
+- **Shortcuts:** Capture screenshots with `Cmd+Shift+S` (macOS) or `Ctrl+Shift+S` (Windows/Linux)
+- **Smart Configuration:** Toggle between modes in Settings → Screenshot Configuration
+- **Custom Prompts:** Define your auto-analysis prompt for consistent, personalized AI responses
+- **Seamless Integration:** Screenshots work with all AI providers (OpenAI, Gemini, Claude, Grok, includes with your custom providers)
+- **Privacy First:** Screenshots are processed locally and only sent to your chosen AI provider
+
+## 🎯 **Always on Top**
 
 **Control whether the Pluely window stays above all other applications for instant access:**
-
-- **Enabled:** : Window always appears on top of other applications
-- **Disabled**: Window behaves like normal applications
-- **Settings Control**: Toggle in Settings → Always On Top Mode
-- **Independent Control:**: Works separately from stealth features
-- **Perfect for**: Quick access during meetings, presentations, or when you need instant AI assistance
-
-**Perfect for instant access during sensitive meetings and conversations - window stays above all applications for seamless AI assistance!**
+| Demo | Key Features |
+| :-----: | ------------------ |
+| <img src="/images/always-on-top.gif" alt="pluely always on top" width="500"/> | 👈 **Watch how the Pluely window stays perfectly visible above all other applications** <br><br> - **Enabled:** Window always appears on top of other applications <br> - **Disabled:** Window behaves like normal applications <br> - **Settings Control:** Toggle in Settings → Always On Top Mode <br> - **Independent Control:** Works separately from stealth features <br> - **Perfect for:** Quick access during meetings, presentations, or when you need instant AI assistance |
 
 ## 🎯 **App Icon Stealth Mode**
 
 **Complete stealth mode control integrated with main toggle:**
-
-- **Show Mode** (Default): App icon remains visible in dock/taskbar when window is hidden
-- **Hide Mode**: App icon completely disappears from dock/taskbar when window is hidden (app keeps running in background)
-- **Settings Control**: Configure dock/taskbar icon visibility in Settings → App Icon Visibility
-- **Auto-Integration**: Works automatically with main toggle shortcut (`Cmd+\` / `Ctrl+\`) based on your settings
-- **Cross-Platform**: Works seamlessly on macOS (ActivationPolicy::Accessory), Windows (skip_taskbar), and Linux (skip_taskbar)
-
-**Perfect for maximum discretion during sensitive meetings and conversations - the app icon disappears from dock/taskbar but app remains fully functional!**
-
----
-
-## 🎯 **System Audio Capture**
-
-**Transform any audio on your system into an intelligent AI assistant with real-time transcription and contextual help:**
-
-- **Real-Time AI Assistant**: 8 specialized modes for meetings, interviews, presentations, learning, and more
-- **Background Processing**: Captures system audio continuously with smart context detection
-- **Multi-Scenario Support**: Meeting insights, interview help, translation, presentation coaching, and learning assistance
-- **Cross-Platform**: Works on macOS, Windows, and Linux with platform-specific audio routing
-- **Settings Control**: Toggle system audio capture in Settings → Audio section
-- **AI Integration**: Seamlessly connects transcription to AI models for instant responses
-
-**Turn any audio into your personal AI assistant - from Zoom calls to podcasts, get intelligent help in real-time!**
-
-#### Why Setup Required?
-
-**🔒 Security by Design**: Operating systems block direct system audio access for privacy protection - this is universal across all platforms and applications.
-
-**⚙️ Quick Setup Process**:
-
-- **macOS**: Install BlackHole (free) + Audio MIDI Setup (5 min)
-- **Windows**: Enable built-in Stereo Mix OR install VB-Cable (free) (3 min)
-- **Linux**: Use built-in PulseAudio monitors (usually works out-of-box)
-
-**[📖 Complete Audio Setup Guide](SYSTEM_AUDIO_SETUP.md)** • **Step-by-step for all platforms**
-
----
-
-## 🎥 **Live Demos**
-
-### 💬 **Input Methods Demo**
-
-Experience multiple input methods including text entry, and image pasting:
-
-<div>
-
-|                                  Input Example 1                                  |                                      Input Example 2                                       |
-| :-------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: |
-|           <img src="images/input1.GIF" alt="Input Demo 1" width="400"/>           |               <img src="images/input2.GIF" alt="Input Demo 2" width="400"/>                |
-| _Clean, intuitive text interface with markdown support for seamless conversation_ | _Image pasting functionality that automatically adds files to attachments for AI analysis_ |
-
-</div>
-
----
-
-### 📸 **Screenshot Demo**
-
-Capture and analyze screenshots with automatic or manual modes for different use cases:
-
-<div>
-
-|                                                Manual Mode Screenshot                                                |
-| :------------------------------------------------------------------------------------------------------------------: |
-|                      <img src="images/leet-code.gif" alt="Manual Mode Screenshot" width="600"/>                      |
-| _Screenshots are captured and automatically added to your attached files for manual submission with your own prompt_ |
-
-|                                     Auto Mode Screenshot                                      |
-| :-------------------------------------------------------------------------------------------: |
-|            <img src="images/youtube.gif" alt="Auto Mode Screenshot" width="600"/>             |
-| _Screenshots are automatically submitted to AI using your custom prompt for instant analysis_ |
-
-</div>
-
----
-
-### 🎤 **Voice Input Demo**
-
-Speak naturally and get instant AI responses with advanced voice activity detection:
-
-<div>
-
-<img src="images/audio.GIF" alt="Voice Input Demo" width="600"/>
-
-_Real-time speech-to-text using OpenAI Whisper with automatic voice detection - just speak and get AI responses_
-
-</div>
-
----
+| Demo | Key Features |
+| :-----: | ------------------ |
+| <img src="/images/toggle-app-icon.gif" alt="pluely app icon hide/show app icon" width="500"/> | 👈 **See how the toggle the app icon from your dock/taskbar while staying fully functional** <br><br> - **Show Mode** (Default): App icon remains visible in dock/taskbar when window is hidden<br>- **Hide Mode:** App icon completely disappears from dock/taskbar when window is hidden (app keeps running in background)<br>- **Settings Control:** Configure dock/taskbar icon visibility in Settings → App Icon Visibility<br>- **Auto-Integration:** Works automatically with main toggle shortcut (`Cmd+\` / `Ctrl+\`) based on your settings<br>- **Cross-Platform:** Works seamlessly on macOS (ActivationPolicy::Accessory), Windows (skip_taskbar), and Linux (skip_taskbar) |
 
 ### 📚 **Conversation History**
 
-Keep track of all your AI interactions with persistent conversation history:
+**Complete conversation management stored locally on your device:**
 
 <div>
+<img src="images/history.gif" alt="Conversation History Demo" width="600"/>
 
-<img src="images/history.GIF" alt="Conversation History Demo" width="600"/>
-
-_Browse through previous conversations, search chat history, and continue where you left off_
+_Browse, reuse, download, and delete your AI conversations with complete local storage_
 
 </div>
+
+- **📱 Local Storage** - All conversations saved to your device with zero data transmission
+- **⚡ Instant Access** - History loads immediately with real-time updates
+- **🔄 Reuse Chats** - Continue any conversation from where you left off with one click
+- **📥 Download Markdown** - Export conversations as formatted markdown files with timestamps
+- **🗑️ Delete Chats** - Remove individual conversations or delete all from Settings
+- **🔍 Quick Navigation** - Browse all your conversations with auto-generated titles
+- **📊 Message History** - See complete message threads with user/AI distinction
 
 ---
 
@@ -365,165 +372,6 @@ Pluely sits quietly on your desktop, ready to assist instantly with zero setup t
 - **Negotiations** - Real-time strategy assistance that remains completely hidden
 
 #### and many more use cases...
-
----
-
-## 🚀 Features
-
-### 🤖 **Multi-LLM Support**
-
-Connect to any AI provider with built-in support for:
-
-- **OpenAI** - Dynamically fetches models directly from OpenAI, select your own
-- **Anthropic Claude** - Enter your model name manually
-- **xAI Grok** - Dynamically fetches models directly from xAI, select your own
-- **Google Gemini** - Dynamically fetches models directly from Gemini, select your own
-- **Custom providers** - Coming soon
-
-### 🎤 **Advanced Speech-to-Text**
-
-Pluely offers **two powerful audio input methods**:
-
-#### 🎤 **Default Input** (Microphone)
-
-- **Voice Activity Detection (VAD)** using `@ricky0123/vad-react`
-- **Real-time voice commands** - just speak and get AI responses
-- **Works immediately** - no setup required on any platform
-
-#### 🔊 **System Audio Capture** (Everything Your Computer Plays)
-
-- **Meeting transcription** - capture Zoom, Teams, Google Meet audio
-- **Video analysis** - transcribe YouTube, educational content, podcasts
-- **Real-time processing** with automatic speech detection
-- **Cross-platform support** - works on macOS, Windows, Linux
-- **Setup required** - see [System Audio Setup Guide](SYSTEM_AUDIO_SETUP.md)
-
-**With any industry-leading STT providers**: OpenAI Whisper, Groq, ElevenLabs, Google, Deepgram, and more!
-
-### 📎 **Multi-Modal Input**
-
-- **Text input** with markdown support
-- **Image attachments** - analyze images, screenshots
-
-### 🎨 **Beautiful, Invisible UI**
-
-- **Translucent window** that overlays any application
-- **Always on top** but never in the way
-- **Minimal design** - focus on content, not interface
-- **Dark/light theme** support
-
-### 👻 **Advanced Stealth Features**
-
-- **App Icon Stealth Mode** - Complete dock/taskbar invisibility for maximum discretion
-- **Intelligent Icon Management** - Automatically hide/show based on window visibility settings
-- **Cross-Platform Stealth** - Works seamlessly on macOS (Dock), Windows (Taskbar), and Linux (Panel)
-- **Global Keyboard Shortcuts** - Control app from anywhere without detection
-
-### ⚡ **Real-Time Streaming**
-
-- **Chunked streaming** - see responses as they're generated
-- **Cancellable requests** - stop generation anytime
-- **Error handling** with retry mechanisms
-
----
-
-## 🌍 Cross-Platform Compatibility
-
-Pluely works seamlessly across all major operating systems with comprehensive audio capture support.
-
-### 🎯 **Audio Capture Methods**
-
-Pluely offers **multiple audio capture options** to work with any setup:
-
-#### 🎤 **Default Input Capture** (Works Immediately)
-
-- ✅ **No setup required** - works out of the box on all platforms
-- ✅ **Uses your microphone** for voice input and commands
-- ✅ **Perfect for**: Voice dictation, personal notes, voice commands
-- ✅ **Supported**: macOS, Windows, Linux
-
-#### 🔊 **System Audio Capture** (Advanced Setup)
-
-- 🎯 **Captures everything your computer plays** - meetings, videos, music
-- 🎯 **Perfect for**: Meeting transcription, video analysis, system audio monitoring
-- ⚙️ **Requires**: Virtual audio device setup (platform-specific)
-- ✅ **Supported**: macOS, Windows, Linux
-
-### 🖥️ **Platform Support Matrix**
-
-| Platform       | Default Input | System Audio | Virtual Audio Solutions                                          |
-| -------------- | ------------- | ------------ | ---------------------------------------------------------------- |
-| **🍎 macOS**   | ✅ Built-in   | ✅ Supported | BlackHole (free), Loopback ($109), SoundFlower                   |
-| **🪟 Windows** | ✅ Built-in   | ✅ Supported | Stereo Mix (built-in), VB-Audio Cable (free), VoiceMeeter (free) |
-| **🐧 Linux**   | ✅ Built-in   | ✅ Supported | PulseAudio Monitors (built-in), ALSA Loopback                    |
-
-### 🎵 **System Audio Capture Capabilities**
-
-Once configured, system audio capture enables transcription of:
-
-- 🎥 **Meeting Audio**: Zoom, Teams, Google Meet, Discord, Slack
-- 🎬 **Video Content**: YouTube, Netflix, Twitch, educational videos
-- 🎵 **Music & Podcasts**: Spotify, Apple Music, podcast apps
-- 🎮 **Game Audio**: Game commentary, streaming content
-- 📞 **VoIP Calls**: Skype, WhatsApp calls, phone calls
-- 📱 **Any System Audio**: Everything your computer plays
-
-### 🛠️ **Setup Difficulty by Platform**
-
-#### 🍎 **macOS Setup**
-
-- **Default Input**: ✅ **Instant** - no setup required
-- **System Audio**: ⚙️ **Easy** - install BlackHole, configure Multi-Output
-- **Time**: ~5 minutes for system audio setup
-- **Best Option**: BlackHole (free) or Loopback (paid but easier)
-
-#### 🪟 **Windows Setup**
-
-- **Default Input**: ✅ **Instant** - no setup required
-- **System Audio**: ⚙️ **Easy** - enable Stereo Mix or install VB-Cable
-- **Time**: ~3 minutes for system audio setup
-- **Best Option**: Stereo Mix (built-in) or VB-Audio Cable (free)
-
-#### 🐧 **Linux Setup**
-
-- **Default Input**: ✅ **Instant** - no setup required
-- **System Audio**: ⚙️ **Easy** - PulseAudio monitors usually work out-of-box
-- **Time**: ~2 minutes for system audio setup
-- **Best Option**: PulseAudio Monitor devices (usually pre-configured)
-
-### 🔧 **Built-in Debug & Testing Tools**
-
-Pluely includes comprehensive debugging tools for all platforms:
-
-- **🔍 Device Debug**: Shows all available audio devices with detailed analysis
-- **🎵 Audio Level Testing**: 3-second audio level test with real-time feedback
-- **📊 Real-time Monitoring**: Live RMS/Peak audio level display in console
-- **🎯 Smart Device Detection**: Automatically selects best available device
-- **🔄 Auto-Recovery**: Handles device conflicts and "already running" errors
-
-### 📚 **Comprehensive Documentation**
-
-- **📖 [SYSTEM_AUDIO_SETUP.md](SYSTEM_AUDIO_SETUP.md)**: Complete setup guide for all platforms
-- **🎯 Platform-specific instructions**: Step-by-step guides with screenshots
-- **🔧 Troubleshooting**: Common issues and solutions for each OS
-- **💡 Pro Tips**: Best practices and optimization recommendations
-
-### 🚀 **Quick Start (Any Platform)**
-
-1. **Download Pluely** for your platform from [releases](https://github.com/iamsrikanthnani/pluely/releases/latest)
-2. **Install & Launch** the application
-3. **Click the audio button** (headphones icon) in the interface
-4. **Choose your method**:
-   - **"🎤 Default Input"** - works immediately, no setup
-   - **"🔄 System Audio"** - requires virtual audio setup (see [guide](SYSTEM_AUDIO_SETUP.md))
-5. **Start speaking or play audio** - transcription begins automatically!
-
-### 🎉 **Why Cross-Platform Matters**
-
-- **🌐 Universal Access**: Use Pluely on any device, anywhere
-- **🔄 Consistent Experience**: Same features and UI across all platforms
-- **🛠️ Flexible Setup**: Multiple audio solutions to fit any environment
-- **📈 Future-Proof**: Built with Tauri for native performance on all platforms
 
 ---
 
