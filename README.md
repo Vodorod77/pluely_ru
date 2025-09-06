@@ -1,6 +1,10 @@
 # Pluely 🚀
 
-[<img src="/images/app-img.png" width="100%" alt="pluely"/>](https://pluely.com/)
+<a href="https://pluely.com/">
+  <img src="/images/app-img.gif" alt="pluely" width="100%" />
+</a>
+
+---
 
 [![Open Source](https://img.shields.io/badge/Open%20Source-❤️-blue)](https://github.com/iamsrikanthnani/pluely)
 [![Tauri](https://img.shields.io/badge/Built%20with-Tauri-orange)](https://tauri.app/)

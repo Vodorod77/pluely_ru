@@ -79,7 +79,13 @@ export const Providers = ({
         <div className="space-y-2">
           <Header
             title="API Key"
-            description={`Enter your ${selectedSttProvider?.provider} API key to authenticate and access STT models. Your key is stored locally and never shared.`}
+            description={`Enter your ${
+              allSttProviders?.find(
+                (p) => p?.id === selectedSttProvider?.provider
+              )?.isCustom
+                ? "Custom Provider"
+                : selectedSttProvider?.provider
+            } API key to authenticate and access STT models. Your key is stored locally and never shared.`}
           />
 
           <div className="space-y-2">
@@ -183,11 +189,21 @@ export const Providers = ({
                   description={`add your preferred ${variable?.key?.replace(
                     /_/g,
                     " "
-                  )} for ${selectedSttProvider?.provider || "provider"}`}
+                  )} for ${
+                    allSttProviders?.find(
+                      (p) => p?.id === selectedSttProvider?.provider
+                    )?.isCustom
+                      ? "Custom Provider"
+                      : selectedSttProvider?.provider
+                  }`}
                 />
                 <TextInput
                   placeholder={`Enter ${
-                    selectedSttProvider?.provider || "provider"
+                    allSttProviders?.find(
+                      (p) => p?.id === selectedSttProvider?.provider
+                    )?.isCustom
+                      ? "Custom Provider"
+                      : selectedSttProvider?.provider
                   } ${variable?.key?.replace(/_/g, " ") || "value"}`}
                   value={getVariableValue()}
                   onChange={(value) => {
