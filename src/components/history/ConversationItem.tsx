@@ -59,10 +59,12 @@ export const ConversationItem = ({
     >
       <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
 
-      <div className="flex w-full flex-row items-center justify-between">
-        <div className="w-full flex flex-col">
+      <div className="flex w-full flex-row items-start gap-2">
+        <div className="flex-1 min-w-0 flex flex-col">
           <h3 className="text-sm font-medium truncate leading-5 line-clamp-1">
-            {conversation.title}
+            {conversation?.title?.length > 70
+              ? conversation?.title?.slice(0, 70) + "..."
+              : conversation?.title}
           </h3>
           <div className="flex items-center gap-2 mt-1">
             <Calendar className="h-3 w-3 text-muted-foreground" />
@@ -75,7 +77,7 @@ export const ConversationItem = ({
           </div>
         </div>
 
-        <div className="flex flex-1 items-center gap-1">
+        <div className="flex items-center gap-1 flex-shrink-0">
           {selectedConversationId === conversation.id && (
             <div className="flex items-center gap-1 text-blue-600">
               <Loader2 className="h-3 w-3 animate-spin" />
