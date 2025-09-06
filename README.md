@@ -1,7 +1,7 @@
 # Pluely 🚀
 
 <a href="https://pluely.com/">
-  <img src="/images/app-img.gif" alt="pluely" width="100%" />
+  <img src="/images/app-img.gif" alt="pluely banner" width="100%" />
 </a>
 
 ---
@@ -161,12 +161,12 @@ Experience two powerful screenshot modes that adapt to your workflow:
 
 |                                               Manual Mode Screenshot                                                |
 | :-----------------------------------------------------------------------------------------------------------------: |
-|                     <img src="images/leet-code.gif" alt="Manual Mode Screenshot" width="600"/>                      |
+|                  <img src="images/leet-code.gif" alt="Pluely Manual Mode Screenshot" width="600"/>                  |
 | _Perfect for coding challenges - capture LeetCode problems and get step-by-step solutions with your custom prompts_ |
 
 |                                                Auto Mode Screenshot                                                |
 | :----------------------------------------------------------------------------------------------------------------: |
-|                       <img src="images/youtube.gif" alt="Auto Mode Screenshot" width="600"/>                       |
+|                   <img src="images/youtube.gif" alt="Pluely Auto Mode Screenshot" width="600"/>                    |
 | _Ideal for single image - automatically analyze image content with your predefined AI prompt for instant insights_ |
 
 </div>
@@ -182,35 +182,49 @@ Experience two powerful screenshot modes that adapt to your workflow:
 ## 🎯 **Always on Top**
 
 **Control whether the Pluely window stays above all other applications for instant access:**
-| Demo | Key Features |
-| :-----: | ------------------ |
-| <img src="/images/always-on-top.gif" alt="pluely always on top" width="500"/> | 👈 **Watch how the Pluely window stays perfectly visible above all other applications** <br><br> - **Enabled:** Window always appears on top of other applications <br> - **Disabled:** Window behaves like normal applications <br> - **Settings Control:** Toggle in Settings → Always On Top Mode <br> - **Independent Control:** Works separately from stealth features <br> - **Perfect for:** Quick access during meetings, presentations, or when you need instant AI assistance |
+
+<img src="/images/always-on-top.gif" alt="pluely always on top" width="600"/>
+
+**Watch how the Pluely window stays perfectly visible above all other applications**
+
+- **Enabled:** Window always appears on top of other applications
+- **Disabled:** Window behaves like normal applications
+- **Settings Control:** Toggle in Settings → Always On Top Mode
+- **Independent Control:** Works separately from stealth features
+- **Perfect for:** Quick access during meetings, presentations, or when you need instant AI assistance |
 
 ## 🎯 **App Icon Stealth Mode**
 
 **Complete stealth mode control integrated with main toggle:**
-| Demo | Key Features |
-| :-----: | ------------------ |
-| <img src="/images/toggle-app-icon.gif" alt="pluely app icon hide/show app icon" width="500"/> | 👈 **See how the toggle the app icon from your dock/taskbar while staying fully functional** <br><br> - **Show Mode** (Default): App icon remains visible in dock/taskbar when window is hidden<br>- **Hide Mode:** App icon completely disappears from dock/taskbar when window is hidden (app keeps running in background)<br>- **Settings Control:** Configure dock/taskbar icon visibility in Settings → App Icon Visibility<br>- **Auto-Integration:** Works automatically with main toggle shortcut (`Cmd+\` / `Ctrl+\`) based on your settings<br>- **Cross-Platform:** Works seamlessly on macOS (ActivationPolicy::Accessory), Windows (skip_taskbar), and Linux (skip_taskbar) |
+
+<img src="/images/toggle-app-icon.gif" alt="pluely app icon hide/show app icon" width="600"/>
+
+**See how the toggle the app icon from your dock/taskbar while staying fully functional**
+
+- **Show Mode** (Default): App icon remains visible in dock/taskbar when window is hidden
+- **Hide Mode:** App icon completely disappears from dock/taskbar when window is hidden (app keeps running in background)
+- **Settings Control:** Configure dock/taskbar icon visibility in Settings → App Icon Visibility
+- **Auto-Integration:** Works automatically with main toggle shortcut (`Cmd+\` / `Ctrl+\`) based on your settings
+- **Cross-Platform:** Works seamlessly on macOS (ActivationPolicy::Accessory), Windows (skip_taskbar), and Linux (skip_taskbar) |
 
 ### 📚 **Conversation History**
 
 **Complete conversation management stored locally on your device:**
 
 <div>
-<img src="images/history.gif" alt="Conversation History Demo" width="600"/>
+<img src="images/conversations.gif" alt="Pluely Conversation History" width="600"/>
 
 _Browse, reuse, download, and delete your AI conversations with complete local storage_
 
 </div>
 
-- **📱 Local Storage** - All conversations saved to your device with zero data transmission
-- **⚡ Instant Access** - History loads immediately with real-time updates
-- **🔄 Reuse Chats** - Continue any conversation from where you left off with one click
-- **📥 Download Markdown** - Export conversations as formatted markdown files with timestamps
-- **🗑️ Delete Chats** - Remove individual conversations or delete all from Settings
-- **🔍 Quick Navigation** - Browse all your conversations with auto-generated titles
-- **📊 Message History** - See complete message threads with user/AI distinction
+- **Local Storage** - All conversations saved to your device with zero data transmission
+- **Instant Access** - History loads immediately with real-time updates
+- **Message History** - See complete message threads with user/AI distinction
+- **Reuse Chats** - Continue any conversation from where you left off with one click
+- **Download Markdown** - Export conversations as formatted markdown files with timestamps
+- **Delete Chats** - Remove individual conversations or delete all from Settings
+- **Quick Navigation** - Browse all your conversations with auto-generated titles
 
 ---
 
