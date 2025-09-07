@@ -9,6 +9,7 @@ import {
   getCustomizableState,
   updateAppIconVisibility,
   updateAlwaysOnTop,
+  updateTitlesVisibility,
   CustomizableState,
 } from "@/lib/storage";
 import { IContextType, ScreenshotConfig, TYPE_PROVIDER } from "@/types";
@@ -67,6 +68,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [customizable, setCustomizable] = useState<CustomizableState>({
     appIcon: { isVisible: true },
     alwaysOnTop: { isEnabled: true },
+    titles: { isEnabled: true },
   });
 
   // Pluely API State
@@ -329,6 +331,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const toggleTitlesVisibility = (isEnabled: boolean) => {
+    const newState = updateTitlesVisibility(isEnabled);
+    setCustomizable(newState);
+    loadData();
+  };
+
   const setPluelyApiEnabled = (enabled: boolean) => {
     setPluelyApiEnabledState(enabled);
     safeLocalStorage.setItem(STORAGE_KEYS.PLUELY_API_ENABLED, String(enabled));
@@ -352,6 +360,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     customizable,
     toggleAppIconVisibility,
     toggleAlwaysOnTop,
+    toggleTitlesVisibility,
     loadData,
     pluelyApiEnabled,
     setPluelyApiEnabled,

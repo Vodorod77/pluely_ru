@@ -7,11 +7,15 @@ export interface CustomizableState {
   alwaysOnTop: {
     isEnabled: boolean;
   };
+  titles: {
+    isEnabled: boolean;
+  };
 }
 
 export const DEFAULT_CUSTOMIZABLE_STATE: CustomizableState = {
   appIcon: { isVisible: true },
   alwaysOnTop: { isEnabled: false },
+  titles: { isEnabled: true },
 };
 
 /**
@@ -56,6 +60,18 @@ export const updateAppIconVisibility = (
 export const updateAlwaysOnTop = (isEnabled: boolean): CustomizableState => {
   const currentState = getCustomizableState();
   const newState = { ...currentState, alwaysOnTop: { isEnabled } };
+  setCustomizableState(newState);
+  return newState;
+};
+
+/**
+ * Update titles visibility
+ */
+export const updateTitlesVisibility = (
+  isEnabled: boolean
+): CustomizableState => {
+  const currentState = getCustomizableState();
+  const newState = { ...currentState, titles: { isEnabled } };
   setCustomizableState(newState);
   return newState;
 };

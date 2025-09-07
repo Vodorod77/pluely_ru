@@ -3,11 +3,13 @@ import { Completion } from "./components/completion";
 import { ChatHistory } from "./components/history";
 import { AudioVisualizer } from "./components/speech/audio-visualizer";
 import { StatusIndicator } from "./components/speech/StatusIndicator";
+import { useTitles } from "./hooks";
 import { useSystemAudio } from "./hooks/useSystemAudio";
 
 const App = () => {
   const systemAudio = useSystemAudio();
-
+  // Initialize title management
+  useTitles();
   const handleSelectConversation = (conversation: any) => {
     // Use localStorage to communicate the selected conversation to Completion component
     localStorage.setItem("selectedConversation", JSON.stringify(conversation));
