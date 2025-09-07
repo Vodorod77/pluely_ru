@@ -230,6 +230,33 @@ _Browse, reuse, download, and delete your AI conversations with complete local s
 
 ## 🔧 **Setup**
 
+### 🔧 **Activate Pluely License**
+
+_Get Pluely API if you don't want to maintain your own providers_
+
+**Unlock premium features, faster responses, and priority support with Pluely License:**
+
+<img src="images/pluely-api.gif" alt="Pluely License Setup" width="600"/>
+
+_Pluel y License activation unlocks faster AI responses, premium features, and dedicated support_
+
+#### **What You Get with Pluely License:**
+
+- **Get Unlimited AI**: Unlimited AI interactions and responses
+- **Faster AI Responses**: Optimized processing with dedicated infrastructure
+- **Premium Features**: Access to advanced AI capabilities and upcoming features
+- **Priority Support**: Direct support for any issues or questions
+- **Exclusive Benefits**: Early access to new features and improvements
+
+#### **How to Get Started:**
+
+1. **Purchase License**: Click "Get License Key" to visit our secure checkout page
+2. **Receive Key**: After payment, you'll receive your license key via email
+3. **Activate**: Paste your license key in Settings → Pluely Access section
+4. **Enjoy**: Start experiencing faster responses and premium features immediately
+
+Switch between Pluely API and your custom providers anytime in Settings → Pluely Access. Whether you want the convenience of our optimized service or prefer to maintain your own AI provider setup, Pluely gives you complete flexibility.
+
 ### 🔧 **AI Provider Setup**
 
 Get started with your preferred AI provider in seconds. Pluely supports all major LLM providers with dynamic model fetching, custom providers, and seamless integration:
