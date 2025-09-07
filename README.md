@@ -449,6 +449,16 @@ Pluely sits quietly on your desktop, ready to assist instantly with zero setup t
 
 ---
 
+## 📋 Prerequisites & Dependencies
+
+**Important**: Before installing the app, ensure all required system dependencies are installed for your platform:
+
+👉 **[Tauri Prerequisites & Dependencies](https://v2.tauri.app/start/prerequisites/)**
+
+This includes essential packages like WebKitGTK (Linux), system libraries, and other dependencies required for Tauri applications to run properly on your operating system.
+
+---
+
 ## Installation & Setup
 
 ### Prerequisites
@@ -677,8 +687,8 @@ We welcome contributions! Here's how to get started:
 
 **❌ Please do NOT submit pull requests that:**
 
-- Add new AI providers
-- Add new speech-to-text
+- Adding new AI providers
+- Adding new speech-to-text providers
 
 **✅ What we DO welcome:**
 
