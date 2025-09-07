@@ -74,7 +74,7 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 # Features
 
-## ⌨️ **Keyboard Shortcuts**
+## **Keyboard Shortcuts**
 
 Pluely comes with powerful global keyboard shortcuts that work from anywhere on your system:
 
@@ -89,7 +89,7 @@ Pluely comes with powerful global keyboard shortcuts that work from anywhere on 
 
 </div>
 
-## 🎯 **System Audio Capture**
+## **System Audio Capture**
 
 _Note: Pluely system audio capture is actively in development and improving._
 
@@ -116,7 +116,7 @@ _Note: Pluely system audio capture is actively in development and improving._
 
 **[📖 Complete Audio Setup Guide](SYSTEM_AUDIO_SETUP.md)** • **Step-by-step for all platforms**
 
-## 🎯 **Microphone Audio Capture**
+## **Microphone Audio Capture**
 
 **Voice Input: Transform your speech into an intelligent AI assistant with real-time transcription and contextual help:**
 
@@ -129,7 +129,7 @@ _Note: Pluely system audio capture is actively in development and improving._
 - **Multi-STT Provider Support:** Choose from OpenAI Whisper, Groq, ElevenLabs, Google, Deepgram, and more
 - **AI Integration:** Seamlessly connects transcription to AI models for instant contextual responses
 
-## 🎯 **Interactive Input**
+## **Interactive Input**
 
 **Smooth, instant input that appears first for quick AI help - paste any images directly:**
 
@@ -151,7 +151,7 @@ Experience the seamless input flow that prioritizes speed and simplicity:
 - **Simple Interface:** Clean, distraction-free input that prioritizes speed
 - **Smart Positioning:** Input field stays focused for continuous conversation flow
 
-## 🎯 **Screenshot Capture**
+## **Screenshot Capture**
 
 **Capture and analyze screenshots with intelligent auto/manual modes for instant AI assistance:**
 
@@ -179,7 +179,7 @@ Experience two powerful screenshot modes that adapt to your workflow:
 - **Seamless Integration:** Screenshots work with all AI providers (OpenAI, Gemini, Claude, Grok, includes with your custom providers)
 - **Privacy First:** Screenshots are processed locally and only sent to your chosen AI provider
 
-## 🎯 **Always on Top**
+## **Always on Top**
 
 **Control whether the Pluely window stays above all other applications for instant access:**
 
@@ -193,7 +193,7 @@ Experience two powerful screenshot modes that adapt to your workflow:
 - **Independent Control:** Works separately from stealth features
 - **Perfect for:** Quick access during meetings, presentations, or when you need instant AI assistance |
 
-## 🎯 **App Icon Stealth Mode**
+## **App Icon Stealth Mode**
 
 **Complete stealth mode control integrated with main toggle:**
 
@@ -207,7 +207,7 @@ Experience two powerful screenshot modes that adapt to your workflow:
 - **Auto-Integration:** Works automatically with main toggle shortcut (`Cmd+\` / `Ctrl+\`) based on your settings
 - **Cross-Platform:** Works seamlessly on macOS (ActivationPolicy::Accessory), Windows (skip_taskbar), and Linux (skip_taskbar) |
 
-## 🎯 **Element Titles Management**
+## **Element Titles Management**
 
 **Complete control over title tooltips across the entire application:**
 
@@ -243,9 +243,9 @@ _Browse, reuse, download, and delete your AI conversations with complete local s
 
 ---
 
-## 🔧 **Setup**
+## **Setup**
 
-### 🔧 **Activate Pluely License**
+### **Activate Pluely License**
 
 _Get Pluely API if you don't want to maintain your own providers_
 
@@ -272,11 +272,11 @@ _Pluely License activation unlocks faster AI responses, premium features, and de
 
 Switch between Pluely API and your custom providers anytime in Settings → Pluely Access. Whether you want the convenience of our optimized service or prefer to maintain your own AI provider setup, Pluely gives you complete flexibility.
 
-### 🚀 **AI Provider Integration**
+### **AI Provider Integration**
 
 **Pluely now supports curl requests when adding custom providers, giving you ultimate flexibility to integrate any AI provider. This means you can connect to any LLM service using simple curl commands, opening up endless possibilities for your AI providers.**
 
-### 🔧 **Custom AI Provider Setup**
+### **Custom AI Provider Setup**
 
 **Unlock Any LLM Provider** - Pluely supports **any LLM provider** with full streaming and non-streaming capabilities. Configure custom endpoints, authentication, and response parsing for complete flexibility.
 
@@ -309,16 +309,16 @@ Add your own variables using the `{{VARIABLE_NAME}}` format directly in your cur
 
 ---
 
-### 🔧 **AI Providers Setup**
+### **AI Providers Setup**
 
 Get started with your preferred AI provider in seconds. Pluely supports all major LLM providers, custom providers, and seamless integration:
 
 <div align="left">
 
-|                                  OpenAI Setup                                  |                                     Grok setup                                     |
-| :----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
-| <img src="images/openai-setup.gif" alt="Pluely OpenAI API Setup" width="400"/> | <img src="images/grok-setup.gif.GIF" alt="Pluely xAI Grok API Setup" width="400"/> |
-|                 _Add your OpenAI API key and enter model name_                 |                  _Add your xAI Grok API key and enter your model_                  |
+|                                  OpenAI Setup                                  |                                   Grok setup                                   |
+| :----------------------------------------------------------------------------: | :----------------------------------------------------------------------------: |
+| <img src="images/openai-setup.gif" alt="Pluely OpenAI API Setup" width="400"/> | <img src="images/grok-setup.gif" alt="Pluely xAI Grok API Setup" width="400"/> |
+|                 _Add your OpenAI API key and enter model name_                 |                _Add your xAI Grok API key and enter your model_                |
 
 |                                  Google Gemini Setup                                  |                                  Anthropic Claude Setup                                  |
 | :-----------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------: |
@@ -337,11 +337,11 @@ Get started with your preferred AI provider in seconds. Pluely supports all majo
 
 ---
 
-### 🚀 **Speech-to-Text Integration**
+### **Speech-to-Text Integration**
 
 **Pluely now supports advanced curl-based integration for speech-to-text providers, giving you ultimate flexibility to integrate any STT service. This means you can connect to any speech API using simple curl commands, opening up endless possibilities for your voice workflows.**
 
-### 🎤 **Speech-to-Text Provider Setup**
+### **Speech-to-Text Provider Setup**
 
 Get started with your preferred speech-to-text provider in seconds. Pluely supports all major STT providers, custom providers, and seamless voice integration:
 
@@ -390,9 +390,9 @@ For STT providers not in our list, use the custom STT provider option with full 
 
 ---
 
-## 🌟 Why Pluely?
+## Why Pluely?
 
-### 👻 **Completely Undetectable & Stealth**
+### **Completely Undetectable & Stealth**
 
 > **🎯 The Ultimate Stealth AI Assistant - Invisible to Everyone**
 
@@ -407,7 +407,7 @@ Pluely is engineered to be **completely invisible** during your most sensitive m
 
 **Perfect for confidential scenarios where discretion is absolutely critical.**
 
-### 🔥 **Blazingly Fast with Tauri**
+### **Blazingly Fast with Tauri**
 
 Built with **Tauri**, Pluely delivers native desktop performance with minimal resource usage:
 
@@ -417,7 +417,7 @@ Built with **Tauri**, Pluely delivers native desktop performance with minimal re
 - **Memory efficient** - uses 50% less RAM than web-based alternatives
 - **Cross-platform** - runs natively on macOS, Windows, and Linux
 
-### 🛡️ **Privacy-First Architecture**
+### **Privacy-First Architecture**
 
 Unlike cloud-based solutions, Pluely keeps everything local:
 
@@ -426,11 +426,11 @@ Unlike cloud-based solutions, Pluely keeps everything local:
 - **No telemetry or tracking** - your conversations stay private, not stored anywhere
 - **Offline-first design** - works without internet (except for AI API calls)
 
-## 🖥️ **Always-On, One Click Away**
+## **Always-On, One Click Away**
 
 Pluely sits quietly on your desktop, ready to assist instantly with zero setup time:
 
-### 🎯 **Perfect for Sensitive Scenarios**
+### **Perfect for Sensitive Scenarios**
 
 **Completely undetectable in all these critical situations:**
 
@@ -449,15 +449,13 @@ Pluely sits quietly on your desktop, ready to assist instantly with zero setup t
 
 ---
 
-## 🛠️ Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 
 - **Node.js** (v18 or higher)
 - **Rust** (latest stable)
 - **npm** or **yarn**
-
-> **🎵 Audio Capabilities**: The built app includes full cross-platform audio support with both microphone input and system audio capture. See [SYSTEM_AUDIO_SETUP.md](SYSTEM_AUDIO_SETUP.md) for platform-specific setup guides.
 
 ### Quick Start
 
@@ -482,13 +480,13 @@ npm run tauri build
 
 This creates platform-specific installers in `src-tauri/target/release/bundle/`:
 
-- **macOS**: `.dmg` file
-- **Windows**: `.msi` installer
-- **Linux**: `.deb` file
+- **macOS**: `.dmg`
+- **Windows**: `.msi`, `.exe`
+- **Linux**: `.deb`, `.rpm`, `.AppImage`
 
 ---
 
-## 🔐 Security & Privacy
+## Security & Privacy
 
 ### **Local API Key Storage**
 
@@ -522,7 +520,7 @@ Pluely makes API calls directly from your frontend because:
 
 ---
 
-## 🚀 Performance Optimizations
+## Performance Optimizations
 
 ### **Tauri Advantages**
 
@@ -540,9 +538,9 @@ Pluely makes API calls directly from your frontend because:
 - **Tree shaking** - only bundle used code
 - **Lazy loading** - components load on demand
 
-## 🧪 Development
+## Development
 
-### 🏗️ Architecture Overview
+### Architecture Overview
 
 #### Frontend (React + TypeScript + Tauri)
 
@@ -669,9 +667,23 @@ npm run lint
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Here's how to get started:
+
+### **Contribution Guidelines**
+
+**🚀 Only fixes and feature PRs are welcome.**
+
+**❌ Please do NOT submit pull requests that:**
+
+- Add new AI providers
+- Add new speech-to-text
+
+**✅ What we DO welcome:**
+
+- Bug fixes and performance improvements
+- Feature improvements to existing functionality
 
 > 💡 **Like this project?** Consider [buying me a coffee ☕](https://www.buymeacoffee.com/srikanthnani) or [hiring me](mailto:srikanthnani1202@gmail.com?subject=Hiring%20Inquiry%20-%20Pluely%20Developer) for your next project!
 
@@ -727,6 +739,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 🔗 Links
 
+- **Website**: [pluely.com](https://pluely.com/) (Pluely website)
 - **🎵 Audio Setup Guide**: [SYSTEM_AUDIO_SETUP.md](SYSTEM_AUDIO_SETUP.md) - Complete cross-platform audio configuration
 - **Website**: [cluely.com](https://cluely.com/) (Original Cluely)
 - **Documentation**: [GitHub Wiki](https://github.com/iamsrikanthnani/pluely/wiki)
@@ -741,7 +754,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 [![Twitter](https://img.shields.io/badge/Twitter-@truly__sn-black?style=for-the-badge&logo=twitter)](https://x.com/truly_sn)&nbsp;
 [![Website](https://img.shields.io/badge/Website-srikanthnani.com-black?style=for-the-badge&logo=globe)](https://www.srikanthnani.com/)&nbsp;
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-iamsrikanthnani-black?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/iamsrikanthnani/)&nbsp;
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-black?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
 
 ---
 
