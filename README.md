@@ -207,6 +207,21 @@ Experience two powerful screenshot modes that adapt to your workflow:
 - **Auto-Integration:** Works automatically with main toggle shortcut (`Cmd+\` / `Ctrl+\`) based on your settings
 - **Cross-Platform:** Works seamlessly on macOS (ActivationPolicy::Accessory), Windows (skip_taskbar), and Linux (skip_taskbar) |
 
+## 🎯 **Element Titles Management**
+
+**Complete control over title tooltips across the entire application:**
+
+<img src="/images/element-titles.gif" alt="Pluely element titles toggle" width="600"/>
+
+**See how to toggle all element title tooltips on/off globally with instant effect**
+
+- **Show Mode** (Default): All button and interactive element tooltips are visible on hover
+- **Hide Mode:** All title tooltips are completely hidden while elements remain fully functional
+- **Settings Control:** Toggle in Settings → Element Titles to enable/disable globally
+- **Instant Effect:** Changes apply immediately across all 50+ interactive elements
+- **Accessibility Aware:** Perfect for users who prefer clean interfaces without tooltip clutter
+- **Preserves Functionality:** Elements remain clickable and accessible, only tooltips are controlled |
+
 ### 📚 **Conversation History**
 
 **Complete conversation management stored locally on your device:**
@@ -234,11 +249,11 @@ _Browse, reuse, download, and delete your AI conversations with complete local s
 
 _Get Pluely API if you don't want to maintain your own providers_
 
-**Unlock premium features, faster responses, and priority support with Pluely License:**
+**Unlock premium features, faster responses, advanced speech to text, and priority support with Pluely License:**
 
 <img src="images/pluely-api.gif" alt="Pluely License Setup" width="600"/>
 
-_Pluel y License activation unlocks faster AI responses, premium features, and dedicated support_
+_Pluely License activation unlocks faster AI responses, premium features, and dedicated support_
 
 #### **What You Get with Pluely License:**
 
@@ -257,103 +272,121 @@ _Pluel y License activation unlocks faster AI responses, premium features, and d
 
 Switch between Pluely API and your custom providers anytime in Settings → Pluely Access. Whether you want the convenience of our optimized service or prefer to maintain your own AI provider setup, Pluely gives you complete flexibility.
 
-### 🔧 **AI Provider Setup**
+### 🚀 **AI Provider Integration**
 
-Get started with your preferred AI provider in seconds. Pluely supports all major LLM providers with dynamic model fetching, custom providers, and seamless integration:
+**Pluely now supports curl requests when adding custom providers, giving you ultimate flexibility to integrate any AI provider. This means you can connect to any LLM service using simple curl commands, opening up endless possibilities for your AI providers.**
 
-<div align="center">
+### 🔧 **Custom AI Provider Setup**
 
-|                                                         Custom Provider Setup                                                          |                                                OpenAI Setup                                                 |
-| :------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------: |
-|                            <img src="images/custom-provider.GIF" alt="Custom provider Setup" width="400"/>                             |                      <img src="images/openai.GIF" alt="OpenAI API Setup" width="400"/>                      |
-| _Add your custom provider and select the provider from AI providers in the AI Providers section, then enter your API key and AI model_ | _Add your OpenAI API key and select from dynamically fetched models including GPT-4, GPT-4 Turbo, and more_ |
+**Unlock Any LLM Provider** - Pluely supports **any LLM provider** with full streaming and non-streaming capabilities. Configure custom endpoints, authentication, and response parsing for complete flexibility.
 
-|                                      Google Gemini Setup                                      |                                       xAI Grok Setup                                        |
-| :-------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------: |
-|           <img src="images/gemini.GIF" alt="Google Gemini API Setup" width="400"/>            |              <img src="images/grok.GIF" alt="xAI Grok API Setup" width="400"/>              |
-| _Connect to Google Gemini with your API key and choose from available models like Gemini Pro_ | _Integrate with xAI Grok - dynamically fetches available models for seamless AI assistance_ |
+<img src="images/custom-provider-setup.gif" alt="Pluely Custom Provider Setup Demo" width="600"/>
 
-|                              Anthropic Claude Setup                               |                              Additional AI Providers                               |
-| :-------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
-|    <img src="images/claude.GIF" alt="Anthropic Claude API Setup" width="400"/>    |     **🔸 Mistral AI**<br>**🔸 Groq**<br>**🔸 Cohere**<br>**🔸 Perplexity AI**      |
-| _Enter your Claude API key and model name manually for powerful AI conversations_ | _These providers are also available in the AI Providers settings for more options_ |
+_See how easy it is to configure any AI provider with Pluely's custom provider setup_
 
-</div>
+#### **🔧 Dynamic Variables Support**
 
-#### ⚙️ **Provider Configuration**
+Pluely supports these **dynamic variables** that are automatically replaced:
 
-Each provider comes pre-configured with optimal settings:
+| Variable            | Purpose                |
+| ------------------- | ---------------------- |
+| `{{TEXT}}`          | User's text input      |
+| `{{IMAGE}}`         | Base64 image data      |
+| `{{SYSTEM_PROMPT}}` | System instructions    |
+| `{{MODEL}}`         | AI model name          |
+| `{{API_KEY}}`       | API authentication key |
 
-- **🔄 Dynamic Model Fetching**: Automatically fetch latest models from OpenAI, xAI, Gemini, Mistral, and Groq
-- **🎯 Manual Model Selection**: For Claude and Cohere, enter your preferred model name
-- **🔐 Secure Authentication**: API keys stored locally in browser storage
-- **📡 Streaming Support**: Real-time responses for all providers
-- **🖼️ Multi-Modal**: Image analysis support where available
-- **⚡ Fast Integration**: One-click setup for instant AI assistance
+#### **Streaming & Response Configuration**
 
-#### 🚀 **Quick Setup Guide**
+- **Streaming Support**: Toggle streaming on/off for real-time responses
+- **Response Path**: Configure where to extract content from API responses (e.g., `choices[0].message.content`)
+- **Authentication**: Support for Bearer tokens, API keys, and custom headers
+- **Any Endpoint**: Works with any REST API that accepts JSON requests
 
-1. **Choose Your Provider**: Select from the comprehensive list in Settings
-2. **Enter API Key**: Add your provider's API key securely
-3. **Select Model**: Choose from dynamically fetched models or enter manually
-4. **Start Chatting**: Begin your AI-powered conversations immediately
+#### **Custom Variable Creation**
 
-#### 🔧 **Custom Provider Support**
-
-For providers not in our list, use the custom provider option:
-
-- Add any OpenAI-compatible API endpoint
-- Configure custom authentication methods
-- Set up your own response parsing
-- Full flexibility for any LLM service
+Add your own variables using the `{{VARIABLE_NAME}}` format directly in your curl command. They'll appear as configurable fields when you select the provider.
 
 ---
 
-### 🎤 **Speech-to-Text Provider Setup**
+### 🔧 **AI Providers Setup**
 
-Pluely supports advanced voice input with multiple speech-to-text providers for accurate, real-time transcription. Choose from industry-leading STT services or add your own custom provider:
+Get started with your preferred AI provider in seconds. Pluely supports all major LLM providers, custom providers, and seamless integration:
 
-<div align="center">
+<div align="left">
 
-| **Provider**                 | **Auth Type**    | **Features**                        | **Model**            |
-| :--------------------------- | :--------------- | :---------------------------------- | :------------------- |
-| **🎤 OpenAI Whisper**        | Bearer Token     | High accuracy, fast processing      | whisper-1            |
-| **⚡ Groq Whisper**          | Bearer Token     | Ultra-fast transcription            | whisper-large-v3     |
-| **🔊 ElevenLabs STT**        | xi-api-key       | Natural language processing         | scribe_v1            |
-| **🔍 Google Speech-to-Text** | Bearer Token     | Advanced language detection         | N/A                  |
-| **🎯 Deepgram STT**          | Bearer Token     | Real-time processing                | nova-2               |
-| **🧠 IBM Watson STT**        | Basic API Key    | Enterprise-grade accuracy           | en-US_BroadbandModel |
-| **☁️ Azure Speech-to-Text**  | Subscription Key | Cloud-native processing             | N/A                  |
-| **🎵 Speechmatics**          | Bearer Token     | High accuracy for various languages | N/A                  |
-| **🤖 Zhipu GLM-ASR**         | Bearer Token     | Chinese language specialist         | glm-asr              |
-| **🚀 Doubao STT**            | Bearer Token     | Fast Chinese transcription          | whisper-1            |
+|                                  OpenAI Setup                                  |                                     Grok setup                                     |
+| :----------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: |
+| <img src="images/openai-setup.gif" alt="Pluely OpenAI API Setup" width="400"/> | <img src="images/grok-setup.gif.GIF" alt="Pluely xAI Grok API Setup" width="400"/> |
+|                 _Add your OpenAI API key and enter model name_                 |                  _Add your xAI Grok API key and enter your model_                  |
+
+|                                  Google Gemini Setup                                  |                                  Anthropic Claude Setup                                  |
+| :-----------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------: |
+| <img src="images/gemini-setup.gif" alt="Pluely Google Gemini API Setup" width="400"/> | <img src="images/claude-setup.gif" alt="Pluely Anthropic Claude API Setup" width="400"/> |
+|                 _Add your Google Gemini API key and enter your model_                 |                 _Add your Anthropic Claude API key and enter your model_                 |
+
+**Additional Providers:**
+
+- **Mistral AI**: Add your Mistral API key and select from available models
+- **Cohere**: Add your Cohere API key and enter your model name
+- **Perplexity**: Add your Perplexity API key and select from available models
+- **Groq**: Add your Groq API key and select from available models
+- **Ollama**: Configure your local Ollama instance and select models
 
 </div>
 
-#### 🎙️ **STT Provider Features**
+---
+
+### 🚀 **Speech-to-Text Integration**
+
+**Pluely now supports advanced curl-based integration for speech-to-text providers, giving you ultimate flexibility to integrate any STT service. This means you can connect to any speech API using simple curl commands, opening up endless possibilities for your voice workflows.**
+
+### 🎤 **Speech-to-Text Provider Setup**
+
+Get started with your preferred speech-to-text provider in seconds. Pluely supports all major STT providers, custom providers, and seamless voice integration:
+
+<div align="left">
+
+|                               OpenAI Whisper Setup                               |                                 ElevenLabs STT Setup                                 |
+| :------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------: |
+| <img src="images/openai-stt.gif" alt="Pluely OpenAI Whisper Setup" width="400"/> | <img src="images/elevenlabs-stt.gif" alt="Pluely ElevenLabs STT Setup" width="400"/> |
+|                _Add your OpenAI API key and select Whisper model_                |                    _Add your ElevenLabs API key and select model_                    |
+
+**Additional STT Providers:**
+
+- **Groq Whisper**: Add your Groq API key and select Whisper model
+- **Google Speech-to-Text**: Add your Google API key for speech recognition
+- **Deepgram STT**: Add your Deepgram API key and select model
+- **Azure Speech-to-Text**: Add your Azure subscription key and configure region
+- **Speechmatics**: Add your Speechmatics API key for transcription
+- **Rev.ai STT**: Add your Rev.ai API key for speech-to-text
+- **IBM Watson STT**: Add your IBM Watson API key and configure service
+
+</div>
+
+#### 🎙️ **STT Provider Configuration**
+
+Each STT provider comes pre-configured with optimal settings:
 
 - **🎯 Real-time Processing**: Instant speech recognition with voice activity detection
 - **🌍 Multi-Language Support**: Choose providers optimized for specific languages
 - **⚡ Fast & Accurate**: Industry-leading transcription accuracy and speed
 - **🔒 Secure Authentication**: API keys stored locally and securely
 - **🎨 Seamless Integration**: Works with Pluely's voice input features
+- **🔧 Custom Variables**: Support for dynamic variables in custom STT providers
+- **🌐 Any STT Provider**: Full compatibility with any speech recognition API endpoint
 
 #### 🛠️ **Custom STT Provider Setup**
 
-Can't find your preferred speech-to-text provider? Add custom STT providers with full configuration control:
+For STT providers not in our list, use the custom STT provider option with full control:
 
-- **🔧 Flexible API Integration**: Support for any REST API endpoint
-- **🔐 Custom Authentication**: Bearer tokens, API keys, or custom headers
-- **📝 Request Customization**: Configure audio formats, parameters, and headers
-- **🎯 Response Parsing**: Define custom response paths for transcription text
-- **⚙️ Advanced Configuration**: Set up audio formats, sample rates, and more
-
-#### 🚀 **Voice Input Quick Start**
-
-1. **Select Provider**: Choose from the comprehensive STT provider list
-2. **Configure API**: Enter your provider's API credentials securely
-3. **Test Connection**: Verify your setup with a quick voice test
-4. **Start Speaking**: Use voice input seamlessly in your conversations
+- **🌐 Any Speech Recognition API**: Add any STT provider with REST API support
+- **🔐 Flexible Authentication**: Bearer tokens, API keys, custom headers, or direct key embedding
+- **📡 Response Path Mapping**: Configure where to extract transcription text from any API response structure
+- **🔧 Dynamic Variables**: Create custom variables using `{{VARIABLE_NAME}}` format in curl commands
+- **📝 Request Customization**: Full control over headers, body structure, and parameters
+- **⚙️ Audio Format Support**: Support for various audio formats and sample rates
+- **🔄 Real-Time Testing**: Test your custom STT provider setup instantly
 
 ---
 
