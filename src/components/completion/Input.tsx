@@ -1,4 +1,4 @@
-import { Loader2, XIcon, CopyIcon } from "lucide-react";
+import { Loader2, XIcon } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -10,6 +10,7 @@ import {
 } from "@/components";
 import { MessageHistory } from "../history";
 import { UseCompletionReturn } from "@/types";
+import { CopyButton } from "../Markdown/copy-button";
 
 export const Input = ({
   isPopoverOpen,
@@ -40,7 +41,7 @@ export const Input = ({
           }
         }}
       >
-        <PopoverTrigger asChild className="!border-none">
+        <PopoverTrigger asChild className="!border-none !bg-transparent">
           <div className="relative select-none">
             <InputComponent
               ref={inputRef}
@@ -91,18 +92,7 @@ export const Input = ({
           <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
             <h3 className="font-semibold text-sm select-none">AI Response</h3>
             <div className="flex items-center gap-2 select-none">
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => {
-                  navigator.clipboard.writeText(response);
-                }}
-                disabled={isLoading}
-                className="cursor-pointer"
-                title="Copy response to clipboard"
-              >
-                <CopyIcon />
-              </Button>
+              <CopyButton content={response} />
               <Button
                 size="icon"
                 variant="ghost"
