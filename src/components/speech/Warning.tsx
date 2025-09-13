@@ -41,11 +41,7 @@ export const Warning = () => {
               Experimental Feature
             </h4>
             <p className="text-xs text-amber-800 leading-relaxed">
-              System audio capture is currently in beta. Results may vary
-              depending on your system configuration and audio setup. This
-              feature will continue to improve in future versions. you can
-              always change the settings to make it work with your system, and
-              as per your needs.
+              System audio capture is currently in beta.
             </p>
           </div>
         </div>

@@ -15,7 +15,6 @@ import { Warning } from "./Warning";
 import { Header } from "./Header";
 import { SetupInstructions } from "./SetupInstructions";
 import { OperationSection } from "./OperationSection";
-import { Settings } from "./Settings";
 import { Context } from "./Context";
 import { useSystemAudioType } from "@/hooks";
 
@@ -29,15 +28,6 @@ export const SystemAudio = ({
   setupRequired,
   startCapture,
   stopCapture,
-  settings,
-  showSettings,
-  setShowSettings,
-  updateSetting,
-  resetSettings,
-  debugInfo,
-  testResults,
-  handleDebugDevices,
-  handleTestAudioLevels,
   isPopoverOpen,
   setIsPopoverOpen,
   useSystemPrompt,
@@ -47,6 +37,7 @@ export const SystemAudio = ({
   startNewConversation,
   conversation,
   resizeWindow,
+  handleSetup,
 }: useSystemAudioType) => {
   const handleToggleCapture = async () => {
     if (capturing) {
@@ -145,11 +136,8 @@ export const SystemAudio = ({
               {setupRequired ? (
                 // Setup Instructions Section
                 <SetupInstructions
-                  handleDebugDevices={handleDebugDevices}
-                  handleTestAudioLevels={handleTestAudioLevels}
-                  startCapture={startCapture}
-                  debugInfo={debugInfo}
-                  testResults={testResults}
+                  setupRequired={setupRequired}
+                  handleSetup={handleSetup}
                 />
               ) : (
                 <>
@@ -168,18 +156,12 @@ export const SystemAudio = ({
                     contextContent={contextContent}
                     setContextContent={setContextContent}
                   />
-                  {/* Audio Settings */}
-                  <Settings
-                    capturing={capturing}
-                    showSettings={showSettings}
-                    setShowSettings={setShowSettings}
-                    resetSettings={resetSettings}
-                    settings={settings}
-                    updateSetting={updateSetting}
-                  />
                 </>
               )}
-
+              <SetupInstructions
+                setupRequired={setupRequired}
+                handleSetup={handleSetup}
+              />
               {/* Experimental Warning */}
               <Warning />
             </div>

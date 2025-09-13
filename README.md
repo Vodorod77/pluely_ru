@@ -104,18 +104,6 @@ _Note: Pluely system audio capture is actively in development and improving._
 - **Settings Control:** Toggle system audio capture in Settings → Audio section
 - **AI Integration:** Seamlessly connects transcription & completion to AI models for instant responses
 
-#### Why Setup Required?
-
-**🔒 Security by Design:** Operating systems block direct system audio access for privacy protection - this is universal across all platforms and applications.
-
-**⚙️ Quick Setup Process:**
-
-- **macOS:** Install BlackHole (free) + Audio MIDI Setup (5 min)
-- **Windows:** Enable built-in Stereo Mix OR install VB-Cable (free) (3 min)
-- **Linux:** Use built-in PulseAudio monitors (usually works out-of-box)
-
-**[📖 Complete Audio Setup Guide](SYSTEM_AUDIO_SETUP.md)** • **Step-by-step for all platforms**
-
 ## **Microphone Audio Capture**
 
 **Voice Input: Transform your speech into an intelligent AI assistant with real-time transcription and contextual help:**
@@ -750,7 +738,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 🔗 Links
 
 - **Website**: [pluely.com](https://pluely.com/) (Pluely website)
-- **🎵 Audio Setup Guide**: [SYSTEM_AUDIO_SETUP.md](SYSTEM_AUDIO_SETUP.md) - Complete cross-platform audio configuration
 - **Website**: [cluely.com](https://cluely.com/) (Original Cluely)
 - **Documentation**: [GitHub Wiki](https://github.com/iamsrikanthnani/pluely/wiki)
 - **Issues**: [GitHub Issues](https://github.com/iamsrikanthnani/pluely/issues)
