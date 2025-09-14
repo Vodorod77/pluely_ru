@@ -155,52 +155,9 @@ pub async fn stop_system_audio_capture(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn check_system_audio_access(app: AppHandle) -> Result<bool, String> {
-    #[cfg(target_os = "macos")]
-    {
-        use xcap::Window;
-        // Get the current application's name to filter out its own windows.
-        let my_app_name = app.package_info().name.clone();
-
-        match Window::all() {
-            Ok(windows) => {
-                // If the list of windows contains any window that does NOT belong
-                // to the current app, we have successfully accessed information
-                // about other processes, which confirms we have permission.
-                let has_permission = windows.iter().any(|w| w.app_name() != my_app_name);
-                Ok(has_permission)
-            }
-            Err(_) => {
-                // If getting the window list fails, it's a strong indicator of a problem,
-                // most likely that permissions have not been granted.
-                Ok(false)
-            }
-        }
-    }
-
-    #[cfg(any(target_os = "windows", target_os = "linux"))]
-    {
-        // For Windows and Linux, this check verifies that the audio device can be initialized.
-        match SpeakerInput::new() {
-            Ok(input) => {
-                let mut stream = input.stream();
-                // We use a timeout to avoid waiting forever if no audio is coming.
-                // If we can poll a sample (even silence) within a short time, the device is working.
-                use tokio::time::{timeout, Duration};
-                match timeout(Duration::from_millis(500), stream.next()).await {
-                    Ok(Some(_)) => Ok(true), // Got a sample, device is accessible.
-                    _ => Ok(false), // Timed out or stream ended, device is not accessible.
-                }
-            }
-            Err(_) => Ok(false), // Failed to create SpeakerInput, device is not accessible.
-        }
-    }
-
-    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
-    {
-        // Unsupported platforms default to no access.
-        Ok(false)
-    }
+pub async fn check_system_audio_access(_app: AppHandle) -> Result<bool, String> {
+    let mut stream = SpeakerInput::new().map_err(|e| e.to_string())?.stream();
+    Ok(stream.next().await.is_some())
 }
 
 #[tauri::command]

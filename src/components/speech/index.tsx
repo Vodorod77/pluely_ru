@@ -39,6 +39,7 @@ export const SystemAudio = ({
   resizeWindow,
   handleSetup,
 }: useSystemAudioType) => {
+  const platform = navigator.platform.toLowerCase();
   const handleToggleCapture = async () => {
     if (capturing) {
       await stopCapture();
@@ -158,10 +159,12 @@ export const SystemAudio = ({
                   />
                 </>
               )}
-              <SetupInstructions
-                setupRequired={setupRequired}
-                handleSetup={handleSetup}
-              />
+              {!setupRequired && platform.includes("mac") && (
+                <SetupInstructions
+                  setupRequired={setupRequired}
+                  handleSetup={handleSetup}
+                />
+              )}
               {/* Experimental Warning */}
               <Warning />
             </div>
