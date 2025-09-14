@@ -6,9 +6,12 @@ use std::sync::{Arc, Mutex};
 use std::task::{Poll, Waker};
 use std::thread;
 
-use pulsectl::stream::{Direction, Stream};
-use pulsectl::simple::Simple;
-use pulsectl::sample::{Spec, Format};
+use libpulse_binding as pulse;
+use libpulse_simple_binding as psimple;
+
+use pulse::sample::{Spec, Format};
+use pulse::stream::Direction;
+use psimple::Simple;
 
 pub struct SpeakerInput {
     server_name: Option<String>,
@@ -16,9 +19,9 @@ pub struct SpeakerInput {
 
 impl SpeakerInput {
     pub fn new() -> Result<Self> {
-        let simple = Simple::new("localhost").map_err(|e| anyhow!(e.to_string()))?;
-        let server_name = simple.get_server_info().map(|info| info.server_name);
-        Ok(Self { server_name })
+        Ok(Self { 
+            server_name: None 
+        })
     }
 
     pub fn stream(self) -> SpeakerStream {
@@ -85,48 +88,57 @@ impl SpeakerStream {
     fn capture_audio_loop(
         sample_queue: Arc<Mutex<VecDeque<f32>>>,
         waker_state: Arc<Mutex<WakerState>>,
-        server_name: Option<&str>,
+        _server_name: Option<&str>,
         init_tx: std::sync::mpsc::Sender<Result<u32>>,
     ) -> Result<()> {
         let spec = Spec {
             format: Format::F32le,
-            rate: 16000,
             channels: 1,
+            rate: 16000,
         };
-        assert!(spec.is_valid());
+        
+        if !spec.is_valid() {
+            return Err(anyhow!("Invalid audio specification"));
+        }
 
-        let init_result: Result<(Stream, u32, u8)> = (|| {
-            let simple = Simple::new(server_name.unwrap_or("localhost")).map_err(|e| anyhow!(e.to_string()))?;
-            let monitor_source = simple.get_server_info()
-                .and_then(|info| info.default_sink_name)
-                .map(|sink_name| format!("{}.monitor", sink_name))
-                .ok_or_else(|| anyhow!("Could not get default sink name"))?;
+        // Try to get the default sink monitor source
+        let source_name = get_default_monitor_source();
 
-            let stream = Stream::new(
-                &simple.context,
-                "pluely-capture",
-                &spec,
-                None,
-            ).map_err(|e| anyhow!(e.to_string()))?;
-            
-            stream.connect_record(Some(&monitor_source), None, Direction::Record).map_err(|e| anyhow!(e.to_string()))?;
+        let init_result: Result<(Simple, u32)> = (|| {
+            let simple = Simple::new(
+                None,                        // Use default server
+                "pluely",           // Application name
+                Direction::Record,          // Record direction
+                source_name.as_deref(),     // Source name (monitor)
+                "System Audio Capture",     // Stream description
+                &spec,                      // Sample specification
+                None,                       // Channel map (use default)
+                None,                       // Buffer attributes (use default)
+            ).map_err(|e| anyhow!("Failed to create PulseAudio simple connection: {}", e))?;
 
-            Ok((stream, spec.rate, spec.channels))
+            Ok((simple, spec.rate))
         })();
 
         match init_result {
-            Ok((stream, sample_rate, _n_channels)) => {
+            Ok((simple, sample_rate)) => {
                 let _ = init_tx.send(Ok(sample_rate));
+
+                // Buffer for reading audio data
+                let mut buffer = vec![0u8; 4096]; // 1024 f32 samples * 4 bytes each
+
                 loop {
                     if waker_state.lock().unwrap().shutdown {
                         break;
                     }
-                    
-                    match stream.read(8192) {
-                        Ok(data) => {
-                            let samples: Vec<f32> = data
+
+                    match simple.read(&mut buffer) {
+                        Ok(_) => {
+                            // Convert byte buffer to f32 samples
+                            let samples: Vec<f32> = buffer
                                 .chunks_exact(4)
-                                .map(|chunk| f32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]))
+                                .map(|chunk| {
+                                    f32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]])
+                                })
                                 .collect();
 
                             if !samples.is_empty() {
@@ -134,13 +146,11 @@ impl SpeakerStream {
                                 if let Some(waker) = waker_state.lock().unwrap().waker.take() {
                                     waker.wake();
                                 }
-                            } else {
-                                thread::sleep(std::time::Duration::from_millis(10));
                             }
                         }
                         Err(e) => {
-                            eprintln!("PulseAudio stream read error: {:?}", e);
-                            break;
+                            eprintln!("PulseAudio read error: {}", e);
+                            thread::sleep(std::time::Duration::from_millis(100));
                         }
                     }
                 }
@@ -151,6 +161,10 @@ impl SpeakerStream {
         }
         Ok(())
     }
+}
+
+fn get_default_monitor_source() -> Option<String> {
+    Some("@DEFAULT_MONITOR@".to_string())
 }
 
 impl Drop for SpeakerStream {
