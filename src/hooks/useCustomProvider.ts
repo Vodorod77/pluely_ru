@@ -7,7 +7,8 @@ import {
   addCustomAiProvider,
   updateCustomAiProvider,
   removeCustomAiProvider,
-} from "@/lib/storage/ai-providers";
+  validateCurl,
+} from "@/lib";
 
 export function useCustomAiProviders() {
   const { loadData } = useApp();
@@ -77,6 +78,11 @@ export function useCustomAiProviders() {
 
     if (!formData.curl.trim()) {
       newErrors.curl = "Curl command is required";
+    } else {
+      const validation = validateCurl(formData.curl, ["TEXT"]);
+      if (!validation.isValid) {
+        newErrors.curl = validation.message || "";
+      }
     }
 
     if (!formData.responseContentPath?.trim()) {

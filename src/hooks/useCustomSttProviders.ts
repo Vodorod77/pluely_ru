@@ -7,6 +7,7 @@ import {
   getCustomSttProviders,
   removeCustomSttProvider,
   updateCustomSttProvider,
+  validateCurl,
 } from "@/lib";
 
 export function useCustomSttProviders() {
@@ -77,6 +78,11 @@ export function useCustomSttProviders() {
 
     if (!formData.curl.trim()) {
       newErrors.curl = "Curl command is required";
+    } else {
+      const validation = validateCurl(formData.curl, ["AUDIO_BASE64"]);
+      if (!validation.isValid) {
+        newErrors.curl = validation.message || "";
+      }
     }
 
     if (!formData.responseContentPath?.trim()) {

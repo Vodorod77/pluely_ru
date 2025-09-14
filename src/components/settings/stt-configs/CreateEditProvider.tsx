@@ -10,6 +10,7 @@ import {
 import { PlusIcon, SaveIcon } from "lucide-react";
 import { useCustomSttProviders } from "@/hooks";
 import { useApp } from "@/contexts";
+import { cn } from "@/lib/utils";
 
 interface CreateEditProviderProps {
   customProviderHook?: ReturnType<typeof useCustomSttProviders>;
@@ -85,7 +86,10 @@ export const CreateEditProvider = ({
                 description="The curl command to use with the STT provider."
               />
               <Textarea
-                className="h-74 font-mono text-sm"
+                className={cn(
+                  "h-74 font-mono text-sm",
+                  errors.curl && "border-red-500"
+                )}
                 placeholder={`curl https://api.openai.com/v1/audio/transcriptions \\
   -H "Authorization: Bearer YOUR_API_KEY or {{API_KEY}}" \\
   -H "Content-Type: multipart/form-data" \\
@@ -96,6 +100,9 @@ export const CreateEditProvider = ({
                   setFormData((prev) => ({ ...prev, curl: e.target.value }))
                 }
               />
+              {errors.curl && (
+                <p className="text-xs text-red-500 mt-1">{errors.curl}</p>
+              )}
 
               {/* Variable Instructions */}
               <div className="bg-muted/50 p-4 rounded-lg space-y-4">
@@ -215,10 +222,19 @@ export const CreateEditProvider = ({
             <Button
               onClick={handleSave}
               disabled={!formData.curl.trim()}
-              className="h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
+              className={cn(
+                "h-11 border-1 border-input/50 focus:border-primary/50 transition-colors",
+                errors.curl && "bg-red-500 hover:bg-red-600 text-white"
+              )}
             >
-              <SaveIcon className="h-4 w-4 mr-2" />
-              {editingProvider ? "Update" : "Save"} Provider
+              {errors.curl ? (
+                "Invalid cURL, try again"
+              ) : (
+                <>
+                  <SaveIcon className="h-4 w-4 mr-2" />
+                  {editingProvider ? "Update" : "Save"} Provider
+                </>
+              )}
             </Button>
           </div>
         </Card>
