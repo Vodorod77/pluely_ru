@@ -53,7 +53,9 @@ export function extractVariables(
 
   const uniqueVariables = [...new Set(variables)];
 
-  const doNotInclude = includeAll ? [] : ["SYSTEM_PROMPT", "TEXT", "IMAGE"];
+  const doNotInclude = includeAll
+    ? []
+    : ["SYSTEM_PROMPT", "TEXT", "IMAGE", "AUDIO"];
 
   const filteredVariables = uniqueVariables?.filter(
     (variable) => !doNotInclude?.includes(variable)

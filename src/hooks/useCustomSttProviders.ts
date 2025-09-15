@@ -79,9 +79,15 @@ export function useCustomSttProviders() {
     if (!formData.curl.trim()) {
       newErrors.curl = "Curl command is required";
     } else {
-      const validation = validateCurl(formData.curl, ["AUDIO_BASE64"]);
-      if (!validation.isValid) {
-        newErrors.curl = validation.message || "";
+      const hasAudioVar = formData.curl.includes("{{AUDIO}}");
+
+      if (!hasAudioVar) {
+        newErrors.curl = "cURL command must contain {{AUDIO}}.";
+      } else {
+        const validation = validateCurl(formData.curl, []);
+        if (!validation.isValid) {
+          newErrors.curl = validation.message || "";
+        }
       }
     }
 

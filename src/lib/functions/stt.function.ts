@@ -94,19 +94,6 @@ export async function fetchSTT(params: STTParams): Promise<string> {
       ),
     };
 
-    // Convert to base64 if needed
-    if (provider.curl.includes("{{AUDIO_BASE64}}")) {
-      try {
-        allVariables.AUDIO_BASE64 = await blobToBase64(audio);
-      } catch (e) {
-        throw new Error(
-          `Failed to convert audio to base64: ${
-            e instanceof Error ? e.message : e
-          }`
-        );
-      }
-    }
-
     // Prepare request
     const url = deepVariableReplacer(curlJson.url || "", allVariables);
     const headers = deepVariableReplacer(curlJson.header || {}, allVariables);
@@ -118,7 +105,10 @@ export async function fetchSTT(params: STTParams): Promise<string> {
       provider.curl.includes("-F ") || provider.curl.includes("--form");
     if (isForm) {
       const form = new FormData();
-      form.append("file", audio);
+      const freshBlob = new Blob([await audio.arrayBuffer()], {
+        type: audio.type,
+      });
+      form.append("file", freshBlob, "audio.wav");
       const headerKeys = Object.keys(headers).map((k) =>
         k.toUpperCase().replace(/[-_]/g, "")
       );
@@ -128,7 +118,7 @@ export async function fetchSTT(params: STTParams): Promise<string> {
           if (
             !val ||
             headerKeys.includes(key.toUpperCase()) ||
-            key.toUpperCase() === "AUDIO_BASE64"
+            key.toUpperCase() === "AUDIO"
           )
             continue;
           form.append(key.toLowerCase(), val as string | Blob);
@@ -154,7 +144,7 @@ export async function fetchSTT(params: STTParams): Promise<string> {
           if (
             !val ||
             headerKeys.includes(key.toUpperCase()) ||
-            key.toUpperCase() === "AUDIO_BASE64"
+            key.toUpperCase() === "AUDIO"
           )
             continue;
           form.append(key.toLowerCase(), val as string | Blob);
@@ -163,6 +153,7 @@ export async function fetchSTT(params: STTParams): Promise<string> {
       delete finalHeaders["Content-Type"];
       body = form;
     } else {
+      allVariables.AUDIO = await blobToBase64(audio);
       const dataObj = curlJson.data ? { ...curlJson.data } : {};
       body = JSON.stringify(deepVariableReplacer(dataObj, allVariables));
       finalHeaders["Content-Type"] = "application/json";
@@ -197,13 +188,12 @@ export async function fetchSTT(params: STTParams): Promise<string> {
       throw new Error(`HTTP ${response.status}: ${errMsg}`);
     }
 
-    // Parse JSON or fallback to text
+    const responseText = await response.text();
     let data: any;
     try {
-      data = await response.json();
+      data = JSON.parse(responseText);
     } catch {
-      const text = await response.text();
-      return [...warnings, text.trim()].filter(Boolean).join("; ");
+      return [...warnings, responseText.trim()].filter(Boolean).join("; ");
     }
 
     // Extract transcription
