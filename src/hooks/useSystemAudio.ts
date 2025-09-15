@@ -4,7 +4,11 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useApp } from "@/contexts";
 import { fetchSTT, fetchAIResponse } from "@/lib/functions";
-import { DEFAULT_SYSTEM_PROMPT, STORAGE_KEYS } from "@/config";
+import {
+  DEFAULT_QUICK_ACTIONS,
+  DEFAULT_SYSTEM_PROMPT,
+  STORAGE_KEYS,
+} from "@/config";
 import {
   generateConversationTitle,
   safeLocalStorage,
@@ -43,6 +47,10 @@ export function useSystemAudio() {
   const [lastAIResponse, setLastAIResponse] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [setupRequired, setSetupRequired] = useState<boolean>(false);
+  const [quickActions, setQuickActions] = useState<string[]>([]);
+  const [isManagingQuickActions, setIsManagingQuickActions] =
+    useState<boolean>(false);
+  const [showQuickActions, setShowQuickActions] = useState<boolean>(true);
 
   const [conversation, setConversation] = useState<ChatConversation>({
     id: "",
@@ -78,6 +86,24 @@ export function useSystemAudio() {
       } catch (error) {
         console.error("Failed to load system audio context:", error);
       }
+    }
+  }, []);
+
+  // Load quick actions from localStorage on mount
+  useEffect(() => {
+    const savedActions = safeLocalStorage.getItem(
+      STORAGE_KEYS.SYSTEM_AUDIO_QUICK_ACTIONS
+    );
+    if (savedActions) {
+      try {
+        const parsed = JSON.parse(savedActions);
+        setQuickActions(parsed);
+      } catch (error) {
+        console.error("Failed to load quick actions:", error);
+        setQuickActions(DEFAULT_QUICK_ACTIONS);
+      }
+    } else {
+      setQuickActions(DEFAULT_QUICK_ACTIONS);
     }
   }, []);
 
@@ -203,6 +229,53 @@ export function useSystemAudio() {
     },
     [useSystemPrompt, saveContextSettings]
   );
+
+  // Quick actions management
+  const saveQuickActions = useCallback((actions: string[]) => {
+    try {
+      safeLocalStorage.setItem(
+        STORAGE_KEYS.SYSTEM_AUDIO_QUICK_ACTIONS,
+        JSON.stringify(actions)
+      );
+    } catch (error) {
+      console.error("Failed to save quick actions:", error);
+    }
+  }, []);
+
+  const addQuickAction = useCallback(
+    (action: string) => {
+      if (action && !quickActions.includes(action)) {
+        const newActions = [...quickActions, action];
+        setQuickActions(newActions);
+        saveQuickActions(newActions);
+      }
+    },
+    [quickActions, saveQuickActions]
+  );
+
+  const removeQuickAction = useCallback(
+    (action: string) => {
+      const newActions = quickActions.filter((a) => a !== action);
+      setQuickActions(newActions);
+      saveQuickActions(newActions);
+    },
+    [quickActions, saveQuickActions]
+  );
+
+  const handleQuickActionClick = async (action: string) => {
+    setLastTranscription(action); // Show the action as if it were a transcription
+    setError("");
+
+    const effectiveSystemPrompt = useSystemPrompt
+      ? systemPrompt || DEFAULT_SYSTEM_PROMPT
+      : contextContent || DEFAULT_SYSTEM_PROMPT;
+
+    const previousMessages = conversation.messages.map((msg) => {
+      return { role: msg.role, content: msg.content };
+    });
+
+    await processWithAI(action, effectiveSystemPrompt, previousMessages);
+  };
 
   // AI Processing function
   const processWithAI = useCallback(
@@ -451,5 +524,13 @@ export function useSystemAudio() {
     startNewConversation,
     // Window resize
     resizeWindow,
+    quickActions,
+    addQuickAction,
+    removeQuickAction,
+    isManagingQuickActions,
+    setIsManagingQuickActions,
+    showQuickActions,
+    setShowQuickActions,
+    handleQuickActionClick,
   };
 }

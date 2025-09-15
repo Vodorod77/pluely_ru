@@ -38,6 +38,14 @@ export const SystemAudio = ({
   conversation,
   resizeWindow,
   handleSetup,
+  quickActions,
+  addQuickAction,
+  removeQuickAction,
+  isManagingQuickActions,
+  setIsManagingQuickActions,
+  showQuickActions,
+  setShowQuickActions,
+  handleQuickActionClick,
 }: useSystemAudioType) => {
   const platform = navigator.platform.toLowerCase();
   const handleToggleCapture = async () => {
@@ -149,6 +157,14 @@ export const SystemAudio = ({
                     isAIProcessing={isAIProcessing}
                     conversation={conversation}
                     startNewConversation={startNewConversation}
+                    quickActions={quickActions}
+                    addQuickAction={addQuickAction}
+                    removeQuickAction={removeQuickAction}
+                    isManagingQuickActions={isManagingQuickActions}
+                    setIsManagingQuickActions={setIsManagingQuickActions}
+                    showQuickActions={showQuickActions}
+                    setShowQuickActions={setShowQuickActions}
+                    handleQuickActionClick={handleQuickActionClick}
                   />
                   {/* Context Settings */}
                   <Context

@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   SELECTED_AI_PROVIDER: "curl_selected_ai_provider",
   SELECTED_STT_PROVIDER: "curl_selected_stt_provider",
   SYSTEM_AUDIO_CONTEXT: "system_audio_context",
+  SYSTEM_AUDIO_QUICK_ACTIONS: "system_audio_quick_actions",
   CUSTOMIZABLE: "customizable",
   PLUELY_API_ENABLED: "pluely_api_enabled",
 } as const;
@@ -20,3 +21,10 @@ export const MAX_FILES = 6;
 // Default settings
 export const DEFAULT_SYSTEM_PROMPT =
   "You are a helpful AI assistant. Be concise, accurate, and friendly in your responses";
+
+export const DEFAULT_QUICK_ACTIONS = [
+  "What should I say?",
+  "Follow-up questions",
+  "Fact-check",
+  "Recap",
+];
