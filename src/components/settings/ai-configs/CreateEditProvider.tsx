@@ -50,7 +50,7 @@ export const CreateEditProvider = ({
           Add Custom Provider
         </Button>
       ) : (
-        <Card className="p-4 border border-input/50 ">
+        <Card className="p-4 border !bg-transparent border-input/50 ">
           <div className="flex justify-between items-center">
             <Header
               title={editingProvider ? `Edit Provider` : "Add Custom Provider"}

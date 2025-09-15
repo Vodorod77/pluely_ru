@@ -393,7 +393,11 @@ export const PluelyApiSetup = () => {
               <ChevronDown />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[calc(100vw-4rem)] h-[46vh]">
+          <PopoverContent
+            align="end"
+            side="bottom"
+            className="w-[calc(100vw-4rem)] h-[46vh]"
+          >
             <Command shouldFilter={true}>
               <CommandInput
                 placeholder="Select model..."

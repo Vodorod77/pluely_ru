@@ -84,7 +84,7 @@ export const Input = ({
 
         {/* Response Panel */}
         <PopoverContent
-          align="center"
+          align="end"
           side="bottom"
           className="w-screen p-0 border shadow-lg overflow-hidden"
           sideOffset={8}

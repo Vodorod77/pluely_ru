@@ -50,7 +50,7 @@ export const CreateEditProvider = ({
           Add Custom STT Provider
         </Button>
       ) : (
-        <Card className="p-4 border border-input/50 ">
+        <Card className="p-4 border border-input/50 bg-transparent">
           <div className="flex justify-between items-center">
             <Header
               title={
