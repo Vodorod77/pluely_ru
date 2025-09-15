@@ -94,8 +94,19 @@ fn handle_toggle_window<R: Runtime>(app: &AppHandle<R>) {
                 eprintln!("Failed to show window: {}", e);
             }
 
-             if let Err(e) = window.set_focus() {
+            if let Err(e) = window.set_focus() {
                 eprintln!("Failed to focus window: {}", e);
+            }
+
+            #[cfg(target_os = "windows")]
+            {
+                // Workaround for Windows rendering issue by forcing a repaint
+                if let Ok(size) = window.outer_size() {
+                    window
+                        .set_size(tauri::PhysicalSize::new(size.width, size.height + 1))
+                        .unwrap_or_default();
+                    window.set_size(size).unwrap_or_default();
+                }
             }
 
             // Emit event to focus text input
