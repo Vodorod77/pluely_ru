@@ -116,36 +116,35 @@ export function useSystemAudio() {
             }
 
             setIsProcessing(true);
-            const transcription = await fetchSTT({
-              provider: providerConfig,
-              selectedProvider: selectedSttProvider,
-              audio: audioBlob,
-            });
-
-            if (transcription.includes("Pluely STT Error")) {
-              setError(transcription);
-              setCapturing(false);
-              setIsPopoverOpen(true);
-              return;
-            }
-
-            if (transcription.trim()) {
-              setLastTranscription(transcription);
-              setError("");
-
-              const effectiveSystemPrompt = useSystemPrompt
-                ? systemPrompt || DEFAULT_SYSTEM_PROMPT
-                : contextContent || DEFAULT_SYSTEM_PROMPT;
-
-              const previousMessages = conversation.messages.map((msg) => {
-                return { role: msg.role, content: msg.content };
+            try {
+              const transcription = await fetchSTT({
+                provider: providerConfig,
+                selectedProvider: selectedSttProvider,
+                audio: audioBlob,
               });
 
-              await processWithAI(
-                transcription,
-                effectiveSystemPrompt,
-                previousMessages
-              );
+              if (transcription.trim()) {
+                setLastTranscription(transcription);
+                setError("");
+
+                const effectiveSystemPrompt = useSystemPrompt
+                  ? systemPrompt || DEFAULT_SYSTEM_PROMPT
+                  : contextContent || DEFAULT_SYSTEM_PROMPT;
+
+                const previousMessages = conversation.messages.map((msg) => {
+                  return { role: msg.role, content: msg.content };
+                });
+
+                await processWithAI(
+                  transcription,
+                  effectiveSystemPrompt,
+                  previousMessages
+                );
+              }
+            } catch (sttError: any) {
+              setError(sttError.message || "Failed to transcribe audio");
+              setCapturing(false);
+              setIsPopoverOpen(true);
             }
           } catch (err) {
             setError("Failed to process speech");
@@ -239,16 +238,20 @@ export function useSystemAudio() {
           return;
         }
 
-        for await (const chunk of fetchAIResponse({
-          provider: usePluelyAPI ? undefined : provider,
-          selectedProvider: selectedAIProvider,
-          systemPrompt: prompt,
-          history: previousMessages,
-          userMessage: transcription,
-          imagesBase64: [],
-        })) {
-          fullResponse += chunk;
-          setLastAIResponse((prev) => prev + chunk);
+        try {
+          for await (const chunk of fetchAIResponse({
+            provider: usePluelyAPI ? undefined : provider,
+            selectedProvider: selectedAIProvider,
+            systemPrompt: prompt,
+            history: previousMessages,
+            userMessage: transcription,
+            imagesBase64: [],
+          })) {
+            fullResponse += chunk;
+            setLastAIResponse((prev) => prev + chunk);
+          }
+        } catch (aiError: any) {
+          setError(aiError.message || "Failed to get AI response");
         }
 
         if (fullResponse) {

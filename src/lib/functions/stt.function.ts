@@ -219,6 +219,6 @@ export async function fetchSTT(params: STTParams): Promise<string> {
     return [...warnings, transcription].filter(Boolean).join("; ");
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    return msg;
+    throw new Error(msg);
   }
 }

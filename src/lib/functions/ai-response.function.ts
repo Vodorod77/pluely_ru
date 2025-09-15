@@ -300,9 +300,10 @@ export async function* fetchAIResponse(params: {
       }
     }
   } catch (error) {
-    yield `Error in fetchAIResponse: ${
-      error instanceof Error ? error.message : "Unknown error"
-    }`;
-    return;
+    throw new Error(
+      `Error in fetchAIResponse: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
 }

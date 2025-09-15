@@ -186,19 +186,26 @@ export const useCompletion = () => {
           error: null,
           response: "",
         }));
-        // Use the fetchAIResponse function
-        for await (const chunk of fetchAIResponse({
-          provider: usePluelyAPI ? undefined : provider,
-          selectedProvider: selectedAIProvider,
-          systemPrompt: systemPrompt || undefined,
-          history: messageHistory,
-          userMessage: input,
-          imagesBase64,
-        })) {
-          fullResponse += chunk;
+        try {
+          // Use the fetchAIResponse function
+          for await (const chunk of fetchAIResponse({
+            provider: usePluelyAPI ? undefined : provider,
+            selectedProvider: selectedAIProvider,
+            systemPrompt: systemPrompt || undefined,
+            history: messageHistory,
+            userMessage: input,
+            imagesBase64,
+          })) {
+            fullResponse += chunk;
+            setState((prev) => ({
+              ...prev,
+              response: prev.response + chunk,
+            }));
+          }
+        } catch (e: any) {
           setState((prev) => ({
             ...prev,
-            response: prev.response + chunk,
+            error: e.message || "An error occurred",
           }));
         }
 
@@ -549,12 +556,13 @@ export const useCompletion = () => {
               input: "",
             }));
           }
-        } catch (error) {
+        } catch (e: any) {
           setState((prev) => ({
             ...prev,
-            error: error instanceof Error ? error.message : "An error occurred",
-            isLoading: false,
+            error: e.message || "An error occurred",
           }));
+        } finally {
+          setState((prev) => ({ ...prev, isLoading: false }));
         }
       } else {
         // Manual mode: Add to attached files
