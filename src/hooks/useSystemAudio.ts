@@ -290,7 +290,6 @@ export function useSystemAudio() {
       setError("");
 
       const hasAccess = await invoke<boolean>("check_system_audio_access");
-      console.log("hasAccess", hasAccess);
       if (!hasAccess) {
         setSetupRequired(true);
         return;

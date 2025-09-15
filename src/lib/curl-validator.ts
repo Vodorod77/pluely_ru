@@ -9,9 +9,6 @@ export const validateCurl = (
   curl: string,
   requiredVariables: string[]
 ): CurlValidationResult => {
-  console.log("curl", curl);
-  console.log("requiredVariables", requiredVariables);
-
   if (!curl.trim().startsWith("curl")) {
     return {
       isValid: false,
