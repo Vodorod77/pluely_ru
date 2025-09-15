@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useWindowResize } from "./useWindow";
-import { useGlobalShortcuts, useWindowFocus } from "@/hooks";
+import { useGlobalShortcuts } from "@/hooks";
 import { MAX_FILES } from "@/config";
 import { useApp } from "@/contexts";
 import { fetchAIResponse, safeLocalStorage } from "@/lib";
@@ -698,13 +698,6 @@ export const useCompletion = () => {
     setEnableVAD(!enableVAD);
     setMicOpen(!micOpen);
   };
-
-  useWindowFocus({
-    onFocusLost: () => {
-      setMicOpen(false);
-      setMessageHistoryOpen(false);
-    },
-  });
 
   // register callbacks for global shortcuts
   useEffect(() => {
