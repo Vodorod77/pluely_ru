@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button, Header, Input, Switch } from "@/components";
-import { KeyIcon, TrashIcon, LoaderIcon, ChevronDown } from "lucide-react";
+import {
+  KeyIcon,
+  TrashIcon,
+  LoaderIcon,
+  ChevronDown,
+  CoffeeIcon,
+} from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useApp } from "@/contexts";
@@ -328,7 +334,7 @@ export const PluelyApiSetup = () => {
             variant="outline"
             onClick={() => openUrl("https://buymeacoffee.com/srikanthnani")}
           >
-            Support Pluely
+            <CoffeeIcon className="h-4 w-4" /> Buy Me a Coffee
           </Button>
         </div>
       </div>
