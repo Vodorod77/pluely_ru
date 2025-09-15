@@ -94,6 +94,7 @@ pub fn run() {
             activate::secure_storage_remove,
             api::transcribe_audio,
             api::chat_stream,
+            api::fetch_models,
             api::check_license_status,
             speaker::start_system_audio_capture,
             speaker::stop_system_audio_capture,
