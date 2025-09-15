@@ -95,11 +95,32 @@ export async function fetchSTT(params: STTParams): Promise<string> {
     };
 
     // Prepare request
-    const url = deepVariableReplacer(curlJson.url || "", allVariables);
+    let url = deepVariableReplacer(curlJson.url || "", allVariables);
     const headers = deepVariableReplacer(curlJson.header || {}, allVariables);
     const formData = deepVariableReplacer(curlJson.form || {}, allVariables);
+
+    // To Check if API accepts Binary Data
+    const isBinaryUpload = provider.curl.includes("--data-binary");
+    // Fetch URL Params
+    const rawParams = curlJson.params || {};
+    // Decode Them
+    const decodedParams = Object.fromEntries(
+      Object.entries(rawParams).map(([key, value]) => [
+        key,
+        typeof value === "string" ? decodeURIComponent(value) : "",
+      ])
+    );
+    // Get the Parameters from allVariables
+    const replacedParams = deepVariableReplacer(decodedParams, allVariables);
+
+    // Add query parameters to URL
+    const queryString = new URLSearchParams(replacedParams).toString();
+    if (queryString) {
+      url += (url.includes("?") ? "&" : "?") + queryString;
+    }
+
     let finalHeaders = { ...headers };
-    let body: FormData | string;
+    let body: FormData | string | Blob;
 
     const isForm =
       provider.curl.includes("-F ") || provider.curl.includes("--form");
@@ -152,11 +173,16 @@ export async function fetchSTT(params: STTParams): Promise<string> {
       }
       delete finalHeaders["Content-Type"];
       body = form;
+    } else if (isBinaryUpload) {
+      // Deepgram-style: raw binary body
+      body = new Blob([await audio.arrayBuffer()], {
+        type: audio.type,
+      });
     } else {
+      // Google-style: JSON payload with base64
       allVariables.AUDIO = await blobToBase64(audio);
       const dataObj = curlJson.data ? { ...curlJson.data } : {};
       body = JSON.stringify(deepVariableReplacer(dataObj, allVariables));
-      finalHeaders["Content-Type"] = "application/json";
     }
 
     const fetchFunction = url?.includes("http") ? fetch : tauriFetch;
