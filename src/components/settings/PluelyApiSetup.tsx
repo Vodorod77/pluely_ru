@@ -296,7 +296,7 @@ export const PluelyApiSetup = () => {
   const description = isModelsLoading
     ? "Fetching the list of supported models..."
     : providerList
-    ? `Access top models from providers like ${providerList}.`
+    ? `Access top models from providers like ${providerList}. and select smaller models for faster responses.`
     : "Explore all the models Pluely supports.";
 
   return (
@@ -379,7 +379,10 @@ export const PluelyApiSetup = () => {
             disabled={isModelsLoading}
             className="cursor-pointer flex justify-start"
           >
-            <Button variant="outline" className="text-start shadow-none w-full">
+            <Button
+              variant="outline"
+              className="h-11 text-start shadow-none w-full"
+            >
               {selectedModel ? selectedModel.name : "Select pro models"}{" "}
               <ChevronDown />
             </Button>
