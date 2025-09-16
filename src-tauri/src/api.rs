@@ -42,9 +42,10 @@ fn get_secure_storage_path(app: &AppHandle) -> Result<PathBuf, String> {
 struct SecureStorage {
     license_key: Option<String>,
     instance_id: Option<String>,
+    selected_pluely_model: Option<String>,
 }
 
-async fn get_stored_credentials(app: &AppHandle) -> Result<(String, String), String> {
+async fn get_stored_credentials(app: &AppHandle) -> Result<(String, String, Option<Model>), String> {
     let storage_path = get_secure_storage_path(app)?;
     
     if !storage_path.exists() {
@@ -59,8 +60,11 @@ async fn get_stored_credentials(app: &AppHandle) -> Result<(String, String), Str
     
     let license_key = storage.license_key.ok_or("License key not found".to_string())?;
     let instance_id = storage.instance_id.ok_or("Instance ID not found".to_string())?;
+
+    let selected_model: Option<Model> = storage.selected_pluely_model
+        .and_then(|json_str| serde_json::from_str(&json_str).ok());
     
-    Ok((license_key, instance_id))
+    Ok((license_key, instance_id, selected_model))
 }
 
 // Audio API Structs
@@ -92,6 +96,24 @@ pub struct ChatResponse {
     error: Option<String>,
 }
 
+// Model API Structs
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Model {
+    provider: String,
+    name: String,
+    id: String,
+    model: String,
+    description: String,
+    modality: String,
+    #[serde(rename = "isAvailable")]
+    is_available: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ModelsResponse {
+    models: Vec<Model>,
+}
+
 
 // Audio API Command
 #[tauri::command]
@@ -104,7 +126,7 @@ pub async fn transcribe_audio(
     let api_access_key = get_api_access_key()?;
     
     // Get stored credentials
-    let (license_key, instance_id) = get_stored_credentials(&app).await?;
+    let (license_key, instance_id, _) = get_stored_credentials(&app).await?;
     
     // Prepare audio request
     let audio_request = AudioRequest {
@@ -166,14 +188,15 @@ pub async fn chat_stream(
     let api_access_key = get_api_access_key()?;
     
     // Get stored credentials
-    let (license_key, instance_id) = get_stored_credentials(&app).await?;
-    
+    let (license_key, instance_id, selected_model) = get_stored_credentials(&app).await?;
+    let (provider, model) = selected_model.as_ref().map_or((None, None), |m| (Some(m.provider.clone()), Some(m.model.clone())));
+   
     // Prepare chat request
     let chat_request = ChatRequest {
         user_message,
         system_prompt,
         image_base64,
-        history,
+        history
     };
     
     // Make HTTP request to chat endpoint with streaming
@@ -186,6 +209,8 @@ pub async fn chat_stream(
         .header("Authorization", format!("Bearer {}", api_access_key))
         .header("license_key", &license_key)
         .header("instance", &instance_id)
+        .header("provider", &provider.unwrap_or("None".to_string()))
+        .header("model", &model.unwrap_or("None".to_string()))
         .json(&chat_request)
         .send()
         .await
@@ -265,6 +290,50 @@ pub async fn chat_stream(
     let _ = app.emit("chat_stream_complete", &full_response);
     
     Ok(full_response)
+}
+
+// Models API Command
+#[tauri::command]
+pub async fn fetch_models() -> Result<Vec<Model>, String> {
+    // Get environment variables
+    let app_endpoint = get_app_endpoint()?;
+    let api_access_key = get_api_access_key()?;
+    
+    // Make HTTP request to models endpoint
+    let client = reqwest::Client::new();
+    let url = format!("{}/api/models", app_endpoint);
+    
+    let response = client
+        .post(&url)
+        .header("Content-Type", "application/json")
+        .header("Authorization", format!("Bearer {}", api_access_key))
+        .send()
+        .await
+        .map_err(|e| format!("Failed to make models request: {}", e))?;
+        
+    // Check if the response is successful
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown server error".to_string());
+        
+        // Try to parse error as JSON to get a more specific error message
+        if let Ok(error_json) = serde_json::from_str::<serde_json::Value>(&error_text) {
+            if let Some(error_msg) = error_json.get("error").and_then(|e| e.as_str()) {
+                return Err(format!("Server error ({}): {}", status, error_msg));
+            } else if let Some(message) = error_json.get("message").and_then(|m| m.as_str()) {
+                return Err(format!("Server error ({}): {}", status, message));
+            }
+        }
+        
+        return Err(format!("Server error ({}): {}", status, error_text));
+    }
+    
+    let models_response: ModelsResponse = response
+        .json()
+        .await
+        .map_err(|e| format!("Failed to parse models response: {}", e))?;
+        
+    Ok(models_response.models)
 }
 
 // Helper command to check if license is available

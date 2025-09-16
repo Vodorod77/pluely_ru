@@ -43,6 +43,7 @@ fn get_secure_storage_path(app: &AppHandle) -> Result<PathBuf, String> {
 struct SecureStorage {
     license_key: Option<String>,
     instance_id: Option<String>,
+    selected_pluely_model: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -55,6 +56,7 @@ pub struct StorageItem {
 pub struct StorageResult {
     license_key: Option<String>,
     instance_id: Option<String>,
+    selected_pluely_model: Option<String>,
 }
 
 #[tauri::command]
@@ -73,6 +75,7 @@ pub async fn secure_storage_save(app: AppHandle, items: Vec<StorageItem>) -> Res
         match item.key.as_str() {
             "pluely_license_key" => storage.license_key = Some(item.value),
             "pluely_instance_id" => storage.instance_id = Some(item.value),
+            "selected_pluely_model" => storage.selected_pluely_model = Some(item.value),
             _ => return Err(format!("Invalid storage key: {}", item.key)),
         }
     }
@@ -94,6 +97,7 @@ pub async fn secure_storage_get(app: AppHandle) -> Result<StorageResult, String>
         return Ok(StorageResult {
             license_key: None,
             instance_id: None,
+            selected_pluely_model: None,
         });
     }
     
@@ -106,6 +110,7 @@ pub async fn secure_storage_get(app: AppHandle) -> Result<StorageResult, String>
     Ok(StorageResult {
         license_key: storage.license_key,
         instance_id: storage.instance_id,
+        selected_pluely_model: storage.selected_pluely_model,
     })
 }
 
@@ -127,6 +132,7 @@ pub async fn secure_storage_remove(app: AppHandle, keys: Vec<String>) -> Result<
         match key.as_str() {
             "pluely_license_key" => storage.license_key = None,
             "pluely_instance_id" => storage.instance_id = None,
+            "selected_pluely_model" => storage.selected_pluely_model = None,
             _ => return Err(format!("Invalid storage key: {}", key)),
         }
     }

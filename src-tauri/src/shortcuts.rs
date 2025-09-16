@@ -1,10 +1,6 @@
-use tauri::{AppHandle, Manager, Runtime, Emitter, PhysicalPosition};
+use tauri::{AppHandle, Manager, Runtime, Emitter};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 use serde_json::json;
-use std::sync::Mutex;
-
-// Static storage for window position
-static WINDOW_POSITION: Mutex<Option<PhysicalPosition<i32>>> = Mutex::new(None);
 
 // Default shortcuts
 #[cfg(target_os = "macos")]
@@ -38,15 +34,7 @@ pub fn setup_global_shortcuts<R: Runtime>(app: &AppHandle<R>) -> Result<(), Box<
     // Register global shortcuts
     app.global_shortcut().on_shortcut(toggle_shortcut, move |app, _shortcut, event| {
         if event.state() == ShortcutState::Pressed {
-            if let Some(window) = app.get_webview_window("main") {
-                // Store the current window position before handling toggle
-                if let Ok(pos) = window.outer_position() {
-                    if let Ok(mut stored_pos) = WINDOW_POSITION.lock() {
-                        *stored_pos = Some(pos);
-                    }
-                }
-                handle_toggle_window(&window);
-            }
+            handle_toggle_window(&app);
         }
     }).map_err(|e| format!("Failed to register toggle shortcut: {}", e))?;
 
@@ -84,44 +72,43 @@ pub fn setup_global_shortcuts<R: Runtime>(app: &AppHandle<R>) -> Result<(), Box<
     Ok(())
 }
 
-/// Handle window toggle (hide/show) with input focus and app icon management
-fn handle_toggle_window<R: Runtime>(window: &tauri::WebviewWindow<R>) {
+/// Handle app toggle (hide/show) with input focus and app icon management
+fn handle_toggle_window<R: Runtime>(app: &AppHandle<R>) {
+    // Get the main window
+    let Some(window) = app.get_webview_window("main") else {
+        eprintln!("Main window not found");
+        return;
+    };
+
     match window.is_visible() {
         Ok(true) => {
             // Window is visible, hide it and handle app icon based on user settings
             if let Err(e) = window.hide() {
                 eprintln!("Failed to hide window: {}", e);
             }
-            
-            // Handle app icon visibility based on user settings when hiding
-            if let Err(e) = set_app_icon_visibility(window.app_handle().clone(), false) {
-                eprintln!("Failed to set app icon visibility: {}", e);
-            }
-        }
+
+         }
         Ok(false) => {
-            // Window is hidden, show it, show app icon, and focus input
+            // Window is hidden, show it and handle app icon based on user settings
             if let Err(e) = window.show() {
                 eprintln!("Failed to show window: {}", e);
-            }
-
-            // Restore to the last position
-            if let Ok(stored_pos) = WINDOW_POSITION.lock() {
-                if let Some(pos) = *stored_pos {
-                    if let Err(e) = window.set_position(pos) {
-                        eprintln!("Failed to set window to previous location: {}", e);
-                    }
-                }
             }
 
             if let Err(e) = window.set_focus() {
                 eprintln!("Failed to focus window: {}", e);
             }
-            // Always show app icon when window is shown
-            // Handle app icon visibility based on user settings when showing
-            if let Err(e) = set_app_icon_visibility(window.app_handle().clone(), true) {
-                eprintln!("Failed to set app icon visibility: {}", e);
+
+            #[cfg(target_os = "windows")]
+            {
+                // Workaround for Windows rendering issue by forcing a repaint
+                if let Ok(size) = window.outer_size() {
+                    window
+                        .set_size(tauri::PhysicalSize::new(size.width, size.height + 1))
+                        .unwrap_or_default();
+                    window.set_size(size).unwrap_or_default();
+                }
             }
-            
+
             // Emit event to focus text input
             if let Err(e) = window.emit("focus-text-input", json!({})) {
                 eprintln!("Failed to emit focus event: {}", e);

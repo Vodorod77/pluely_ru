@@ -34,7 +34,7 @@ export const CustomProviders = ({ allAiProviders }: UseSettingsReturn) => {
                 return (
                   <Card
                     key={provider?.id}
-                    className="p-3 border border-input/50"
+                    className="p-3 border !bg-transparent border-input/50"
                   >
                     <div className="flex items-center justify-between">
                       <div>

@@ -4,22 +4,18 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useApp } from "@/contexts";
 import { fetchSTT, fetchAIResponse } from "@/lib/functions";
-import { DEFAULT_SYSTEM_PROMPT, STORAGE_KEYS } from "@/config";
+import {
+  DEFAULT_QUICK_ACTIONS,
+  DEFAULT_SYSTEM_PROMPT,
+  STORAGE_KEYS,
+} from "@/config";
 import {
   generateConversationTitle,
   safeLocalStorage,
   saveConversation,
 } from "@/lib";
 import { shouldUsePluelyAPI } from "@/lib/functions/pluely.api";
-
-// Audio settings type
-export interface AudioSettings {
-  vadSensitivity: number;
-  speechThreshold: number;
-  silenceThreshold: number;
-  minSpeechDuration: number;
-  preSpeechBufferSize: number;
-}
+import { Message } from "@/types/completion";
 
 // Chat message interface (reusing from useCompletion)
 interface ChatMessage {
@@ -38,15 +34,6 @@ export interface ChatConversation {
   updatedAt: number;
 }
 
-// Default settings
-const DEFAULT_SETTINGS: AudioSettings = {
-  vadSensitivity: 0.004,
-  speechThreshold: 0.01,
-  silenceThreshold: 47,
-  minSpeechDuration: 15,
-  preSpeechBufferSize: 15,
-};
-
 export type useSystemAudioType = ReturnType<typeof useSystemAudio>;
 
 export function useSystemAudio() {
@@ -60,10 +47,10 @@ export function useSystemAudio() {
   const [lastAIResponse, setLastAIResponse] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [setupRequired, setSetupRequired] = useState<boolean>(false);
-  const [settings, setSettings] = useState<AudioSettings>(DEFAULT_SETTINGS);
-  const [showSettings, setShowSettings] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<string>("");
-  const [testResults, setTestResults] = useState<string>("");
+  const [quickActions, setQuickActions] = useState<string[]>([]);
+  const [isManagingQuickActions, setIsManagingQuickActions] =
+    useState<boolean>(false);
+  const [showQuickActions, setShowQuickActions] = useState<boolean>(true);
 
   const [conversation, setConversation] = useState<ChatConversation>({
     id: "",
@@ -102,131 +89,111 @@ export function useSystemAudio() {
     }
   }, []);
 
-  // Check capture status on mount
+  // Load quick actions from localStorage on mount
   useEffect(() => {
-    const checkCaptureStatus = async () => {
+    const savedActions = safeLocalStorage.getItem(
+      STORAGE_KEYS.SYSTEM_AUDIO_QUICK_ACTIONS
+    );
+    if (savedActions) {
       try {
-        const status = await invoke<string>("get_vad_status");
-
-        // Parse the status to see if capturing is active
-        if (status.includes("Capturing: true")) {
-          setCapturing(true);
-        }
-      } catch (err) {}
-    };
-    if (!setupRequired && !isPopoverOpen) {
-      checkCaptureStatus();
+        const parsed = JSON.parse(savedActions);
+        setQuickActions(parsed);
+      } catch (error) {
+        console.error("Failed to load quick actions:", error);
+        setQuickActions(DEFAULT_QUICK_ACTIONS);
+      }
+    } else {
+      setQuickActions(DEFAULT_QUICK_ACTIONS);
     }
-  }, [setupRequired, isPopoverOpen]);
+  }, []);
 
-  // Handle speech detection events from Rust backend
+  // Handle single speech detection event
   useEffect(() => {
-    let speechStartUnlisten: (() => void) | undefined;
-    let speechDetectedUnlisten: (() => void) | undefined;
+    let speechUnlisten: (() => void) | undefined;
 
-    const setupEventListeners = async () => {
+    const setupEventListener = async () => {
       try {
-        // Listen for speech start events
-        speechStartUnlisten = await listen("speech-start", () => {
-          // Only clear error if still capturing
-          if (capturing) {
-            setError("");
-          }
-        });
+        speechUnlisten = await listen("speech-detected", async (event) => {
+          try {
+            if (!capturing) return;
 
-        // Listen for speech detected events (with audio data)
-        speechDetectedUnlisten = await listen(
-          "speech-detected",
-          async (event) => {
+            const base64Audio = event.payload as string;
+            // Convert to blob
+            const binaryString = atob(base64Audio);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            const audioBlob = new Blob([bytes], { type: "audio/wav" });
+
+            const usePluelyAPI = await shouldUsePluelyAPI();
+            if (!selectedSttProvider.provider && !usePluelyAPI) {
+              setError("No speech provider selected.");
+              return;
+            }
+
+            const providerConfig = allSttProviders.find(
+              (p) => p.id === selectedSttProvider.provider
+            );
+
+            if (!providerConfig && !usePluelyAPI) {
+              setError("Speech provider config not found.");
+              return;
+            }
+
+            setIsProcessing(true);
             try {
-              // Early return if capturing is no longer active
-              if (!capturing) {
-                return;
-              }
-
-              const base64Audio = event.payload as string;
-
-              // Convert base64 to blob
-              const binaryString = atob(base64Audio);
-              const bytes = new Uint8Array(binaryString.length);
-              for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-              }
-              const audioBlob = new Blob([bytes], { type: "audio/wav" });
-
-              const usePluelyAPI = await shouldUsePluelyAPI();
-              // Check if we have a configured speech provider
-              if (!selectedSttProvider.provider && !usePluelyAPI) {
-                setError(
-                  "No speech provider selected. Please select one in settings."
-                );
-                return;
-              }
-
-              const providerConfig = allSttProviders.find(
-                (p) => p.id === selectedSttProvider.provider
-              );
-
-              if (!providerConfig && !usePluelyAPI) {
-                setError(
-                  "Speech provider configuration not found. Please check your settings."
-                );
-                return;
-              }
-
-              setIsProcessing(true);
-              // Send to STT
               const transcription = await fetchSTT({
                 provider: providerConfig,
                 selectedProvider: selectedSttProvider,
                 audio: audioBlob,
               });
-              // if pluely stt error, set error and return
-              if (transcription.includes("Pluely STT Error")) {
-                setError(transcription);
-                setIsProcessing(false);
-                setCapturing(false);
-                setIsAIProcessing(false);
-                setIsPopoverOpen(true);
-                setLastTranscription("");
-                return;
-              }
 
-              if (transcription && transcription.trim()) {
+              if (transcription.trim()) {
                 setLastTranscription(transcription);
                 setError("");
 
-                // Determine which prompt to use based on user selection
                 const effectiveSystemPrompt = useSystemPrompt
                   ? systemPrompt || DEFAULT_SYSTEM_PROMPT
                   : contextContent || DEFAULT_SYSTEM_PROMPT;
 
-                // Send transcription to AI for processing
-                await processWithAI(transcription, effectiveSystemPrompt);
+                const previousMessages = conversation.messages.map((msg) => {
+                  return { role: msg.role, content: msg.content };
+                });
+
+                await processWithAI(
+                  transcription,
+                  effectiveSystemPrompt,
+                  previousMessages
+                );
               }
-            } catch (err) {
-              setError(
-                err instanceof Error ? err.message : "Failed to process speech"
-              );
-            } finally {
-              setIsProcessing(false);
+            } catch (sttError: any) {
+              setError(sttError.message || "Failed to transcribe audio");
+              setCapturing(false);
+              setIsPopoverOpen(true);
             }
+          } catch (err) {
+            setError("Failed to process speech");
+          } finally {
+            setIsProcessing(false);
           }
-        );
+        });
       } catch (err) {
-        setError("Failed to setup audio event listeners");
+        setError("Failed to setup speech listener");
       }
     };
 
-    if (capturing) {
-      setupEventListeners();
-    }
+    setupEventListener();
 
     return () => {
-      if (speechStartUnlisten) speechStartUnlisten();
-      if (speechDetectedUnlisten) speechDetectedUnlisten();
+      if (speechUnlisten) speechUnlisten();
     };
-  }, [capturing, selectedSttProvider, allSttProviders]);
+  }, [
+    capturing,
+    selectedSttProvider,
+    allSttProviders,
+    conversation.messages.length,
+  ]);
 
   // Context management functions
   const saveContextSettings = useCallback(
@@ -263,10 +230,60 @@ export function useSystemAudio() {
     [useSystemPrompt, saveContextSettings]
   );
 
+  // Quick actions management
+  const saveQuickActions = useCallback((actions: string[]) => {
+    try {
+      safeLocalStorage.setItem(
+        STORAGE_KEYS.SYSTEM_AUDIO_QUICK_ACTIONS,
+        JSON.stringify(actions)
+      );
+    } catch (error) {
+      console.error("Failed to save quick actions:", error);
+    }
+  }, []);
+
+  const addQuickAction = useCallback(
+    (action: string) => {
+      if (action && !quickActions.includes(action)) {
+        const newActions = [...quickActions, action];
+        setQuickActions(newActions);
+        saveQuickActions(newActions);
+      }
+    },
+    [quickActions, saveQuickActions]
+  );
+
+  const removeQuickAction = useCallback(
+    (action: string) => {
+      const newActions = quickActions.filter((a) => a !== action);
+      setQuickActions(newActions);
+      saveQuickActions(newActions);
+    },
+    [quickActions, saveQuickActions]
+  );
+
+  const handleQuickActionClick = async (action: string) => {
+    setLastTranscription(action); // Show the action as if it were a transcription
+    setError("");
+
+    const effectiveSystemPrompt = useSystemPrompt
+      ? systemPrompt || DEFAULT_SYSTEM_PROMPT
+      : contextContent || DEFAULT_SYSTEM_PROMPT;
+
+    const previousMessages = conversation.messages.map((msg) => {
+      return { role: msg.role, content: msg.content };
+    });
+
+    await processWithAI(action, effectiveSystemPrompt, previousMessages);
+  };
+
   // AI Processing function
   const processWithAI = useCallback(
-    async (transcription: string, prompt: string) => {
-      // Cancel any existing AI request
+    async (
+      transcription: string,
+      prompt: string,
+      previousMessages: Message[]
+    ) => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -278,18 +295,11 @@ export function useSystemAudio() {
         setLastAIResponse("");
         setError("");
 
-        // Prepare message history for the AI
-        const messageHistory = conversation.messages.map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        }));
-
         let fullResponse = "";
 
         const usePluelyAPI = await shouldUsePluelyAPI();
-        // Check if AI provider is configured
         if (!selectedAIProvider.provider && !usePluelyAPI) {
-          setError("No AI provider selected. Please select one in settings.");
+          setError("No AI provider selected.");
           return;
         }
 
@@ -297,27 +307,27 @@ export function useSystemAudio() {
           (p) => p.id === selectedAIProvider.provider
         );
         if (!provider && !usePluelyAPI) {
-          setError(
-            "AI provider configuration not found. Please check your settings."
-          );
+          setError("AI provider config not found.");
           return;
         }
 
-        // Use the fetchAIResponse function
-        for await (const chunk of fetchAIResponse({
-          provider: usePluelyAPI ? undefined : provider,
-          selectedProvider: selectedAIProvider,
-          systemPrompt: prompt,
-          history: messageHistory,
-          userMessage: transcription,
-          imagesBase64: [],
-        })) {
-          fullResponse += chunk;
-          setLastAIResponse((prev) => prev + chunk);
+        try {
+          for await (const chunk of fetchAIResponse({
+            provider: usePluelyAPI ? undefined : provider,
+            selectedProvider: selectedAIProvider,
+            systemPrompt: prompt,
+            history: previousMessages,
+            userMessage: transcription,
+            imagesBase64: [],
+          })) {
+            fullResponse += chunk;
+            setLastAIResponse((prev) => prev + chunk);
+          }
+        } catch (aiError: any) {
+          setError(aiError.message || "Failed to get AI response");
         }
 
         if (fullResponse) {
-          // Save the conversation after successful completion
           setConversation((prev) => ({
             ...prev,
             messages: [
@@ -340,9 +350,7 @@ export function useSystemAudio() {
           }));
         }
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to get AI response"
-        );
+        setError("Failed to get AI response");
       } finally {
         setIsAIProcessing(false);
       }
@@ -353,19 +361,18 @@ export function useSystemAudio() {
   const startCapture = useCallback(async () => {
     try {
       setError("");
-      setSetupRequired(false);
 
-      // Stop any existing capture first
-      try {
-        await invoke<string>("stop_system_audio_capture");
-      } catch (stopErr) {
-        // Ignore errors if nothing was running
+      const hasAccess = await invoke<boolean>("check_system_audio_access");
+      if (!hasAccess) {
+        setSetupRequired(true);
+        return;
       }
+
+      await invoke<string>("stop_system_audio_capture");
 
       await invoke<string>("start_system_audio_capture");
       setCapturing(true);
 
-      // Always generate a new conversation ID when starting capture
       const conversationId = `sysaudio_conv_${Date.now()}_${Math.random()
         .toString(36)
         .substr(2, 9)}`;
@@ -377,166 +384,58 @@ export function useSystemAudio() {
         updatedAt: 0,
       });
     } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Failed to start system audio capture";
-
-      // Check if this is a setup requirement error
-      if (errorMessage.includes("SETUP_REQUIRED")) {
-        setSetupRequired(true);
-        setError(""); // Clear error since we'll show setup instructions instead
-      } else {
-        // Other errors (permissions, device issues, etc.)
-        setSetupRequired(false);
-        setError(errorMessage);
-      }
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(errorMessage);
     }
   }, []);
 
   const stopCapture = useCallback(async () => {
     try {
-      // Cancel any ongoing AI request first
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
         abortControllerRef.current = null;
       }
 
-      // Set capturing to false first to stop any ongoing processing
       setCapturing(false);
       setIsProcessing(false);
       setIsAIProcessing(false);
 
-      // Then stop the Rust backend
       await invoke<string>("stop_system_audio_capture");
 
-      // Clear all state
       setLastTranscription("");
       setLastAIResponse("");
-      setSetupRequired(false);
       setError("");
 
-      // reload the window to clear the audio visualizer
       window.location.reload();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to stop audio capture"
-      );
+      setError("Failed to stop capture");
     }
   }, []);
 
-  const getAudioDevices = useCallback(async () => {
+  const handleSetup = useCallback(async () => {
     try {
-      const devices = await invoke<string[]>("get_audio_devices");
-      return devices;
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to get audio devices"
-      );
-      return [];
-    }
-  }, []);
+      const platform = navigator.platform.toLowerCase();
 
-  // Settings update function
-  const updateSetting = useCallback(
-    async <K extends keyof AudioSettings>(key: K, value: AudioSettings[K]) => {
-      try {
-        // Update local state immediately
-        setSettings((prev) => ({ ...prev, [key]: value }));
-
-        // Update backend
-        switch (key) {
-          case "vadSensitivity":
-            await invoke<string>("set_vad_sensitivity", {
-              value: value as number,
-            });
-            break;
-          case "speechThreshold":
-            await invoke<string>("set_speech_threshold", {
-              value: value as number,
-            });
-            break;
-          case "silenceThreshold":
-            await invoke<string>("set_silence_threshold", {
-              chunks: value as number,
-            });
-            break;
-          case "minSpeechDuration":
-            await invoke<string>("set_min_speech_duration", {
-              chunks: value as number,
-            });
-            break;
-          case "preSpeechBufferSize":
-            await invoke<string>("set_pre_speech_buffer_size", {
-              chunks: value as number,
-            });
-            break;
-        }
-      } catch (err) {
-        // Revert local state on error
-        setSettings((prev) => ({ ...prev, [key]: prev[key] }));
-        setError(
-          err instanceof Error ? err.message : `Failed to update ${key}`
-        );
+      if (platform.includes("mac") || platform.includes("win")) {
+        await invoke("request_system_audio_access");
       }
-    },
-    []
-  );
 
-  const debugAudioDevices = useCallback(async () => {
-    try {
-      const debugInfo = await invoke<string>("debug_audio_devices");
+      // Delay to give the user time to grant permissions in the system dialog.
+      await new Promise((resolve) => setTimeout(resolve, 3000));
 
-      return debugInfo;
+      const hasAccess = await invoke<boolean>("check_system_audio_access");
+      if (hasAccess) {
+        setSetupRequired(false);
+        await startCapture();
+      } else {
+        setSetupRequired(true);
+        setError("Permission not granted. Please try the manual steps.");
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to get debug info");
-      return "";
+      setError("Failed to request access. Please try the manual steps below.");
+      setSetupRequired(true);
     }
-  }, []);
-
-  const testAudioLevels = useCallback(async () => {
-    try {
-      const testResults = await invoke<string>("test_audio_levels");
-      return testResults;
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to test audio levels"
-      );
-      return "";
-    }
-  }, []);
-
-  const resetSettings = useCallback(async () => {
-    try {
-      await invoke<string>("reset_audio_settings");
-      setSettings(DEFAULT_SETTINGS);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to reset audio settings"
-      );
-    }
-  }, []);
-
-  // Debug functions
-  const handleDebugDevices = useCallback(async () => {
-    try {
-      const info = await debugAudioDevices();
-      setDebugInfo(info);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to debug devices");
-    }
-  }, [debugAudioDevices]);
-
-  const handleTestAudioLevels = useCallback(async () => {
-    try {
-      const results = await testAudioLevels();
-      setTestResults(results);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to test audio levels"
-      );
-    }
-  }, [testAudioLevels]);
+  }, [startCapture]);
 
   useEffect(() => {
     const shouldOpenPopover =
@@ -546,7 +445,6 @@ export function useSystemAudio() {
       !!lastAIResponse ||
       !!error;
     setIsPopoverOpen(shouldOpenPopover);
-    // Resize window when capturing state changes, setup is required, or there's an error
     resizeWindow(shouldOpenPopover);
   }, [
     capturing,
@@ -557,7 +455,6 @@ export function useSystemAudio() {
     resizeWindow,
   ]);
 
-  // Register system audio callback for global shortcut
   useEffect(() => {
     globalShortcuts.registerSystemAudioCallback(async () => {
       if (capturing) {
@@ -566,20 +463,14 @@ export function useSystemAudio() {
         await startCapture();
       }
     });
-  }, []);
+  }, [startCapture, stopCapture]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      // Cancel any ongoing AI request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-
-      // Always try to stop capture during cleanup
-      invoke<string>("stop_system_audio_capture").catch(() => {
-        // Ignore errors during cleanup
-      });
+      invoke("stop_system_audio_capture").catch(() => {});
     };
   }, []);
 
@@ -604,10 +495,6 @@ export function useSystemAudio() {
     setIsProcessing(false);
     setIsAIProcessing(false);
     setIsPopoverOpen(false);
-    setShowSettings(false);
-    setSettings(DEFAULT_SETTINGS);
-    setDebugInfo("");
-    setTestResults("");
     setUseSystemPrompt(true);
   }, []);
 
@@ -621,20 +508,7 @@ export function useSystemAudio() {
     setupRequired,
     startCapture,
     stopCapture,
-    getAudioDevices,
-    // Settings
-    settings,
-    showSettings,
-    setShowSettings,
-    updateSetting,
-    resetSettings,
-    // Debug
-    debugInfo,
-    testResults,
-    handleDebugDevices,
-    handleTestAudioLevels,
-    debugAudioDevices,
-    testAudioLevels,
+    handleSetup,
     isPopoverOpen,
     setIsPopoverOpen,
     // Conversation management
@@ -650,5 +524,13 @@ export function useSystemAudio() {
     startNewConversation,
     // Window resize
     resizeWindow,
+    quickActions,
+    addQuickAction,
+    removeQuickAction,
+    isManagingQuickActions,
+    setIsManagingQuickActions,
+    showQuickActions,
+    setShowQuickActions,
+    handleQuickActionClick,
   };
 }

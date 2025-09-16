@@ -21,6 +21,9 @@ interface AudioVisualizerProps {
 export function AudioVisualizer({ isRecording }: AudioVisualizerProps) {
   const [stream, setStream] = useState<MediaStream | null>(null);
 
+  // if we use real audio stream from output device, it will be much better and more accurate
+  // but it will be much more CPU intensive and will be much more battery intensive
+  // so we use the display media stream instead
   const getStream = async (isRecording: boolean) => {
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: isRecording,

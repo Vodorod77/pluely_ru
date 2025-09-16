@@ -40,8 +40,8 @@ export const Audio = ({
       </PopoverTrigger>
 
       <PopoverContent
-        side="top"
-        align="center"
+        align="end"
+        side="bottom"
         className={`w-80 p-3 ${
           pluelyApiEnabled || speechProviderStatus ? "hidden" : ""
         }`}

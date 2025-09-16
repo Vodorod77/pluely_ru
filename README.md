@@ -99,22 +99,11 @@ _Note: Pluely system audio capture is actively in development and improving._
 
 - **Real-Time AI Assistant:** 8 specialized modes for meetings, interviews, presentations, learning, and more
 - **Background Processing:** Captures system audio continuously with smart context detection
+- **Quick Actions & Smart Conversation Helpers:** Add, delete, or customize your own quick actions and smart conversation helpers like "What should I say?", "Follow-up questions", "Recap", or create your own as needed
 - **Multi-Scenario Support:** Meeting insights, interview help, translation, presentation coaching, and learning assistance
 - **Cross-Platform:** Works on macOS, Windows, and Linux with platform-specific audio routing
 - **Settings Control:** Toggle system audio capture in Settings → Audio section
 - **AI Integration:** Seamlessly connects transcription & completion to AI models for instant responses
-
-#### Why Setup Required?
-
-**🔒 Security by Design:** Operating systems block direct system audio access for privacy protection - this is universal across all platforms and applications.
-
-**⚙️ Quick Setup Process:**
-
-- **macOS:** Install BlackHole (free) + Audio MIDI Setup (5 min)
-- **Windows:** Enable built-in Stereo Mix OR install VB-Cable (free) (3 min)
-- **Linux:** Use built-in PulseAudio monitors (usually works out-of-box)
-
-**[📖 Complete Audio Setup Guide](SYSTEM_AUDIO_SETUP.md)** • **Step-by-step for all platforms**
 
 ## **Microphone Audio Capture**
 
@@ -247,21 +236,25 @@ _Browse, reuse, download, and delete your AI conversations with complete local s
 
 ### **Activate Pluely License**
 
-_Get Pluely API if you don't want to maintain your own providers_
+_Join thousands of professionals powering their workflows with Pluely_
 
-**Unlock premium features, faster responses, advanced speech to text, and priority support with Pluely License:**
+**Join us in unlocking premium features, faster responses, advanced speech to text, and priority support with Pluely License:**
 
 <img src="images/pluely-api.gif" alt="Pluely License Setup" width="600"/>
 
-_Pluely License activation unlocks faster AI responses, premium features, and dedicated support_
+_Pluely License activation unlocks faster AI responses, premium features, and dedicated support - we're using it daily and it transforms our workflow!_
 
 #### **What You Get with Pluely License:**
 
-- **Get Unlimited AI**: Unlimited AI interactions and responses
-- **Faster AI Responses**: Optimized processing with dedicated infrastructure
-- **Premium Features**: Access to advanced AI capabilities and upcoming features
-- **Priority Support**: Direct support for any issues or questions
-- **Exclusive Benefits**: Early access to new features and improvements
+- **80+ premium AI models with instant access**
+- **Zero-latency AI generation**
+- **One-click model switching**
+- **Zero maintenance and setup**
+- **Advanced speech-to-text with highest accuracy**
+- **Zero-latency speech-to-text processing**
+- **Zero data storage or collection (100% privacy)**
+- **Unlimited API usage with no rate limits**
+- **Priority feature requests and premium support**
 
 #### **How to Get Started:**
 
@@ -750,7 +743,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 🔗 Links
 
 - **Website**: [pluely.com](https://pluely.com/) (Pluely website)
-- **🎵 Audio Setup Guide**: [SYSTEM_AUDIO_SETUP.md](SYSTEM_AUDIO_SETUP.md) - Complete cross-platform audio configuration
 - **Website**: [cluely.com](https://cluely.com/) (Original Cluely)
 - **Documentation**: [GitHub Wiki](https://github.com/iamsrikanthnani/pluely/wiki)
 - **Issues**: [GitHub Issues](https://github.com/iamsrikanthnani/pluely/issues)

@@ -7,6 +7,7 @@ import {
   getCustomSttProviders,
   removeCustomSttProvider,
   updateCustomSttProvider,
+  validateCurl,
 } from "@/lib";
 
 export function useCustomSttProviders() {
@@ -77,6 +78,17 @@ export function useCustomSttProviders() {
 
     if (!formData.curl.trim()) {
       newErrors.curl = "Curl command is required";
+    } else {
+      const hasAudioVar = formData.curl.includes("{{AUDIO}}");
+
+      if (!hasAudioVar) {
+        newErrors.curl = "cURL command must contain {{AUDIO}}.";
+      } else {
+        const validation = validateCurl(formData.curl, []);
+        if (!validation.isValid) {
+          newErrors.curl = validation.message || "";
+        }
+      }
     }
 
     if (!formData.responseContentPath?.trim()) {

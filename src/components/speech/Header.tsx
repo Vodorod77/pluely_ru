@@ -18,12 +18,10 @@ export const Header = ({
     <div className="flex flex-col gap-3">
       <div className="border-b border-input/50 pb-3 flex justify-between items-start">
         <div>
-          <h2 className="font-semibold text-sm">
-            System Audio Capture(Experimental, initial version)
-          </h2>
+          <h2 className="font-semibold text-sm">System Audio Capture</h2>
           <p className="text-xs text-muted-foreground mt-1">
             {setupRequired
-              ? "Setup virtual audio device to capture system audio"
+              ? "Setup required to capture system audio"
               : "Real-time AI assistant using system audio, until and unless sound is detected from your audio speakers no api calls will be made (expect responses in ~2-4 seconds)"}
           </p>
         </div>
@@ -50,17 +48,6 @@ export const Header = ({
             Pluely audio features are being actively developed and enhanced in
             future versions. also you can always change your Audio settings for
             better performance.
-          </p>
-        </div>
-        <div className="text-sm text-muted-foreground space-y-1">
-          <p>
-            <strong>Current Limitations:</strong> Please don't use this for
-            meeting note-taker yet, and other related things.
-          </p>
-          <p>
-            <strong>Future Updates:</strong> We're working on supporting meeting
-            note-taker, better interview assistant, real-time translator, and
-            many other advanced features in upcoming versions.
           </p>
         </div>
       </div>

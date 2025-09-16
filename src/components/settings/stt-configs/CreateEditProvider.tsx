@@ -10,6 +10,7 @@ import {
 import { PlusIcon, SaveIcon } from "lucide-react";
 import { useCustomSttProviders } from "@/hooks";
 import { useApp } from "@/contexts";
+import { cn } from "@/lib/utils";
 
 interface CreateEditProviderProps {
   customProviderHook?: ReturnType<typeof useCustomSttProviders>;
@@ -49,7 +50,7 @@ export const CreateEditProvider = ({
           Add Custom STT Provider
         </Button>
       ) : (
-        <Card className="p-4 border border-input/50 ">
+        <Card className="p-4 border border-input/50 bg-transparent">
           <div className="flex justify-between items-center">
             <Header
               title={
@@ -85,17 +86,22 @@ export const CreateEditProvider = ({
                 description="The curl command to use with the STT provider."
               />
               <Textarea
-                className="h-74 font-mono text-sm"
-                placeholder={`curl https://api.openai.com/v1/audio/transcriptions \\
-  -H "Authorization: Bearer YOUR_API_KEY or {{API_KEY}}" \\
-  -H "Content-Type: multipart/form-data" \\
-  -F model="your-model-name or {{MODEL}}" \\
-  -F file="<(base64 -d <<< {{AUDIO_BASE64}});filename=audio.wav"`}
+                className={cn(
+                  "h-74 font-mono text-sm",
+                  errors.curl && "border-red-500"
+                )}
+                placeholder={`curl -X POST "https://api.openai.com/v1/audio/transcriptions" \\
+      -H "Authorization: Bearer {{API_KEY}}" \\
+      -F "file={{AUDIO}}" \\
+      -F "model={{MODEL}}"`}
                 value={formData.curl}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, curl: e.target.value }))
                 }
               />
+              {errors.curl && (
+                <p className="text-xs text-red-500 mt-1">{errors.curl}</p>
+              )}
 
               {/* Variable Instructions */}
               <div className="bg-muted/50 p-4 rounded-lg space-y-4">
@@ -121,10 +127,12 @@ export const CreateEditProvider = ({
                 <div className="grid grid-cols-1 gap-3 text-sm">
                   <div className="flex items-center gap-3 p-3 bg-card border rounded-lg">
                     <code className="bg-muted px-2 py-1 rounded font-mono text-xs">
-                      {"{{AUDIO_BASE64}}"}
+                      {"{{AUDIO}}"}
                     </code>
                     <span className="text-foreground font-medium">
-                      → REQUIRED: Base64 encoded audio data
+                      → REQUIRED: Base64 encoded audio data or audio file as wav
+                      file if you are using multipart/form-data (using -F or
+                      --form)
                     </span>
                   </div>
                 </div>
@@ -152,7 +160,7 @@ export const CreateEditProvider = ({
                   <p className="text-xs text-muted-foreground italic">
                     💡 Tip: The{" "}
                     <code className="bg-muted px-1 rounded text-xs">
-                      {"{{AUDIO_BASE64}}"}
+                      {"{{AUDIO}}"}
                     </code>{" "}
                     variable is essential for STT functionality - make sure it's
                     properly included in your curl command.
@@ -215,10 +223,19 @@ export const CreateEditProvider = ({
             <Button
               onClick={handleSave}
               disabled={!formData.curl.trim()}
-              className="h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
+              className={cn(
+                "h-11 border-1 border-input/50 focus:border-primary/50 transition-colors",
+                errors.curl && "bg-red-500 hover:bg-red-600 text-white"
+              )}
             >
-              <SaveIcon className="h-4 w-4 mr-2" />
-              {editingProvider ? "Update" : "Save"} Provider
+              {errors.curl ? (
+                "Invalid cURL, try again"
+              ) : (
+                <>
+                  <SaveIcon className="h-4 w-4 mr-2" />
+                  {editingProvider ? "Update" : "Save"} Provider
+                </>
+              )}
             </Button>
           </div>
         </Card>

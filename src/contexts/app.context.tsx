@@ -13,6 +13,7 @@ import {
   CustomizableState,
 } from "@/lib/storage";
 import { IContextType, ScreenshotConfig, TYPE_PROVIDER } from "@/types";
+import curl2Json from "@bany/curl-to-json";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import {
@@ -22,6 +23,40 @@ import {
   useEffect,
   useState,
 } from "react";
+
+const validateAndProcessCurlProviders = (
+  providersJson: string,
+  providerType: "AI" | "STT"
+): TYPE_PROVIDER[] => {
+  try {
+    const parsed = JSON.parse(providersJson);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .filter((p) => {
+        try {
+          curl2Json(p.curl);
+          return true;
+        } catch (e) {
+          return false;
+        }
+
+        return true;
+      })
+      .map((p) => {
+        const provider = { ...p, isCustom: true };
+        if (providerType === "STT" && provider.curl) {
+          provider.curl = provider.curl.replace(/AUDIO_BASE64/g, "AUDIO");
+        }
+        return provider;
+      });
+  } catch (e) {
+    console.warn(`Failed to parse custom ${providerType} providers`, e);
+    return [];
+  }
+};
 
 // Create the context
 const AppContext = createContext<IContextType | undefined>(undefined);
@@ -111,31 +146,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const savedAi = safeLocalStorage.getItem(STORAGE_KEYS.CUSTOM_AI_PROVIDERS);
     let aiList: TYPE_PROVIDER[] = [];
     if (savedAi) {
-      try {
-        const parsed = JSON.parse(savedAi);
-        if (Array.isArray(parsed)) {
-          aiList = parsed.map((p) => ({ ...p, isCustom: true }));
-        }
-      } catch {
-        console.warn("Failed to parse custom AI providers");
-      }
+      aiList = validateAndProcessCurlProviders(savedAi, "AI");
     }
     setCustomAiProviders(aiList);
 
-    // Load custom AI providers
+    // Load custom STT providers
     const savedStt = safeLocalStorage.getItem(
       STORAGE_KEYS.CUSTOM_SPEECH_PROVIDERS
     );
     let sttList: TYPE_PROVIDER[] = [];
     if (savedStt) {
-      try {
-        const parsed = JSON.parse(savedStt);
-        if (Array.isArray(parsed)) {
-          sttList = parsed.map((p) => ({ ...p, isCustom: true }));
-        }
-      } catch {
-        console.warn("Failed to parse custom AI providers");
-      }
+      sttList = validateAndProcessCurlProviders(savedStt, "STT");
     }
     setCustomSttProviders(sttList);
 
