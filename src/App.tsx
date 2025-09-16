@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Card, Settings, SystemAudio, Updater } from "./components";
 import { Completion } from "./components/completion";
 import { ChatHistory } from "./components/history";
@@ -5,9 +6,11 @@ import { AudioVisualizer } from "./components/speech/audio-visualizer";
 import { StatusIndicator } from "./components/speech/StatusIndicator";
 import { useTitles } from "./hooks";
 import { useSystemAudio } from "./hooks/useSystemAudio";
+import { listen } from "@tauri-apps/api/event";
 
 const App = () => {
   const systemAudio = useSystemAudio();
+  const [isHidden, setIsHidden] = useState(false);
   // Initialize title management
   useTitles();
   const handleSelectConversation = (conversation: any) => {
@@ -27,8 +30,28 @@ const App = () => {
     window.dispatchEvent(new CustomEvent("newConversation"));
   };
 
+  useEffect(() => {
+    const unlistenPromise = listen<boolean>(
+      "toggle-window-visibility",
+      (event) => {
+        const platform = navigator.platform.toLowerCase();
+        if (typeof event.payload === "boolean" && platform.includes("win")) {
+          setIsHidden(!event.payload);
+        }
+      }
+    );
+
+    return () => {
+      unlistenPromise.then((unlisten) => unlisten());
+    };
+  }, []);
+
   return (
-    <div className="w-screen h-screen flex overflow-hidden justify-center items-start">
+    <div
+      className={`w-screen h-screen flex overflow-hidden justify-center items-start ${
+        isHidden ? "hidden pointer-events-none" : ""
+      }`}
+    >
       <Card className="w-full flex flex-row items-center gap-2 p-2">
         <SystemAudio {...systemAudio} />
         {systemAudio?.capturing ? (
@@ -55,7 +78,7 @@ const App = () => {
               : "w-full flex flex-row gap-2 items-center"
           }`}
         >
-          <Completion />
+          <Completion isHidden={isHidden} />
           <ChatHistory
             onSelectConversation={handleSelectConversation}
             onNewConversation={handleNewConversation}

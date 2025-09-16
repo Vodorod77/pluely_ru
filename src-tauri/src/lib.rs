@@ -71,6 +71,7 @@ fn capture_to_base64() -> Result<String, String> {
 pub fn run() {
     let mut builder = tauri::Builder::default()
         .manage(AudioState::default())
+        .manage(shortcuts::WindowVisibility(Mutex::new(false)))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_http::init())

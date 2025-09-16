@@ -1,6 +1,9 @@
 use tauri::{AppHandle, Manager, Runtime, Emitter};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 use serde_json::json;
+use std::sync::Mutex;
+// State for window visibility
+pub struct WindowVisibility(pub Mutex<bool>);
 
 // Default shortcuts
 #[cfg(target_os = "macos")]
@@ -80,6 +83,19 @@ fn handle_toggle_window<R: Runtime>(app: &AppHandle<R>) {
         return;
     };
 
+    #[cfg(target_os = "windows")]
+    {
+        let state = app.state::<WindowVisibility>();
+        let mut is_hidden = state.0.lock().unwrap();
+        *is_hidden = !*is_hidden;
+
+        if let Err(e) = window.emit("toggle-window-visibility", *is_hidden) {
+            eprintln!("Failed to emit toggle-window-visibility event: {}", e);
+        }
+        return;
+    }
+
+    #[cfg(not(target_os = "windows"))]
     match window.is_visible() {
         Ok(true) => {
             // Window is visible, hide it and handle app icon based on user settings
@@ -96,17 +112,6 @@ fn handle_toggle_window<R: Runtime>(app: &AppHandle<R>) {
 
             if let Err(e) = window.set_focus() {
                 eprintln!("Failed to focus window: {}", e);
-            }
-
-            #[cfg(target_os = "windows")]
-            {
-                // Workaround for Windows rendering issue by forcing a repaint
-                if let Ok(size) = window.outer_size() {
-                    window
-                        .set_size(tauri::PhysicalSize::new(size.width, size.height + 1))
-                        .unwrap_or_default();
-                    window.set_size(size).unwrap_or_default();
-                }
             }
 
             // Emit event to focus text input
