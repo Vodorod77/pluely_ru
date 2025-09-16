@@ -200,12 +200,38 @@ pub async fn activate_license_api(license_key: String) -> Result<ActivationRespo
         .json(&activation_request)
         .send()
         .await
-        .map_err(|e| format!("Failed to make activation request: {}", e))?;
+        .map_err(|e| {
+            let error_msg = format!("{}", e);
+            if error_msg.contains("url (") {
+                // Remove the URL part from the error message
+                let parts: Vec<&str> = error_msg.split(" for url (").collect();
+                if parts.len() > 1 {
+                    format!("Failed to make chat request: {}", parts[0])
+                } else {
+                    format!("Failed to make chat request: {}", error_msg)
+                }
+            } else {
+                format!("Failed to make chat request: {}", error_msg)
+            }
+        })?;
     
     let activation_response: ActivationResponse = response
         .json()
         .await
-        .map_err(|e| format!("Failed to parse activation response: {}", e))?;
+        .map_err(|e| {
+            let error_msg = format!("{}", e);
+            if error_msg.contains("url (") {
+                // Remove the URL part from the error message
+                let parts: Vec<&str> = error_msg.split(" for url (").collect();
+                if parts.len() > 1 {
+                    format!("Failed to make chat request: {}", parts[0])
+                } else {
+                    format!("Failed to make chat request: {}", error_msg)
+                }
+            } else {
+                format!("Failed to make chat request: {}", error_msg)
+            }
+        })?;
     
     Ok(activation_response)
 }
@@ -240,12 +266,37 @@ pub async fn get_checkout_url() -> Result<CheckoutResponse, String> {
         .json(&serde_json::json!({}))
         .send()
         .await
-        .map_err(|e| format!("Failed to make checkout request: {}", e))?;
+        .map_err(|e| {
+            let error_msg = format!("{}", e);
+            if error_msg.contains("url (") {
+                // Remove the URL part from the error message
+                let parts: Vec<&str> = error_msg.split(" for url (").collect();
+                if parts.len() > 1 {
+                    format!("Failed to make chat request: {}", parts[0])
+                } else {
+                    format!("Failed to make chat request: {}", error_msg)
+                }
+            } else {
+                format!("Failed to make chat request: {}", error_msg)
+            }
+        })?;
     
     let checkout_response: CheckoutResponse = response
         .json()
         .await
-        .map_err(|e| format!("Failed to parse checkout response: {}", e))?;
-    
+        .map_err(|e| {
+            let error_msg = format!("{}", e);
+            if error_msg.contains("url (") {
+                // Remove the URL part from the error message
+                let parts: Vec<&str> = error_msg.split(" for url (").collect();
+                if parts.len() > 1 {
+                    format!("Failed to make chat request: {}", parts[0])
+                } else {
+                    format!("Failed to make chat request: {}", error_msg)
+                }
+            } else {
+                format!("Failed to make chat request: {}", error_msg)
+            }
+        })?;    
     Ok(checkout_response)
 }

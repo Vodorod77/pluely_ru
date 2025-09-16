@@ -30,7 +30,8 @@ export const Input = ({
   cancel,
   scrollAreaRef,
   inputRef,
-}: UseCompletionReturn) => {
+  isHidden,
+}: UseCompletionReturn & { isHidden: boolean }) => {
   return (
     <div className="relative flex-1">
       <Popover
@@ -50,7 +51,7 @@ export const Input = ({
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               onPaste={handlePaste}
-              disabled={isLoading}
+              disabled={isLoading || isHidden}
               className={`${
                 currentConversationId && conversationHistory.length > 0
                   ? "pr-14"

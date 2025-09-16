@@ -147,7 +147,20 @@ pub async fn transcribe_audio(
         .json(&audio_request)
         .send()
         .await
-        .map_err(|e| format!("Failed to make audio request: {}", e))?;
+        .map_err(|e| {
+            let error_msg = format!("{}", e);
+            if error_msg.contains("url (") {
+                // Remove the URL part from the error message
+                let parts: Vec<&str> = error_msg.split(" for url (").collect();
+                if parts.len() > 1 {
+                    format!("Failed to make audio request: {}", parts[0])
+                } else {
+                    format!("Failed to make audio request: {}", error_msg)
+                }
+            } else {
+                format!("Failed to make audio request: {}", error_msg)
+            }
+        })?;
     
     // Check if the response is successful
     if !response.status().is_success() {
@@ -214,7 +227,20 @@ pub async fn chat_stream(
         .json(&chat_request)
         .send()
         .await
-        .map_err(|e| format!("Failed to make chat request: {}", e))?;
+        .map_err(|e| {
+            let error_msg = format!("{}", e);
+            if error_msg.contains("url (") {
+                // Remove the URL part from the error message
+                let parts: Vec<&str> = error_msg.split(" for url (").collect();
+                if parts.len() > 1 {
+                    format!("Failed to make chat request: {}", parts[0])
+                } else {
+                    format!("Failed to make chat request: {}", error_msg)
+                }
+            } else {
+                format!("Failed to make chat request: {}", error_msg)
+            }
+        })?;
     
     // Check if the response is successful
     if !response.status().is_success() {
@@ -309,7 +335,20 @@ pub async fn fetch_models() -> Result<Vec<Model>, String> {
         .header("Authorization", format!("Bearer {}", api_access_key))
         .send()
         .await
-        .map_err(|e| format!("Failed to make models request: {}", e))?;
+        .map_err(|e| {
+            let error_msg = format!("{}", e);
+            if error_msg.contains("url (") {
+                // Remove the URL part from the error message
+                let parts: Vec<&str> = error_msg.split(" for url (").collect();
+                if parts.len() > 1 {
+                    format!("Failed to make models request: {}", parts[0])
+                } else {
+                    format!("Failed to make models request: {}", error_msg)
+                }
+            } else {
+                format!("Failed to make models request: {}", error_msg)
+            }
+        })?;
         
     // Check if the response is successful
     if !response.status().is_success() {
