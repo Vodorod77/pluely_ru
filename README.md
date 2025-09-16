@@ -99,6 +99,7 @@ _Note: Pluely system audio capture is actively in development and improving._
 
 - **Real-Time AI Assistant:** 8 specialized modes for meetings, interviews, presentations, learning, and more
 - **Background Processing:** Captures system audio continuously with smart context detection
+- **Quick Actions & Smart Conversation Helpers:** Add, delete, or customize your own quick actions and smart conversation helpers like "What should I say?", "Follow-up questions", "Recap", or create your own as needed
 - **Multi-Scenario Support:** Meeting insights, interview help, translation, presentation coaching, and learning assistance
 - **Cross-Platform:** Works on macOS, Windows, and Linux with platform-specific audio routing
 - **Settings Control:** Toggle system audio capture in Settings → Audio section
@@ -235,21 +236,25 @@ _Browse, reuse, download, and delete your AI conversations with complete local s
 
 ### **Activate Pluely License**
 
-_Get Pluely API if you don't want to maintain your own providers_
+_Join thousands of professionals powering their workflows with Pluely_
 
-**Unlock premium features, faster responses, advanced speech to text, and priority support with Pluely License:**
+**Join us in unlocking premium features, faster responses, advanced speech to text, and priority support with Pluely License:**
 
 <img src="images/pluely-api.gif" alt="Pluely License Setup" width="600"/>
 
-_Pluely License activation unlocks faster AI responses, premium features, and dedicated support_
+_Pluely License activation unlocks faster AI responses, premium features, and dedicated support - we're using it daily and it transforms our workflow!_
 
 #### **What You Get with Pluely License:**
 
-- **Get Unlimited AI**: Unlimited AI interactions and responses
-- **Faster AI Responses**: Optimized processing with dedicated infrastructure
-- **Premium Features**: Access to advanced AI capabilities and upcoming features
-- **Priority Support**: Direct support for any issues or questions
-- **Exclusive Benefits**: Early access to new features and improvements
+- **80+ premium AI models with instant access**
+- **Zero-latency AI generation**
+- **One-click model switching**
+- **Zero maintenance and setup**
+- **Advanced speech-to-text with highest accuracy**
+- **Zero-latency speech-to-text processing**
+- **Zero data storage or collection (100% privacy)**
+- **Unlimited API usage with no rate limits**
+- **Priority feature requests and premium support**
 
 #### **How to Get Started:**
 
