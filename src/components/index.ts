@@ -10,3 +10,4 @@ export * from "./TextInput";
 export * from "./speech";
 export * from "./DragButton";
 export * from "./GetLicense";
+export * from "./CustomCursor";
