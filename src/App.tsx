@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card, Settings, SystemAudio, Updater } from "./components";
+import { Card, Settings, SystemAudio, Updater, DragButton } from "./components";
 import { Completion } from "./components/completion";
 import { ChatHistory } from "./components/history";
 import { AudioVisualizer } from "./components/speech/audio-visualizer";
@@ -105,6 +105,7 @@ const App = () => {
         </div>
 
         <Updater />
+        <DragButton />
       </Card>
     </div>
   );

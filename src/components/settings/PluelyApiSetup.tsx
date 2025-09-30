@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Header, Input, Switch } from "@/components";
 import {
   KeyIcon,
   TrashIcon,
@@ -11,6 +10,11 @@ import { invoke } from "@tauri-apps/api/core";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useApp } from "@/contexts";
 import {
+  GetLicense,
+  Button,
+  Header,
+  Input,
+  Switch,
   Command,
   CommandEmpty,
   CommandGroup,
@@ -31,12 +35,6 @@ interface ActivationResponse {
     name: string;
     created_at: string;
   };
-}
-
-interface CheckoutResponse {
-  success?: boolean;
-  checkout_url?: string;
-  error?: string;
 }
 
 interface StorageResult {
@@ -60,13 +58,18 @@ const INSTANCE_ID_STORAGE_KEY = "pluely_instance_id";
 const SELECTED_PLUELY_MODEL_STORAGE_KEY = "selected_pluely_model";
 
 export const PluelyApiSetup = () => {
-  const { pluelyApiEnabled, setPluelyApiEnabled } = useApp();
+  const {
+    pluelyApiEnabled,
+    setPluelyApiEnabled,
+    hasActiveLicense,
+    setHasActiveLicense,
+    getActiveLicenseStatus,
+  } = useApp();
 
   const [licenseKey, setLicenseKey] = useState("");
   const [storedLicenseKey, setStoredLicenseKey] = useState<string | null>(null);
   const [maskedLicenseKey, setMaskedLicenseKey] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [models, setModels] = useState<Model[]>([]);
@@ -183,6 +186,7 @@ export const PluelyApiSetup = () => {
         setPluelyApiEnabled(true);
 
         await loadLicenseStatus(); // Reload status
+        await getActiveLicenseStatus();
       } else {
         setError(response.error || "Failed to activate license");
       }
@@ -198,8 +202,9 @@ export const PluelyApiSetup = () => {
     setIsLoading(true);
     setError(null);
     setSuccess(null);
-
+    setHasActiveLicense(false);
     try {
+      await invoke("deactivate_license_api");
       // Remove all license data from secure storage in one call
       await invoke("secure_storage_remove", {
         keys: [
@@ -252,27 +257,6 @@ export const PluelyApiSetup = () => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !storedLicenseKey) {
       handleActivateLicense();
-    }
-  };
-
-  const handleGetLicenseKey = async () => {
-    setIsCheckoutLoading(true);
-    setError(null);
-
-    try {
-      const response: CheckoutResponse = await invoke("get_checkout_url");
-
-      if (response.success && response.checkout_url) {
-        // Open checkout URL in default browser
-        await openUrl(response.checkout_url);
-      } else {
-        setError(response.error || "Failed to get checkout URL");
-      }
-    } catch (err) {
-      console.error("Failed to get checkout URL:", err);
-      setError(typeof err === "string" ? err : "Failed to get checkout URL");
-    } finally {
-      setIsCheckoutLoading(false);
     }
   };
 
@@ -347,15 +331,7 @@ export const PluelyApiSetup = () => {
             description="Pluely license to unlock faster responses, quicker support and premium features."
           />
           <div className="flex flex-row items-center gap-2">
-            {!storedLicenseKey && (
-              <Button
-                onClick={handleGetLicenseKey}
-                disabled={isCheckoutLoading}
-                size="sm"
-              >
-                {isCheckoutLoading ? "Loading..." : "Get License Key"}
-              </Button>
-            )}
+            {!storedLicenseKey && <GetLicense />}
           </div>
         </div>
 
@@ -539,7 +515,7 @@ export const PluelyApiSetup = () => {
         <Switch
           checked={pluelyApiEnabled}
           onCheckedChange={setPluelyApiEnabled}
-          disabled={!storedLicenseKey} // Disable if no license is stored
+          disabled={!storedLicenseKey || !hasActiveLicense} // Disable if no license is stored
         />
       </div>
     </div>

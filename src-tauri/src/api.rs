@@ -45,7 +45,7 @@ struct SecureStorage {
     selected_pluely_model: Option<String>,
 }
 
-async fn get_stored_credentials(app: &AppHandle) -> Result<(String, String, Option<Model>), String> {
+pub async fn get_stored_credentials(app: &AppHandle) -> Result<(String, String, Option<Model>), String> {
     let storage_path = get_secure_storage_path(app)?;
     
     if !storage_path.exists() {

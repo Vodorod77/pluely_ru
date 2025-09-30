@@ -32,22 +32,6 @@ fn get_app_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }
 
-#[tauri::command]
-fn set_window_height(window: tauri::WebviewWindow, height: u32) -> Result<(), String> {
-    use tauri::{LogicalSize, Size};
-    
-    let new_size = LogicalSize::new(700.0, height as f64);
-    
-    match window.set_size(Size::Logical(new_size)) {
-        Ok(_) => {
-            if let Err(e) = window::position_window_top_center(&window, 54) {
-                eprintln!("Failed to reposition window: {}", e);
-            }
-            Ok(())
-        }
-        Err(e) => Err(format!("Failed to resize window: {}", e))
-    }
-}
 
 #[tauri::command]
 fn capture_to_base64() -> Result<String, String> {
@@ -81,13 +65,15 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet, 
             get_app_version,
-            set_window_height,
+            window::set_window_height,
             capture_to_base64,
             shortcuts::get_shortcuts,
             shortcuts::check_shortcuts_registered,
             shortcuts::set_app_icon_visibility,
             shortcuts::set_always_on_top,
             activate::activate_license_api,
+            activate::deactivate_license_api,
+            activate::validate_license_api,
             activate::mask_license_key_cmd,
             activate::get_checkout_url,
             activate::secure_storage_save,

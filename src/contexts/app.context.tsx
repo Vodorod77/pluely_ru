@@ -105,11 +105,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     alwaysOnTop: { isEnabled: true },
     titles: { isEnabled: true },
   });
+  const [hasActiveLicense, setHasActiveLicense] = useState<boolean>(false);
 
   // Pluely API State
   const [pluelyApiEnabled, setPluelyApiEnabledState] = useState<boolean>(
     safeLocalStorage.getItem(STORAGE_KEYS.PLUELY_API_ENABLED) === "true"
   );
+
+  const getActiveLicenseStatus = async () => {
+    const response: { is_active: boolean } = await invoke(
+      "validate_license_api"
+    );
+    setHasActiveLicense(response.is_active);
+  };
 
   // Function to load AI, STT, system prompt and screenshot config data from storage
   const loadData = () => {
@@ -191,6 +199,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   // Load data on mount
   useEffect(() => {
+    getActiveLicenseStatus();
     loadData();
   }, []);
 
@@ -385,6 +394,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     loadData,
     pluelyApiEnabled,
     setPluelyApiEnabled,
+    hasActiveLicense,
+    setHasActiveLicense,
+    getActiveLicenseStatus,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

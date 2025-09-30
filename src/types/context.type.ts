@@ -42,4 +42,7 @@ export type IContextType = {
   loadData: () => void;
   pluelyApiEnabled: boolean;
   setPluelyApiEnabled: (enabled: boolean) => void;
+  hasActiveLicense: boolean;
+  setHasActiveLicense: Dispatch<SetStateAction<boolean>>;
+  getActiveLicenseStatus: () => Promise<void>;
 };

@@ -55,7 +55,7 @@ export const Input = ({
               className={`${
                 currentConversationId && conversationHistory.length > 0
                   ? "pr-14"
-                  : "pr-12"
+                  : "pr-2"
               }`}
             />
 

@@ -4,6 +4,7 @@ use std::fs;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 use uuid::Uuid;
+use crate::api::get_stored_credentials;
 
 fn get_payment_endpoint() -> Result<String, String> {
     if let Ok(endpoint) = env::var("PAYMENT_ENDPOINT") {
@@ -161,6 +162,12 @@ pub struct ActivationResponse {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct ValidateResponse {
+    is_active: bool,
+    last_validated_at: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct InstanceInfo {
     id: String,
     name: String,
@@ -232,9 +239,135 @@ pub async fn activate_license_api(license_key: String) -> Result<ActivationRespo
                 format!("Failed to make chat request: {}", error_msg)
             }
         })?;
-    
+    println!("Activation response: {:?}", activation_response);
     Ok(activation_response)
 }
+
+
+#[tauri::command]
+pub async fn deactivate_license_api(app: AppHandle) -> Result<ActivationResponse, String> {
+    // Get payment endpoint and API access key from environment
+    let payment_endpoint = get_payment_endpoint()?;
+    let api_access_key = get_api_access_key()?;
+    
+    let (license_key, instance_id, _) = get_stored_credentials(&app).await?;
+
+    let deactivation_request = ActivationRequest {
+        license_key: license_key.clone(),
+        instance_name: instance_id.clone(),
+    };
+    // Make HTTP request to activation endpoint with authorization header
+    let client = reqwest::Client::new();
+    let url = format!("{}/deactivate", payment_endpoint);
+    
+    let response = client
+        .post(&url)
+        .header("Content-Type", "application/json")
+        .header("Authorization", format!("Bearer {}", api_access_key))
+        .json(&deactivation_request)
+        .send()
+        .await
+        .map_err(|e| {
+            let error_msg = format!("{}", e);
+            if error_msg.contains("url (") {
+                // Remove the URL part from the error message
+                let parts: Vec<&str> = error_msg.split(" for url (").collect();
+                if parts.len() > 1 {
+                    format!("Failed to make chat request: {}", parts[0])
+                } else {
+                    format!("Failed to make chat request: {}", error_msg)
+                }
+            } else {
+                format!("Failed to make chat request: {}", error_msg)
+            }
+        })?;
+    let deactivation_response: ActivationResponse = response
+        .json()
+        .await
+        .map_err(|e| {
+            let error_msg = format!("{}", e);
+            if error_msg.contains("url (") {
+                // Remove the URL part from the error message
+                let parts: Vec<&str> = error_msg.split(" for url (").collect();
+                if parts.len() > 1 {
+                    format!("Failed to make chat request: {}", parts[0])
+                } else {
+                    format!("Failed to make chat request: {}", error_msg)
+                }
+            } else {
+                format!("Failed to make chat request: {}", error_msg)
+            }
+        })?;
+    Ok(deactivation_response)
+}
+
+#[tauri::command]
+pub async fn validate_license_api(app: AppHandle) -> Result<ValidateResponse, String> {
+    // Get payment endpoint and API access key from environment
+    let payment_endpoint = get_payment_endpoint()?;
+    let api_access_key = get_api_access_key()?;
+    
+    let (license_key, instance_id, _) = get_stored_credentials(&app).await?;
+
+    let validate_request = ActivationRequest {
+        license_key: license_key.clone(),
+        instance_name: instance_id.clone(),
+    };
+
+     if license_key.is_empty() || instance_id.is_empty() {
+        return Ok(ValidateResponse {
+            is_active: false,
+            last_validated_at: None,
+        });
+    }
+
+    // Make HTTP request to validate endpoint with authorization header
+    let client = reqwest::Client::new();
+    let url = format!("{}/validate", payment_endpoint);
+    
+    let response = client
+        .post(&url)
+        .header("Content-Type", "application/json")
+        .header("Authorization", format!("Bearer {}", api_access_key))
+        .json(&validate_request)
+        .send()
+        .await
+        .map_err(|e| {
+            let error_msg = format!("{}", e);
+            if error_msg.contains("url (") {
+                // Remove the URL part from the error message
+                let parts: Vec<&str> = error_msg.split(" for url (").collect();
+                if parts.len() > 1 {
+                    format!("Failed to make chat request: {}", parts[0])
+                } else {
+                    format!("Failed to make chat request: {}", error_msg)
+                }
+            } else {
+                format!("Failed to make chat request: {}", error_msg)
+            }
+        })?;
+    
+    let validate_response: ValidateResponse = response
+        .json()
+        .await
+        .map_err(|e| {
+            let error_msg = format!("{}", e);
+            if error_msg.contains("url (") {
+                // Remove the URL part from the error message
+                let parts: Vec<&str> = error_msg.split(" for url (").collect();
+                if parts.len() > 1 {
+                    format!("Failed to make chat request: {}", parts[0])
+                } else {
+                    format!("Failed to make chat request: {}", error_msg)
+                }
+            } else {
+                format!("Failed to make chat request: {}", error_msg)
+            }
+        })?;
+    println!("Validate response: {:?}", validate_response);
+    Ok(validate_response)
+}
+
 
 #[tauri::command]
 pub fn mask_license_key_cmd(license_key: String) -> String {

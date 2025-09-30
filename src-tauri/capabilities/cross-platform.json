@@ -16,6 +16,7 @@
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister",
     "shell:allow-open",
+    "core:window:allow-start-dragging",
     {
       "identifier": "http:default",
       "allow": [{ "url": "http://**" }, { "url": "https://**" }]
