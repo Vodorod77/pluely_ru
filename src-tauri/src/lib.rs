@@ -82,6 +82,7 @@ pub fn run() {
             api::transcribe_audio,
             api::chat_stream,
             api::fetch_models,
+            api::create_system_prompt,
             api::check_license_status,
             speaker::start_system_audio_capture,
             speaker::stop_system_audio_capture,

@@ -8,7 +8,7 @@ import {
   ScrollArea,
 } from "@/components";
 import { Disclaimer } from "./Disclaimer";
-import { SystemPrompt } from "./SystemPrompt";
+import { SystemPrompt } from "./system-prompt";
 import { ScreenshotConfigs } from "./ScreenshotConfigs";
 import { AppIconToggle } from "./AppIconToggle";
 import { AlwaysOnTopToggle } from "./AlwaysOnTopToggle";
