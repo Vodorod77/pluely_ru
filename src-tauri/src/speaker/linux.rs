@@ -9,9 +9,9 @@ use std::thread;
 use libpulse_binding as pulse;
 use libpulse_simple_binding as psimple;
 
-use pulse::sample::{Spec, Format};
-use pulse::stream::Direction;
 use psimple::Simple;
+use pulse::sample::{Format, Spec};
+use pulse::stream::Direction;
 
 pub struct SpeakerInput {
     server_name: Option<String>,
@@ -19,9 +19,7 @@ pub struct SpeakerInput {
 
 impl SpeakerInput {
     pub fn new() -> Result<Self> {
-        Ok(Self { 
-            server_name: None 
-        })
+        Ok(Self { server_name: None })
     }
 
     pub fn stream(self) -> SpeakerStream {
@@ -96,7 +94,7 @@ impl SpeakerStream {
             channels: 1,
             rate: 16000,
         };
-        
+
         if !spec.is_valid() {
             return Err(anyhow!("Invalid audio specification"));
         }
@@ -106,15 +104,16 @@ impl SpeakerStream {
 
         let init_result: Result<(Simple, u32)> = (|| {
             let simple = Simple::new(
-                None,                        // Use default server
-                "pluely",           // Application name
-                Direction::Record,          // Record direction
-                source_name.as_deref(),     // Source name (monitor)
-                "System Audio Capture",     // Stream description
-                &spec,                      // Sample specification
-                None,                       // Channel map (use default)
-                None,                       // Buffer attributes (use default)
-            ).map_err(|e| anyhow!("Failed to create PulseAudio simple connection: {}", e))?;
+                None,                   // Use default server
+                "pluely",               // Application name
+                Direction::Record,      // Record direction
+                source_name.as_deref(), // Source name (monitor)
+                "System Audio Capture", // Stream description
+                &spec,                  // Sample specification
+                None,                   // Channel map (use default)
+                None,                   // Buffer attributes (use default)
+            )
+            .map_err(|e| anyhow!("Failed to create PulseAudio simple connection: {}", e))?;
 
             Ok((simple, spec.rate))
         })();

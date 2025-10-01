@@ -1,5 +1,5 @@
 use anyhow::Result;
-use futures_util::{Stream};
+use futures_util::Stream;
 use std::pin::Pin;
 
 #[cfg(target_os = "macos")]
@@ -36,7 +36,9 @@ impl SpeakerInput {
 
     #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
     pub fn new() -> Result<Self> {
-        Err(anyhow::anyhow!("SpeakerInput::new is not supported on this platform"))
+        Err(anyhow::anyhow!(
+            "SpeakerInput::new is not supported on this platform"
+        ))
     }
 
     // Starts the audio stream.

@@ -5,9 +5,9 @@ use std::collections::VecDeque;
 use std::sync::{mpsc, Arc, Mutex};
 use std::task::{Poll, Waker};
 use std::thread;
-use wasapi::{get_default_device, Direction, SampleType, StreamMode, WaveFormat};
 use std::time::Duration;
 use tracing::error;
+use wasapi::{get_default_device, Direction, SampleType, StreamMode, WaveFormat};
 
 pub struct SpeakerInput {}
 

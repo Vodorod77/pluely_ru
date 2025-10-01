@@ -1,7 +1,7 @@
-use tauri::{AppHandle, Manager, Runtime, Emitter};
-use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 use serde_json::json;
 use std::sync::Mutex;
+use tauri::{AppHandle, Emitter, Manager, Runtime};
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 // State for window visibility
 pub struct WindowVisibility(pub Mutex<bool>);
 
@@ -27,51 +27,64 @@ const DEFAULT_SYSTEM_AUDIO_SHORTCUT: &str = "cmd+shift+m";
 const DEFAULT_SYSTEM_AUDIO_SHORTCUT: &str = "ctrl+shift+m";
 
 /// Initialize global shortcuts for the application
-pub fn setup_global_shortcuts<R: Runtime>(app: &AppHandle<R>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn setup_global_shortcuts<R: Runtime>(
+    app: &AppHandle<R>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let toggle_shortcut = DEFAULT_TOGGLE_SHORTCUT.parse::<Shortcut>()?;
     let audio_shortcut = DEFAULT_AUDIO_SHORTCUT.parse::<Shortcut>()?;
     let screenshot_shortcut = DEFAULT_SCREENSHOT_SHORTCUT.parse::<Shortcut>()?;
     let system_audio_shortcut = DEFAULT_SYSTEM_AUDIO_SHORTCUT.parse::<Shortcut>()?;
 
-     
     // Register global shortcuts
-    app.global_shortcut().on_shortcut(toggle_shortcut, move |app, _shortcut, event| {
-        if event.state() == ShortcutState::Pressed {
-            handle_toggle_window(&app);
-        }
-    }).map_err(|e| format!("Failed to register toggle shortcut: {}", e))?;
+    app.global_shortcut()
+        .on_shortcut(toggle_shortcut, move |app, _shortcut, event| {
+            if event.state() == ShortcutState::Pressed {
+                handle_toggle_window(&app);
+            }
+        })
+        .map_err(|e| format!("Failed to register toggle shortcut: {}", e))?;
 
     let app_handle = app.clone();
-    app.global_shortcut().on_shortcut(audio_shortcut, move |_app, _shortcut, event| {
-        if event.state() == ShortcutState::Pressed {
-            handle_audio_shortcut(&app_handle);
-        }
-    }).map_err(|e| format!("Failed to register audio shortcut: {}", e))?;
+    app.global_shortcut()
+        .on_shortcut(audio_shortcut, move |_app, _shortcut, event| {
+            if event.state() == ShortcutState::Pressed {
+                handle_audio_shortcut(&app_handle);
+            }
+        })
+        .map_err(|e| format!("Failed to register audio shortcut: {}", e))?;
 
     let app_handle = app.clone();
-    app.global_shortcut().on_shortcut(screenshot_shortcut, move |_app, _shortcut, event| {
-        if event.state() == ShortcutState::Pressed {
-            handle_screenshot_shortcut(&app_handle);
-        }
-    }).map_err(|e| format!("Failed to register screenshot shortcut: {}", e))?;
+    app.global_shortcut()
+        .on_shortcut(screenshot_shortcut, move |_app, _shortcut, event| {
+            if event.state() == ShortcutState::Pressed {
+                handle_screenshot_shortcut(&app_handle);
+            }
+        })
+        .map_err(|e| format!("Failed to register screenshot shortcut: {}", e))?;
 
     let app_handle = app.clone();
-    app.global_shortcut().on_shortcut(system_audio_shortcut, move |_app, _shortcut, event| {
-        if event.state() == ShortcutState::Pressed {
-            handle_system_audio_shortcut(&app_handle);
-        }
-    }).map_err(|e| format!("Failed to register system audio shortcut: {}", e))?;
+    app.global_shortcut()
+        .on_shortcut(system_audio_shortcut, move |_app, _shortcut, event| {
+            if event.state() == ShortcutState::Pressed {
+                handle_system_audio_shortcut(&app_handle);
+            }
+        })
+        .map_err(|e| format!("Failed to register system audio shortcut: {}", e))?;
 
     // Register all shortcuts
-    app.global_shortcut().register(toggle_shortcut)
+    app.global_shortcut()
+        .register(toggle_shortcut)
         .map_err(|e| format!("Failed to register toggle shortcut: {}", e))?;
-    app.global_shortcut().register(audio_shortcut)
+    app.global_shortcut()
+        .register(audio_shortcut)
         .map_err(|e| format!("Failed to register audio shortcut: {}", e))?;
-    app.global_shortcut().register(screenshot_shortcut)
+    app.global_shortcut()
+        .register(screenshot_shortcut)
         .map_err(|e| format!("Failed to register screenshot shortcut: {}", e))?;
-    app.global_shortcut().register(system_audio_shortcut)
+    app.global_shortcut()
+        .register(system_audio_shortcut)
         .map_err(|e| format!("Failed to register system audio shortcut: {}", e))?;
-    
+
     Ok(())
 }
 
@@ -102,8 +115,7 @@ fn handle_toggle_window<R: Runtime>(app: &AppHandle<R>) {
             if let Err(e) = window.hide() {
                 eprintln!("Failed to hide window: {}", e);
             }
-
-         }
+        }
         Ok(false) => {
             // Window is hidden, show it and handle app icon based on user settings
             if let Err(e) = window.show() {
@@ -125,7 +137,6 @@ fn handle_toggle_window<R: Runtime>(app: &AppHandle<R>) {
     }
 }
 
-
 /// Handle audio shortcut
 fn handle_audio_shortcut<R: Runtime>(app: &AppHandle<R>) {
     if let Some(window) = app.get_webview_window("main") {
@@ -139,7 +150,7 @@ fn handle_audio_shortcut<R: Runtime>(app: &AppHandle<R>) {
                 eprintln!("Failed to focus window: {}", e);
             }
         }
-        
+
         // Emit event to start audio recording
         if let Err(e) = window.emit("start-audio-recording", json!({})) {
             eprintln!("Failed to emit audio recording event: {}", e);
@@ -170,7 +181,7 @@ fn handle_system_audio_shortcut<R: Runtime>(app: &AppHandle<R>) {
                 eprintln!("Failed to focus window: {}", e);
             }
         }
-        
+
         // Emit event to toggle system audio capture - frontend will determine current state
         if let Err(e) = window.emit("toggle-system-audio", json!({})) {
             eprintln!("Failed to emit system audio event: {}", e);
@@ -209,17 +220,14 @@ pub fn check_shortcuts_registered<R: Runtime>(app: AppHandle<R>) -> Result<bool,
             return Err(format!("Failed to parse shortcut: {}", shortcut_str));
         }
     }
-    
+
     Ok(true)
 }
 // Tauri command to set app icon visibility in dock/taskbar
 #[tauri::command]
-pub fn set_app_icon_visibility<R: Runtime>(
-    app: AppHandle<R>,
-    visible: bool,
-) -> Result<(), String> {
+pub fn set_app_icon_visibility<R: Runtime>(app: AppHandle<R>, visible: bool) -> Result<(), String> {
     println!("Setting app icon visibility to: {}", visible);
-    
+
     #[cfg(target_os = "macos")]
     {
         // On macOS, use activation policy to control dock icon
@@ -230,71 +238,64 @@ pub fn set_app_icon_visibility<R: Runtime>(
             println!("Setting macOS activation policy to Accessory (hidden)");
             tauri::ActivationPolicy::Accessory
         };
-        
-        app.set_activation_policy(policy)
-            .map_err(|e| {
-                eprintln!("Failed to set activation policy: {}", e);
-                format!("Failed to set activation policy: {}", e)
-            })?;
-        
+
+        app.set_activation_policy(policy).map_err(|e| {
+            eprintln!("Failed to set activation policy: {}", e);
+            format!("Failed to set activation policy: {}", e)
+        })?;
+
         println!("Successfully set macOS activation policy");
     }
-    
+
     #[cfg(target_os = "windows")]
     {
         // On Windows, control taskbar icon visibility
         if let Some(window) = app.get_webview_window("main") {
             println!("Setting Windows taskbar visibility to: {}", visible);
-            window.set_skip_taskbar(!visible)
-                .map_err(|e| {
-                    eprintln!("Failed to set taskbar visibility: {}", e);
-                    format!("Failed to set taskbar visibility: {}", e)
-                })?;
+            window.set_skip_taskbar(!visible).map_err(|e| {
+                eprintln!("Failed to set taskbar visibility: {}", e);
+                format!("Failed to set taskbar visibility: {}", e)
+            })?;
             println!("Successfully set Windows taskbar visibility");
         } else {
             eprintln!("Main window not found on Windows");
         }
     }
-    
+
     #[cfg(target_os = "linux")]
     {
         // On Linux, control panel icon visibility
         if let Some(window) = app.get_webview_window("main") {
             println!("Setting Linux panel visibility to: {}", visible);
-            window.set_skip_taskbar(!visible)
-                .map_err(|e| {
-                    eprintln!("Failed to set panel visibility: {}", e);
-                    format!("Failed to set panel visibility: {}", e)
-                })?;
+            window.set_skip_taskbar(!visible).map_err(|e| {
+                eprintln!("Failed to set panel visibility: {}", e);
+                format!("Failed to set panel visibility: {}", e)
+            })?;
             println!("Successfully set Linux panel visibility");
         } else {
             eprintln!("Main window not found on Linux");
         }
     }
-    
+
     Ok(())
 }
 
 /// Tauri command to set always on top state
 #[tauri::command]
-pub fn set_always_on_top<R: Runtime>(
-    app: AppHandle<R>,
-    enabled: bool,
-) -> Result<(), String> {
+pub fn set_always_on_top<R: Runtime>(app: AppHandle<R>, enabled: bool) -> Result<(), String> {
     println!("Setting always on top to: {}", enabled);
-    
+
     if let Some(window) = app.get_webview_window("main") {
-        window.set_always_on_top(enabled)
-            .map_err(|e| {
-                eprintln!("Failed to set always on top: {}", e);
-                format!("Failed to set always on top: {}", e)
-            })?;
-        
+        window.set_always_on_top(enabled).map_err(|e| {
+            eprintln!("Failed to set always on top: {}", e);
+            format!("Failed to set always on top: {}", e)
+        })?;
+
         println!("Successfully set always on top to: {}", enabled);
     } else {
         eprintln!("Main window not found");
         return Err("Main window not found".to_string());
     }
-    
+
     Ok(())
 }

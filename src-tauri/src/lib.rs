@@ -1,16 +1,16 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-mod window;
-mod shortcuts;
 mod activate;
 mod api;
+mod shortcuts;
+mod window;
 
-#[cfg(target_os = "macos")]
-use tauri_plugin_macos_permissions;
-use xcap::Monitor;
 use base64::Engine;
 use image::codecs::png::PngEncoder;
 use image::{ColorType, ImageEncoder};
 use tauri_plugin_http;
+#[cfg(target_os = "macos")]
+use tauri_plugin_macos_permissions;
+use xcap::Monitor;
 
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinHandle;
@@ -32,7 +32,6 @@ fn get_app_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }
 
-
 #[tauri::command]
 fn capture_to_base64() -> Result<String, String> {
     let monitors = Monitor::all().map_err(|e| format!("Failed to get monitors: {}", e))?;
@@ -41,10 +40,17 @@ fn capture_to_base64() -> Result<String, String> {
         .find(|m| m.is_primary())
         .ok_or("No primary monitor found".to_string())?;
 
-    let image = primary_monitor.capture_image().map_err(|e| format!("Failed to capture image: {}", e))?;
+    let image = primary_monitor
+        .capture_image()
+        .map_err(|e| format!("Failed to capture image: {}", e))?;
     let mut png_buffer = Vec::new();
     PngEncoder::new(&mut png_buffer)
-        .write_image(image.as_raw(), image.width(), image.height(), ColorType::Rgba8.into())
+        .write_image(
+            image.as_raw(),
+            image.width(),
+            image.height(),
+            ColorType::Rgba8.into(),
+        )
         .map_err(|e| format!("Failed to encode to PNG: {}", e))?;
     let base64_str = base64::engine::general_purpose::STANDARD.encode(png_buffer);
 
@@ -54,6 +60,7 @@ fn capture_to_base64() -> Result<String, String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default()
+        .plugin(tauri_plugin_sql::Builder::new().build())
         .manage(AudioState::default())
         .manage(shortcuts::WindowVisibility(Mutex::new(false)))
         .plugin(tauri_plugin_opener::init())
@@ -61,9 +68,9 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_keychain::init())
-        .plugin(tauri_plugin_shell::init())  // Add shell plugin
+        .plugin(tauri_plugin_shell::init()) // Add shell plugin
         .invoke_handler(tauri::generate_handler![
-            greet, 
+            greet,
             get_app_version,
             window::set_window_height,
             capture_to_base64,
@@ -92,12 +99,12 @@ pub fn run() {
         .setup(|app| {
             // Setup main window positioning
             window::setup_main_window(app).expect("Failed to setup main window");
-            
+
             // Setup global shortcuts
             if let Err(e) = shortcuts::setup_global_shortcuts(app.handle()) {
                 eprintln!("Failed to setup global shortcuts: {}", e);
             }
-            
+
             Ok(())
         });
 

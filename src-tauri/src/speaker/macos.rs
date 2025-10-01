@@ -13,7 +13,7 @@ use ringbuf::{
 use ca::aggregate_device_keys as agg_keys;
 use cidre::{arc, av, cat, cf, core_audio as ca, ns, os};
 pub struct SpeakerInput {
-    tap: ca::TapGuard,  // Assuming ca::TapGuard from core-audio-rs
+    tap: ca::TapGuard, // Assuming ca::TapGuard from core-audio-rs
     agg_desc: arc::Retained<cf::DictionaryOf<cf::String, cf::Type>>,
 }
 
@@ -86,7 +86,7 @@ impl SpeakerInput {
                 cf::Boolean::value_true().as_type_ref(),
                 cf::Boolean::value_false(),
                 cf::Boolean::value_true(),
-                cf::str!(c"system-audio-tap"),  // Simplified name
+                cf::str!(c"system-audio-tap"), // Simplified name
                 &output_uid,
                 &cf::Uuid::new().to_cf_string(),
                 &cf::ArrayOf::from_slice(&[sub_device.as_ref()]),

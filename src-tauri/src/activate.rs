@@ -1,16 +1,16 @@
+use crate::api::get_stored_credentials;
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 use uuid::Uuid;
-use crate::api::get_stored_credentials;
 
 fn get_payment_endpoint() -> Result<String, String> {
     if let Ok(endpoint) = env::var("PAYMENT_ENDPOINT") {
         return Ok(endpoint);
     }
-    
+
     match option_env!("PAYMENT_ENDPOINT") {
         Some(endpoint) => Ok(endpoint.to_string()),
         None => Err("PAYMENT_ENDPOINT environment variable not set. Please ensure it's set during the build process.".to_string())
@@ -18,11 +18,11 @@ fn get_payment_endpoint() -> Result<String, String> {
 }
 
 fn get_api_access_key() -> Result<String, String> {
-     if let Ok(key) = env::var("API_ACCESS_KEY") {
+    if let Ok(key) = env::var("API_ACCESS_KEY") {
         return Ok(key);
     }
-    
-     match option_env!("API_ACCESS_KEY") {
+
+    match option_env!("API_ACCESS_KEY") {
         Some(key) => Ok(key.to_string()),
         None => Err("API_ACCESS_KEY environment variable not set. Please ensure it's set during the build process.".to_string())
     }
@@ -30,13 +30,15 @@ fn get_api_access_key() -> Result<String, String> {
 
 // Secure storage functions using Tauri's app data directory
 fn get_secure_storage_path(app: &AppHandle) -> Result<PathBuf, String> {
-    let app_data_dir = app.path().app_data_dir()
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
         .map_err(|e| format!("Failed to get app data directory: {}", e))?;
-    
+
     // Create the directory if it doesn't exist
     fs::create_dir_all(&app_data_dir)
         .map_err(|e| format!("Failed to create app data directory: {}", e))?;
-    
+
     Ok(app_data_dir.join("secure_storage.json"))
 }
 
@@ -63,7 +65,7 @@ pub struct StorageResult {
 #[tauri::command]
 pub async fn secure_storage_save(app: AppHandle, items: Vec<StorageItem>) -> Result<(), String> {
     let storage_path = get_secure_storage_path(&app)?;
-    
+
     let mut storage = if storage_path.exists() {
         let content = fs::read_to_string(&storage_path)
             .map_err(|e| format!("Failed to read storage file: {}", e))?;
@@ -71,7 +73,7 @@ pub async fn secure_storage_save(app: AppHandle, items: Vec<StorageItem>) -> Res
     } else {
         SecureStorage::default()
     };
-    
+
     for item in items {
         match item.key.as_str() {
             "pluely_license_key" => storage.license_key = Some(item.value),
@@ -80,20 +82,20 @@ pub async fn secure_storage_save(app: AppHandle, items: Vec<StorageItem>) -> Res
             _ => return Err(format!("Invalid storage key: {}", item.key)),
         }
     }
-    
+
     let content = serde_json::to_string(&storage)
         .map_err(|e| format!("Failed to serialize storage: {}", e))?;
-    
+
     fs::write(&storage_path, content)
         .map_err(|e| format!("Failed to write storage file: {}", e))?;
-    
+
     Ok(())
 }
 
 #[tauri::command]
 pub async fn secure_storage_get(app: AppHandle) -> Result<StorageResult, String> {
     let storage_path = get_secure_storage_path(&app)?;
-    
+
     if !storage_path.exists() {
         return Ok(StorageResult {
             license_key: None,
@@ -101,13 +103,13 @@ pub async fn secure_storage_get(app: AppHandle) -> Result<StorageResult, String>
             selected_pluely_model: None,
         });
     }
-    
+
     let content = fs::read_to_string(&storage_path)
         .map_err(|e| format!("Failed to read storage file: {}", e))?;
-    
+
     let storage: SecureStorage = serde_json::from_str(&content)
         .map_err(|e| format!("Failed to parse storage file: {}", e))?;
-    
+
     Ok(StorageResult {
         license_key: storage.license_key,
         instance_id: storage.instance_id,
@@ -118,17 +120,17 @@ pub async fn secure_storage_get(app: AppHandle) -> Result<StorageResult, String>
 #[tauri::command]
 pub async fn secure_storage_remove(app: AppHandle, keys: Vec<String>) -> Result<(), String> {
     let storage_path = get_secure_storage_path(&app)?;
-    
+
     if !storage_path.exists() {
         return Ok(()); // Nothing to remove
     }
-    
+
     let content = fs::read_to_string(&storage_path)
         .map_err(|e| format!("Failed to read storage file: {}", e))?;
-    
+
     let mut storage: SecureStorage = serde_json::from_str(&content)
         .map_err(|e| format!("Failed to parse storage file: {}", e))?;
-    
+
     for key in keys {
         match key.as_str() {
             "pluely_license_key" => storage.license_key = None,
@@ -137,13 +139,13 @@ pub async fn secure_storage_remove(app: AppHandle, keys: Vec<String>) -> Result<
             _ => return Err(format!("Invalid storage key: {}", key)),
         }
     }
-    
+
     let content = serde_json::to_string(&storage)
         .map_err(|e| format!("Failed to serialize storage: {}", e))?;
-    
+
     fs::write(&storage_path, content)
         .map_err(|e| format!("Failed to write storage file: {}", e))?;
-    
+
     Ok(())
 }
 
@@ -186,20 +188,20 @@ pub async fn activate_license_api(license_key: String) -> Result<ActivationRespo
     // Get payment endpoint and API access key from environment
     let payment_endpoint = get_payment_endpoint()?;
     let api_access_key = get_api_access_key()?;
-    
+
     // Generate UUID for instance name
     let instance_name = Uuid::new_v4().to_string();
-    
+
     // Prepare activation request
     let activation_request = ActivationRequest {
         license_key: license_key.clone(),
         instance_name: instance_name.clone(),
     };
-    
+
     // Make HTTP request to activation endpoint with authorization header
     let client = reqwest::Client::new();
     let url = format!("{}/activate", payment_endpoint);
-    
+
     let response = client
         .post(&url)
         .header("Content-Type", "application/json")
@@ -221,35 +223,31 @@ pub async fn activate_license_api(license_key: String) -> Result<ActivationRespo
                 format!("Failed to make chat request: {}", error_msg)
             }
         })?;
-    
-    let activation_response: ActivationResponse = response
-        .json()
-        .await
-        .map_err(|e| {
-            let error_msg = format!("{}", e);
-            if error_msg.contains("url (") {
-                // Remove the URL part from the error message
-                let parts: Vec<&str> = error_msg.split(" for url (").collect();
-                if parts.len() > 1 {
-                    format!("Failed to make chat request: {}", parts[0])
-                } else {
-                    format!("Failed to make chat request: {}", error_msg)
-                }
+
+    let activation_response: ActivationResponse = response.json().await.map_err(|e| {
+        let error_msg = format!("{}", e);
+        if error_msg.contains("url (") {
+            // Remove the URL part from the error message
+            let parts: Vec<&str> = error_msg.split(" for url (").collect();
+            if parts.len() > 1 {
+                format!("Failed to make chat request: {}", parts[0])
             } else {
                 format!("Failed to make chat request: {}", error_msg)
             }
-        })?;
+        } else {
+            format!("Failed to make chat request: {}", error_msg)
+        }
+    })?;
     println!("Activation response: {:?}", activation_response);
     Ok(activation_response)
 }
-
 
 #[tauri::command]
 pub async fn deactivate_license_api(app: AppHandle) -> Result<ActivationResponse, String> {
     // Get payment endpoint and API access key from environment
     let payment_endpoint = get_payment_endpoint()?;
     let api_access_key = get_api_access_key()?;
-    
+
     let (license_key, instance_id, _) = get_stored_credentials(&app).await?;
 
     let deactivation_request = ActivationRequest {
@@ -259,7 +257,7 @@ pub async fn deactivate_license_api(app: AppHandle) -> Result<ActivationResponse
     // Make HTTP request to activation endpoint with authorization header
     let client = reqwest::Client::new();
     let url = format!("{}/deactivate", payment_endpoint);
-    
+
     let response = client
         .post(&url)
         .header("Content-Type", "application/json")
@@ -281,23 +279,20 @@ pub async fn deactivate_license_api(app: AppHandle) -> Result<ActivationResponse
                 format!("Failed to make chat request: {}", error_msg)
             }
         })?;
-    let deactivation_response: ActivationResponse = response
-        .json()
-        .await
-        .map_err(|e| {
-            let error_msg = format!("{}", e);
-            if error_msg.contains("url (") {
-                // Remove the URL part from the error message
-                let parts: Vec<&str> = error_msg.split(" for url (").collect();
-                if parts.len() > 1 {
-                    format!("Failed to make chat request: {}", parts[0])
-                } else {
-                    format!("Failed to make chat request: {}", error_msg)
-                }
+    let deactivation_response: ActivationResponse = response.json().await.map_err(|e| {
+        let error_msg = format!("{}", e);
+        if error_msg.contains("url (") {
+            // Remove the URL part from the error message
+            let parts: Vec<&str> = error_msg.split(" for url (").collect();
+            if parts.len() > 1 {
+                format!("Failed to make chat request: {}", parts[0])
             } else {
                 format!("Failed to make chat request: {}", error_msg)
             }
-        })?;
+        } else {
+            format!("Failed to make chat request: {}", error_msg)
+        }
+    })?;
     Ok(deactivation_response)
 }
 
@@ -306,7 +301,7 @@ pub async fn validate_license_api(app: AppHandle) -> Result<ValidateResponse, St
     // Get payment endpoint and API access key from environment
     let payment_endpoint = get_payment_endpoint()?;
     let api_access_key = get_api_access_key()?;
-    
+
     let (license_key, instance_id, _) = get_stored_credentials(&app).await?;
 
     let validate_request = ActivationRequest {
@@ -314,7 +309,7 @@ pub async fn validate_license_api(app: AppHandle) -> Result<ValidateResponse, St
         instance_name: instance_id.clone(),
     };
 
-     if license_key.is_empty() || instance_id.is_empty() {
+    if license_key.is_empty() || instance_id.is_empty() {
         return Ok(ValidateResponse {
             is_active: false,
             last_validated_at: None,
@@ -324,7 +319,7 @@ pub async fn validate_license_api(app: AppHandle) -> Result<ValidateResponse, St
     // Make HTTP request to validate endpoint with authorization header
     let client = reqwest::Client::new();
     let url = format!("{}/validate", payment_endpoint);
-    
+
     let response = client
         .post(&url)
         .header("Content-Type", "application/json")
@@ -346,39 +341,35 @@ pub async fn validate_license_api(app: AppHandle) -> Result<ValidateResponse, St
                 format!("Failed to make chat request: {}", error_msg)
             }
         })?;
-    
-    let validate_response: ValidateResponse = response
-        .json()
-        .await
-        .map_err(|e| {
-            let error_msg = format!("{}", e);
-            if error_msg.contains("url (") {
-                // Remove the URL part from the error message
-                let parts: Vec<&str> = error_msg.split(" for url (").collect();
-                if parts.len() > 1 {
-                    format!("Failed to make chat request: {}", parts[0])
-                } else {
-                    format!("Failed to make chat request: {}", error_msg)
-                }
+
+    let validate_response: ValidateResponse = response.json().await.map_err(|e| {
+        let error_msg = format!("{}", e);
+        if error_msg.contains("url (") {
+            // Remove the URL part from the error message
+            let parts: Vec<&str> = error_msg.split(" for url (").collect();
+            if parts.len() > 1 {
+                format!("Failed to make chat request: {}", parts[0])
             } else {
                 format!("Failed to make chat request: {}", error_msg)
             }
-        })?;
+        } else {
+            format!("Failed to make chat request: {}", error_msg)
+        }
+    })?;
     println!("Validate response: {:?}", validate_response);
     Ok(validate_response)
 }
-
 
 #[tauri::command]
 pub fn mask_license_key_cmd(license_key: String) -> String {
     if license_key.len() <= 8 {
         return "*".repeat(license_key.len());
     }
-    
+
     let first_four = &license_key[..4];
-    let last_four = &license_key[license_key.len()-4..];
+    let last_four = &license_key[license_key.len() - 4..];
     let middle_stars = "*".repeat(license_key.len() - 8);
-    
+
     format!("{}{}{}", first_four, middle_stars, last_four)
 }
 
@@ -387,11 +378,11 @@ pub async fn get_checkout_url() -> Result<CheckoutResponse, String> {
     // Get payment endpoint and API access key from environment
     let payment_endpoint = get_payment_endpoint()?;
     let api_access_key = get_api_access_key()?;
-    
+
     // Make HTTP request to checkout endpoint with authorization header
     let client = reqwest::Client::new();
     let url = format!("{}/checkout", payment_endpoint);
-    
+
     let response = client
         .post(&url)
         .header("Content-Type", "application/json")
@@ -413,23 +404,20 @@ pub async fn get_checkout_url() -> Result<CheckoutResponse, String> {
                 format!("Failed to make chat request: {}", error_msg)
             }
         })?;
-    
-    let checkout_response: CheckoutResponse = response
-        .json()
-        .await
-        .map_err(|e| {
-            let error_msg = format!("{}", e);
-            if error_msg.contains("url (") {
-                // Remove the URL part from the error message
-                let parts: Vec<&str> = error_msg.split(" for url (").collect();
-                if parts.len() > 1 {
-                    format!("Failed to make chat request: {}", parts[0])
-                } else {
-                    format!("Failed to make chat request: {}", error_msg)
-                }
+
+    let checkout_response: CheckoutResponse = response.json().await.map_err(|e| {
+        let error_msg = format!("{}", e);
+        if error_msg.contains("url (") {
+            // Remove the URL part from the error message
+            let parts: Vec<&str> = error_msg.split(" for url (").collect();
+            if parts.len() > 1 {
+                format!("Failed to make chat request: {}", parts[0])
             } else {
                 format!("Failed to make chat request: {}", error_msg)
             }
-        })?;    
+        } else {
+            format!("Failed to make chat request: {}", error_msg)
+        }
+    })?;
     Ok(checkout_response)
 }
