@@ -9,3 +9,4 @@ export * from "./useSystemAudio";
 export * from "./useHistory";
 export * from "./useCopyToClipboard";
 export * from "./useTitles";
+export * from "./useSystemPrompts";

@@ -3,6 +3,7 @@ export const STORAGE_KEYS = {
   THEME: "theme",
   CHAT_HISTORY: "chat_history",
   SYSTEM_PROMPT: "system_prompt",
+  SELECTED_SYSTEM_PROMPT_ID: "selected_system_prompt_id",
   SCREENSHOT_CONFIG: "screenshot_config",
   // add curl_ prefix because we are using curl to store the providers
   CUSTOM_AI_PROVIDERS: "curl_custom_ai_providers",

@@ -10,8 +10,12 @@ interface CheckoutResponse {
 }
 export const GetLicense = ({
   setState,
+  buttonText,
+  buttonClassName = "",
 }: {
   setState?: React.Dispatch<React.SetStateAction<boolean>>;
+  buttonText?: string;
+  buttonClassName?: string;
 }) => {
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
 
@@ -38,8 +42,9 @@ export const GetLicense = ({
       onClick={handleGetLicenseKey}
       disabled={isCheckoutLoading}
       size="sm"
+      className={buttonClassName}
     >
-      {isCheckoutLoading ? "Loading..." : "Get License"}
+      {isCheckoutLoading ? "Loading..." : buttonText || "Get License"}
     </Button>
   );
 };
