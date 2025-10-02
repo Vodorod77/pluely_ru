@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { MousePointer } from "lucide-react";
+import { MousePointer2 } from "lucide-react";
 
 export const CustomCursor = () => {
   const cursorRef = useRef<HTMLDivElement>(null);
@@ -66,7 +66,7 @@ export const CustomCursor = () => {
         transition: "opacity 0.1s ease-out",
       }}
     >
-      <MousePointer className="w-5 h-5 drop-shadow-2xl fill-secondary stroke-primary" />
+      <MousePointer2 className="w-5 h-5 drop-shadow-2xl fill-secondary stroke-primary" />
     </div>
   );
 };
