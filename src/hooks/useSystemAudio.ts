@@ -10,11 +10,11 @@ import {
   STORAGE_KEYS,
 } from "@/config";
 import {
-  generateConversationTitle,
   safeLocalStorage,
+  shouldUsePluelyAPI,
+  generateConversationTitle,
   saveConversation,
 } from "@/lib";
-import { shouldUsePluelyAPI } from "@/lib/functions/pluely.api";
 import { Message } from "@/types/completion";
 
 // Chat message interface (reusing from useCompletion)
@@ -475,7 +475,16 @@ export function useSystemAudio() {
   }, []);
 
   useEffect(() => {
-    saveConversation(conversation);
+    const saveConv = async () => {
+      try {
+        if (conversation.id && conversation.updatedAt > 0) {
+          await saveConversation(conversation);
+        }
+      } catch (error) {
+        console.error("Failed to save system audio conversation:", error);
+      }
+    };
+    saveConv();
   }, [conversation.messages.length, conversation.title, conversation.id]);
 
   const startNewConversation = useCallback(() => {

@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { loadChatHistory, deleteConversation } from "@/lib";
+import { useState, useEffect, useCallback } from "react";
+import { getAllConversations, deleteConversation } from "@/lib";
 import { ChatConversation } from "@/types/completion";
 import { useWindowResize } from "@/hooks";
 
@@ -47,6 +47,17 @@ export function useHistory(): UseHistoryReturn {
 
   const { resizeWindow } = useWindowResize();
 
+  // Function to refresh conversations
+  const refreshConversations = useCallback(async () => {
+    try {
+      const loadedConversations = await getAllConversations();
+      setConversations(loadedConversations);
+    } catch (error) {
+      console.error("Failed to load conversations:", error);
+      setConversations([]);
+    }
+  }, []);
+
   // Load conversations when component mounts or popover opens
   useEffect(() => {
     if (isOpen) {
@@ -55,16 +66,11 @@ export function useHistory(): UseHistoryReturn {
       // Reset viewing state when popover closes
       setViewingConversation(null);
     }
-  }, [isOpen]);
+  }, [isOpen, refreshConversations]);
 
   useEffect(() => {
     resizeWindow(isOpen);
   }, [isOpen, resizeWindow]);
-
-  const refreshConversations = () => {
-    const loadedConversations = loadChatHistory();
-    setConversations(loadedConversations);
-  };
 
   const handleViewConversation = (conversation: ChatConversation) => {
     setViewingConversation(conversation);
@@ -118,21 +124,26 @@ export function useHistory(): UseHistoryReturn {
     setDeleteConfirm(conversationId);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteConfirm) return;
 
-    setSelectedConversationId(null);
-    setViewingConversation(null);
-    deleteConversation(deleteConfirm);
-    setConversations((prev) => prev.filter((c) => c.id !== deleteConfirm));
-    setDeleteConfirm(null);
+    try {
+      setSelectedConversationId(null);
+      setViewingConversation(null);
+      await deleteConversation(deleteConfirm);
+      setConversations((prev) => prev.filter((c) => c.id !== deleteConfirm));
 
-    // Emit event to notify other components about deletion
-    window.dispatchEvent(
-      new CustomEvent("conversationDeleted", {
-        detail: deleteConfirm,
-      })
-    );
+      // Emit event to notify other components about deletion
+      window.dispatchEvent(
+        new CustomEvent("conversationDeleted", {
+          detail: deleteConfirm,
+        })
+      );
+    } catch (error) {
+      console.error("Failed to delete conversation:", error);
+    } finally {
+      setDeleteConfirm(null);
+    }
   };
 
   const cancelDelete = () => {

@@ -10,6 +10,13 @@ pub fn migrations() -> Vec<Migration> {
             sql: include_str!("migrations/system-prompts.sql"),
             kind: MigrationKind::Up,
         },
+        // Migration 2: Create chat history tables (conversations and messages)
+        Migration {
+            version: 2,
+            description: "create_chat_history_tables",
+            sql: include_str!("migrations/chat-history.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 

@@ -102,6 +102,7 @@ export async function* fetchAIResponse(params: {
   history?: Message[];
   userMessage: string;
   imagesBase64?: string[];
+  signal?: AbortSignal;
 }): AsyncIterable<string> {
   try {
     const {
@@ -111,7 +112,13 @@ export async function* fetchAIResponse(params: {
       history = [],
       userMessage,
       imagesBase64 = [],
+      signal,
     } = params;
+
+    // Check if already aborted
+    if (signal?.aborted) {
+      return;
+    }
 
     // Check if we should use Pluely API instead
     const usePluelyAPI = await shouldUsePluelyAPI();
@@ -220,8 +227,16 @@ export async function* fetchAIResponse(params: {
         method: curlJson.method || "POST",
         headers,
         body: curlJson.method === "GET" ? undefined : JSON.stringify(bodyObj),
+        signal,
       });
     } catch (fetchError) {
+      // Check if aborted
+      if (
+        signal?.aborted ||
+        (fetchError instanceof Error && fetchError.name === "AbortError")
+      ) {
+        return; // Silently return on abort
+      }
       yield `Network error during API request: ${
         fetchError instanceof Error ? fetchError.message : "Unknown error"
       }`;
@@ -265,10 +280,23 @@ export async function* fetchAIResponse(params: {
     let buffer = "";
 
     while (true) {
+      // Check if aborted
+      if (signal?.aborted) {
+        reader.cancel();
+        return;
+      }
+
       let readResult;
       try {
         readResult = await reader.read();
       } catch (readError) {
+        // Check if aborted
+        if (
+          signal?.aborted ||
+          (readError instanceof Error && readError.name === "AbortError")
+        ) {
+          return; // Silently return on abort
+        }
         yield `Error reading stream: ${
           readError instanceof Error ? readError.message : "Unknown error"
         }`;
@@ -276,6 +304,13 @@ export async function* fetchAIResponse(params: {
       }
       const { done, value } = readResult;
       if (done) break;
+
+      // Check if aborted before processing
+      if (signal?.aborted) {
+        reader.cancel();
+        return;
+      }
+
       buffer += decoder.decode(value, { stream: true });
 
       const lines = buffer.split("\n");

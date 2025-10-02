@@ -14,12 +14,30 @@ import { StatusIndicator } from "./components/speech/StatusIndicator";
 import { useTitles } from "./hooks";
 import { useSystemAudio } from "./hooks/useSystemAudio";
 import { listen } from "@tauri-apps/api/event";
+import { migrateLocalStorageToSQLite } from "./lib/database";
 
 const App = () => {
   const systemAudio = useSystemAudio();
   const [isHidden, setIsHidden] = useState(false);
   // Initialize title management
   useTitles();
+
+  // Migrate localStorage chat history to SQLite on app startup
+  useEffect(() => {
+    const runMigration = async () => {
+      try {
+        const result = await migrateLocalStorageToSQLite();
+        if (result.success && result.migratedCount > 0) {
+          console.log(
+            `Migrated ${result.migratedCount} conversations to SQLite`
+          );
+        }
+      } catch (error) {
+        console.error("Failed to migrate chat history:", error);
+      }
+    };
+    runMigration();
+  }, []);
   const handleSelectConversation = (conversation: any) => {
     // Use localStorage to communicate the selected conversation to Completion component
     localStorage.setItem("selectedConversation", JSON.stringify(conversation));
