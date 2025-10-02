@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { getAllConversations, deleteConversation } from "@/lib";
+import {
+  getAllConversations,
+  deleteConversation,
+  DOWNLOAD_SUCCESS_DISPLAY_MS,
+} from "@/lib";
 import { ChatConversation } from "@/types/completion";
 import { useWindowResize } from "@/hooks";
 
@@ -110,14 +114,14 @@ export function useHistory(): UseHistoryReturn {
       return;
     }
 
-    // Clear success state after 2 seconds
+    // Clear success state after display timeout
     setTimeout(() => {
       setDownloadedConversations((prev) => {
         const newSet = new Set(prev);
         newSet.delete(conversation.id);
         return newSet;
       });
-    }, 2000);
+    }, DOWNLOAD_SUCCESS_DISPLAY_MS);
   };
 
   const handleDeleteConfirm = (conversationId: string) => {

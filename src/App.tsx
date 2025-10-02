@@ -6,15 +6,14 @@ import {
   Updater,
   DragButton,
   CustomCursor,
-} from "./components";
-import { Completion } from "./components/completion";
-import { ChatHistory } from "./components/history";
-import { AudioVisualizer } from "./components/speech/audio-visualizer";
-import { StatusIndicator } from "./components/speech/StatusIndicator";
-import { useTitles } from "./hooks";
-import { useSystemAudio } from "./hooks/useSystemAudio";
+  Completion,
+  ChatHistory,
+  AudioVisualizer,
+  StatusIndicator,
+} from "@/components";
+import { useTitles, useSystemAudio } from "@/hooks";
 import { listen } from "@tauri-apps/api/event";
-import { migrateLocalStorageToSQLite } from "./lib/database";
+import { safeLocalStorage, migrateLocalStorageToSQLite } from "@/lib";
 
 const App = () => {
   const systemAudio = useSystemAudio();
@@ -26,32 +25,46 @@ const App = () => {
   useEffect(() => {
     const runMigration = async () => {
       try {
+        // Early exit: Check if migration already completed
+        const migrationKey = "chat_history_migrated_to_sqlite";
+        const alreadyMigrated =
+          safeLocalStorage.getItem(migrationKey) === "true";
+
+        if (alreadyMigrated) {
+          return; // Migration already complete, skip
+        }
+
         const result = await migrateLocalStorageToSQLite();
-        if (result.success && result.migratedCount > 0) {
-          console.log(
-            `Migrated ${result.migratedCount} conversations to SQLite`
-          );
+
+        if (result.success) {
+          if (result.migratedCount > 0) {
+            console.log(
+              `Successfully migrated ${result.migratedCount} conversations to SQLite`
+            );
+          }
+        } else if (result.error) {
+          // Migration failed - log error
+          console.error("Migration error:", result.error);
         }
       } catch (error) {
-        console.error("Failed to migrate chat history:", error);
+        // Critical error during migration
+        console.error("Critical migration failure:", error);
       }
     };
     runMigration();
   }, []);
+
   const handleSelectConversation = (conversation: any) => {
-    // Use localStorage to communicate the selected conversation to Completion component
-    localStorage.setItem("selectedConversation", JSON.stringify(conversation));
-    // Trigger a custom event to notify Completion component
+    // useCompletion will fetch the full conversation from SQLite by id
     window.dispatchEvent(
       new CustomEvent("conversationSelected", {
-        detail: conversation,
+        detail: { id: conversation.id },
       })
     );
   };
 
   const handleNewConversation = () => {
-    // Clear any selected conversation and trigger new conversation
-    localStorage.removeItem("selectedConversation");
+    // Trigger new conversation event
     window.dispatchEvent(new CustomEvent("newConversation"));
   };
 

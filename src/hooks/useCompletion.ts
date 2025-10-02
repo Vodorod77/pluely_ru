@@ -9,6 +9,10 @@ import {
   getConversationById,
   generateConversationTitle,
   shouldUsePluelyAPI,
+  MESSAGE_ID_OFFSET,
+  generateConversationId,
+  generateMessageId,
+  generateRequestId,
 } from "@/lib";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -139,9 +143,7 @@ export const useCompletion = () => {
       }
 
       // Generate unique request ID
-      const requestId = `req_${Date.now()}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
+      const requestId = generateRequestId();
       currentRequestIdRef.current = requestId;
 
       // Cancel any existing request
@@ -354,22 +356,21 @@ export const useCompletion = () => {
       }
 
       const conversationId =
-        state.currentConversationId ||
-        `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        state.currentConversationId || generateConversationId("chat");
       const timestamp = Date.now();
 
       const userMsg: ChatMessage = {
-        id: `msg_${timestamp}_user`,
+        id: generateMessageId("user", timestamp),
         role: "user",
         content: userMessage,
         timestamp,
       };
 
       const assistantMsg: ChatMessage = {
-        id: `msg_${timestamp + 1}_assistant`,
+        id: generateMessageId("assistant", timestamp + MESSAGE_ID_OFFSET),
         role: "assistant",
         content: assistantResponse,
-        timestamp: timestamp + 1,
+        timestamp: timestamp + MESSAGE_ID_OFFSET,
       };
 
       const newMessages = [...state.conversationHistory, userMsg, assistantMsg];
@@ -422,9 +423,39 @@ export const useCompletion = () => {
 
   // Listen for conversation events from the main ChatHistory component
   useEffect(() => {
-    const handleConversationSelected = (event: any) => {
-      const conversation = event.detail;
-      loadConversation(conversation);
+    const handleConversationSelected = async (event: any) => {
+      // Only the conversation ID is passed through the event
+      const { id } = event.detail;
+
+      if (!id || typeof id !== "string") {
+        console.error("No conversation ID provided");
+        setState((prev) => ({
+          ...prev,
+          error: "Invalid conversation selected",
+        }));
+        return;
+      }
+
+      try {
+        // Fetch the full conversation from SQLite
+        const conversation = await getConversationById(id);
+
+        if (conversation) {
+          loadConversation(conversation);
+        } else {
+          console.error(`Conversation ${id} not found in database`);
+          setState((prev) => ({
+            ...prev,
+            error: "Conversation not found. It may have been deleted.",
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to load conversation:", error);
+        setState((prev) => ({
+          ...prev,
+          error: "Failed to load conversation. Please try again.",
+        }));
+      }
     };
 
     const handleNewConversation = () => {
@@ -494,9 +525,7 @@ export const useCompletion = () => {
         };
 
         // Generate unique request ID
-        const requestId = `req_${Date.now()}_${Math.random()
-          .toString(36)
-          .substr(2, 9)}`;
+        const requestId = generateRequestId();
         currentRequestIdRef.current = requestId;
 
         // Cancel any existing request
@@ -732,6 +761,17 @@ export const useCompletion = () => {
     setEnableVAD(!enableVAD);
     setMicOpen(!micOpen);
   };
+
+  // Cleanup abort controller on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+      currentRequestIdRef.current = null;
+    };
+  }, []);
 
   // register callbacks for global shortcuts
   useEffect(() => {

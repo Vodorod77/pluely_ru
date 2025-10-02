@@ -23,6 +23,8 @@ CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation
 CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
 -- Composite index for efficient message queries
 CREATE INDEX IF NOT EXISTS idx_messages_conversation_timestamp ON messages(conversation_id, timestamp ASC);
+-- Composite index for filtering by role
+CREATE INDEX IF NOT EXISTS idx_messages_conversation_role ON messages(conversation_id, role, timestamp ASC);
 
 -- Trigger to automatically update conversations updated_at when messages change
 CREATE TRIGGER IF NOT EXISTS update_conversation_timestamp_on_message_insert

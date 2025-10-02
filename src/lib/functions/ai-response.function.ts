@@ -11,6 +11,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import curl2Json from "@bany/curl-to-json";
 import { shouldUsePluelyAPI } from "./pluely.api";
+import { CHUNK_POLL_INTERVAL_MS } from "../chat-constants";
 
 // Pluely AI streaming function
 async function* fetchPluelyAIResponse(params: {
@@ -18,6 +19,7 @@ async function* fetchPluelyAIResponse(params: {
   userMessage: string;
   imagesBase64?: string[];
   history?: Message[];
+  signal?: AbortSignal;
 }): AsyncIterable<string> {
   try {
     const {
@@ -25,12 +27,19 @@ async function* fetchPluelyAIResponse(params: {
       userMessage,
       imagesBase64 = [],
       history = [],
+      signal,
     } = params;
+
+    // Check if already aborted before starting
+    if (signal?.aborted) {
+      return;
+    }
 
     // Convert history to the expected format
     let historyString: string | undefined;
     if (history.length > 0) {
-      const formattedHistory = history?.reverse()?.map((msg) => ({
+      // Create a copy before reversing to avoid mutating the original array
+      const formattedHistory = [...history].reverse().map((msg) => ({
         role: msg.role,
         content: [{ type: "text", text: msg.content }],
       }));
@@ -57,6 +66,13 @@ async function* fetchPluelyAIResponse(params: {
     });
 
     try {
+      // Check if aborted before starting invoke
+      if (signal?.aborted) {
+        unlisten();
+        unlistenComplete();
+        return;
+      }
+
       // Start the streaming request
       await invoke("chat_stream", {
         userMessage,
@@ -68,14 +84,37 @@ async function* fetchPluelyAIResponse(params: {
       // Yield chunks as they come in
       let lastIndex = 0;
       while (!streamComplete) {
+        // Check if aborted during streaming
+        if (signal?.aborted) {
+          unlisten();
+          unlistenComplete();
+          return;
+        }
+
         // Wait a bit for chunks to accumulate
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise((resolve) =>
+          setTimeout(resolve, CHUNK_POLL_INTERVAL_MS)
+        );
+
+        // Check again after timeout
+        if (signal?.aborted) {
+          unlisten();
+          unlistenComplete();
+          return;
+        }
 
         // Yield any new chunks
         for (let i = lastIndex; i < streamChunks.length; i++) {
           yield streamChunks[i];
         }
         lastIndex = streamChunks.length;
+      }
+
+      // Final abort check before yielding remaining chunks
+      if (signal?.aborted) {
+        unlisten();
+        unlistenComplete();
+        return;
       }
 
       // Yield any remaining chunks
@@ -128,6 +167,7 @@ export async function* fetchAIResponse(params: {
         userMessage,
         imagesBase64,
         history,
+        signal,
       });
       return;
     }

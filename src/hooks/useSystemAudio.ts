@@ -14,6 +14,9 @@ import {
   shouldUsePluelyAPI,
   generateConversationTitle,
   saveConversation,
+  CONVERSATION_SAVE_DEBOUNCE_MS,
+  generateConversationId,
+  generateMessageId,
 } from "@/lib";
 import { Message } from "@/types/completion";
 
@@ -72,6 +75,8 @@ export function useSystemAudio() {
     systemPrompt,
   } = useApp();
   const abortControllerRef = useRef<AbortController | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isSavingRef = useRef<boolean>(false);
 
   // Load context settings from localStorage on mount
   useEffect(() => {
@@ -328,24 +333,25 @@ export function useSystemAudio() {
         }
 
         if (fullResponse) {
+          const timestamp = Date.now();
           setConversation((prev) => ({
             ...prev,
             messages: [
               {
-                id: `msg_${Date.now()}_user`,
+                id: generateMessageId("user", timestamp),
                 role: "user" as const,
                 content: transcription,
-                timestamp: Date.now(),
+                timestamp,
               },
               {
-                id: `msg_${Date.now()}_assistant`,
+                id: generateMessageId("assistant", timestamp + 1),
                 role: "assistant" as const,
                 content: fullResponse,
-                timestamp: Date.now(),
+                timestamp: timestamp + 1,
               },
               ...prev.messages,
             ],
-            updatedAt: Date.now(),
+            updatedAt: timestamp,
             title: prev.title || generateConversationTitle(transcription),
           }));
         }
@@ -373,9 +379,7 @@ export function useSystemAudio() {
       await invoke<string>("start_system_audio_capture");
       setCapturing(true);
 
-      const conversationId = `sysaudio_conv_${Date.now()}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
+      const conversationId = generateConversationId("sysaudio");
       setConversation({
         id: conversationId,
         title: "",
@@ -474,24 +478,55 @@ export function useSystemAudio() {
     };
   }, []);
 
+  // Debounced save to prevent race conditions and improve performance
   useEffect(() => {
-    const saveConv = async () => {
+    // Clear any pending save
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Only debounce if there are messages to save
+    if (
+      !conversation.id ||
+      conversation.updatedAt === 0 ||
+      conversation.messages.length === 0
+    ) {
+      return;
+    }
+
+    // Debounce saves (only save 500ms after last change)
+    saveTimeoutRef.current = setTimeout(async () => {
+      // Don't save if already saving (prevent concurrent saves)
+      if (isSavingRef.current) {
+        return;
+      }
+
       try {
-        if (conversation.id && conversation.updatedAt > 0) {
-          await saveConversation(conversation);
-        }
+        isSavingRef.current = true;
+        await saveConversation(conversation);
       } catch (error) {
         console.error("Failed to save system audio conversation:", error);
+      } finally {
+        isSavingRef.current = false;
+      }
+    }, CONVERSATION_SAVE_DEBOUNCE_MS);
+
+    // Cleanup on unmount or dependency change
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
       }
     };
-    saveConv();
-  }, [conversation.messages.length, conversation.title, conversation.id]);
+  }, [
+    conversation.messages.length,
+    conversation.title,
+    conversation.id,
+    conversation.updatedAt,
+  ]);
 
   const startNewConversation = useCallback(() => {
     setConversation({
-      id: `sysaudio_conv_${Date.now()}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`,
+      id: generateConversationId("sysaudio"),
       title: "",
       messages: [],
       createdAt: 0,

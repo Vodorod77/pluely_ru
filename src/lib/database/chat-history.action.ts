@@ -1,6 +1,6 @@
 import { getDatabase } from "./config";
 import { ChatConversation } from "@/types";
-import { safeLocalStorage } from "@/lib/storage";
+import { safeLocalStorage, CONVERSATION_TITLE_WORD_LIMIT } from "@/lib";
 
 // Legacy localStorage key for migration purposes
 const LEGACY_CHAT_HISTORY_KEY = "chat_history";
@@ -414,7 +414,7 @@ export function generateConversationTitle(userMessage: string): string {
     return "New Conversation";
   }
 
-  const words = trimmed.split(/\s+/).slice(0, 6);
+  const words = trimmed.split(/\s+/).slice(0, CONVERSATION_TITLE_WORD_LIMIT);
   const title = words.join(" ");
 
   return title.length < trimmed.length ? `${title}...` : title;

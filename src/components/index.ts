@@ -11,3 +11,6 @@ export * from "./speech";
 export * from "./DragButton";
 export * from "./GetLicense";
 export * from "./CustomCursor";
+export * from "./history";
+export * from "./speech/audio-visualizer";
+export * from "./speech/StatusIndicator";
