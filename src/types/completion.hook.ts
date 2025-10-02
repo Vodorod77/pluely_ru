@@ -84,6 +84,10 @@ export interface UseCompletionReturn {
   messageHistoryOpen: boolean;
   /** Function to control message history panel visibility */
   setMessageHistoryOpen: Dispatch<SetStateAction<boolean>>;
+  /** Whether keep engaged mode is active (keeps popover open for continuous conversation) */
+  keepEngaged: boolean;
+  /** Function to toggle keep engaged mode */
+  setKeepEngaged: Dispatch<SetStateAction<boolean>>;
 
   // Screenshot functionality
   /** Current screenshot configuration settings */

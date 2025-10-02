@@ -74,6 +74,7 @@ export const useCompletion = () => {
   const [messageHistoryOpen, setMessageHistoryOpen] = useState(false);
   const [isFilesPopoverOpen, setIsFilesPopoverOpen] = useState(false);
   const [isScreenshotLoading, setIsScreenshotLoading] = useState(false);
+  const [keepEngaged, setKeepEngaged] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { resizeWindow } = useWindowResize();
@@ -292,6 +293,10 @@ export const useCompletion = () => {
   }, []);
 
   const reset = useCallback(() => {
+    // Don't reset if keep engaged mode is active
+    if (keepEngaged) {
+      return;
+    }
     cancel();
     setState((prev) => ({
       ...prev,
@@ -300,7 +305,7 @@ export const useCompletion = () => {
       error: null,
       attachedFiles: [],
     }));
-  }, [cancel]);
+  }, [cancel, keepEngaged]);
 
   // Helper function to convert file to base64
   const fileToBase64 = useCallback(async (file: File): Promise<string> => {
@@ -705,7 +710,10 @@ export const useCompletion = () => {
   );
 
   const isPopoverOpen =
-    state.isLoading || state.response !== "" || state.error !== null;
+    state.isLoading ||
+    state.response !== "" ||
+    state.error !== null ||
+    keepEngaged;
 
   useEffect(() => {
     resizeWindow(
@@ -827,5 +835,7 @@ export const useCompletion = () => {
     inputRef,
     captureScreenshot,
     isScreenshotLoading,
+    keepEngaged,
+    setKeepEngaged,
   };
 };

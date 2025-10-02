@@ -7,6 +7,7 @@ import {
   ScrollArea,
   Input as InputComponent,
   Markdown,
+  Switch,
 } from "@/components";
 import { MessageHistory } from "../history";
 import { UseCompletionReturn } from "@/types";
@@ -31,13 +32,15 @@ export const Input = ({
   scrollAreaRef,
   inputRef,
   isHidden,
+  keepEngaged,
+  setKeepEngaged,
 }: UseCompletionReturn & { isHidden: boolean }) => {
   return (
     <div className="relative flex-1">
       <Popover
         open={isPopoverOpen}
         onOpenChange={(open) => {
-          if (!open && !isLoading) {
+          if (!open && !isLoading && !keepEngaged) {
             reset();
           }
         }}
@@ -91,8 +94,17 @@ export const Input = ({
           sideOffset={8}
         >
           <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
-            <h3 className="font-semibold text-sm select-none">AI Response</h3>
+            <h3 className="font-semibold text-sm select-none">
+              {keepEngaged ? "Conversation Mode" : "AI Response"}
+            </h3>
             <div className="flex items-center gap-2 select-none">
+              <div className="flex flex-row items-center gap-2 mr-2">
+                <p className="text-sm">Keep the chat engaged</p>
+                <Switch
+                  checked={keepEngaged}
+                  onCheckedChange={setKeepEngaged}
+                />
+              </div>
               <CopyButton content={response} />
               <Button
                 size="icon"
@@ -100,12 +112,22 @@ export const Input = ({
                 onClick={() => {
                   if (isLoading) {
                     cancel();
+                  } else if (keepEngaged) {
+                    // When keepEngaged is on, close everything and start new conversation
+                    setKeepEngaged(false);
+                    startNewConversation();
                   } else {
                     reset();
                   }
                 }}
                 className="cursor-pointer"
-                title={isLoading ? "Cancel loading" : "Clear conversation"}
+                title={
+                  isLoading
+                    ? "Cancel loading"
+                    : keepEngaged
+                    ? "Close and start new conversation"
+                    : "Clear conversation"
+                }
               >
                 <XIcon />
               </Button>
@@ -128,6 +150,39 @@ export const Input = ({
                   <span className="text-sm">Generating response...</span>
                 </div>
               )}
+              {keepEngaged ? (
+                <div className="space-y-4 pt-4">
+                  {conversationHistory
+                    .slice(1)
+                    .sort((a, b) => b?.timestamp - a?.timestamp)
+                    .map((message) => (
+                      <div
+                        key={message.id}
+                        className={`p-3 rounded-lg ${
+                          message.role === "user"
+                            ? "bg-primary/10 border-l-4 border-primary"
+                            : "bg-muted/50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs font-medium text-muted-foreground uppercase">
+                            {message.role === "user" ? "You" : "AI"}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(message.timestamp).toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
+                          </span>
+                        </div>
+                        <Markdown>{message.content}</Markdown>
+                      </div>
+                    ))}
+                </div>
+              ) : null}
             </div>
           </ScrollArea>
         </PopoverContent>
