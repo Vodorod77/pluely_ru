@@ -3,7 +3,7 @@ mod activate;
 mod api;
 mod shortcuts;
 mod window;
-
+mod db;
 use base64::Engine;
 use image::codecs::png::PngEncoder;
 use image::{ColorType, ImageEncoder};
@@ -60,7 +60,11 @@ fn capture_to_base64() -> Result<String, String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default()
-        .plugin(tauri_plugin_sql::Builder::new().build())
+        .plugin(
+            tauri_plugin_sql::Builder::default()
+                .add_migrations("sqlite:pluely.db", db::migrations())
+                .build(),
+        )
         .manage(AudioState::default())
         .manage(shortcuts::WindowVisibility(Mutex::new(false)))
         .plugin(tauri_plugin_opener::init())
