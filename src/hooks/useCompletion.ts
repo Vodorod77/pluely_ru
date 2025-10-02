@@ -729,7 +729,7 @@ export const useCompletion = () => {
 
   // Auto scroll to bottom when response updates
   useEffect(() => {
-    if (state.response && scrollAreaRef.current) {
+    if (!keepEngaged && state.response && scrollAreaRef.current) {
       const scrollElement = scrollAreaRef.current.querySelector(
         "[data-radix-scroll-area-viewport]"
       );
@@ -740,7 +740,7 @@ export const useCompletion = () => {
         });
       }
     }
-  }, [state.response]);
+  }, [state.response, keepEngaged]);
 
   const captureScreenshot = async () => {
     if (!screenshotConfiguration.enabled || !handleScreenshotSubmit) return;

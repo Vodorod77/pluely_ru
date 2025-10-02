@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Loader2, XIcon } from "lucide-react";
 import {
   Popover,
@@ -35,6 +36,33 @@ export const Input = ({
   keepEngaged,
   setKeepEngaged,
 }: UseCompletionReturn & { isHidden: boolean }) => {
+  // Keyboard arrow key support for scrolling
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isPopoverOpen || !keepEngaged) return;
+
+      const activeScrollRef = scrollAreaRef.current || scrollAreaRef.current;
+      const scrollElement = activeScrollRef?.querySelector(
+        "[data-radix-scroll-area-viewport]"
+      ) as HTMLElement;
+
+      if (!scrollElement) return;
+
+      const scrollAmount = 100; // pixels to scroll
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        scrollElement.scrollBy({ top: scrollAmount, behavior: "smooth" });
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        scrollElement.scrollBy({ top: -scrollAmount, behavior: "smooth" });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isPopoverOpen, keepEngaged, scrollAreaRef]);
+
   return (
     <div className="relative flex-1">
       <Popover
@@ -94,12 +122,19 @@ export const Input = ({
           sideOffset={8}
         >
           <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
-            <h3 className="font-semibold text-sm select-none">
-              {keepEngaged ? "Conversation Mode" : "AI Response"}
-            </h3>
+            <div className="flex flex-row gap-1 items-center">
+              <h3 className="font-semibold text-sm select-none">
+                {keepEngaged ? "Conversation Mode" : "AI Response"}
+              </h3>
+              <div className="text-xs text-muted-foreground/70">
+                (Use arrow keys to scroll)
+              </div>
+            </div>
             <div className="flex items-center gap-2 select-none">
               <div className="flex flex-row items-center gap-2 mr-2">
-                <p className="text-sm">Keep the chat engaged</p>
+                <p className="text-sm">{`Toggle ${
+                  keepEngaged ? "AI response" : "conversation mode"
+                }`}</p>
                 <Switch
                   checked={keepEngaged}
                   onCheckedChange={setKeepEngaged}
@@ -141,48 +176,52 @@ export const Input = ({
                   <strong>Error:</strong> {error}
                 </div>
               )}
-
-              {response && <Markdown>{response}</Markdown>}
-
               {isLoading && (
-                <div className="flex items-center gap-2 mt-4 text-muted-foreground animate-pulse select-none">
+                <div className="flex items-center gap-2 my-4 text-muted-foreground animate-pulse select-none">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm">Generating response...</span>
                 </div>
               )}
-              {keepEngaged ? (
-                <div className="space-y-4 pt-4">
+              {response && <Markdown>{response}</Markdown>}
+
+              {/* Conversation History - Separate scroll, no auto-scroll */}
+              {keepEngaged && conversationHistory.length > 1 && (
+                <div className="space-y-3 pt-3">
                   {conversationHistory
-                    .slice(1)
                     .sort((a, b) => b?.timestamp - a?.timestamp)
-                    .map((message) => (
-                      <div
-                        key={message.id}
-                        className={`p-3 rounded-lg ${
-                          message.role === "user"
-                            ? "bg-primary/10 border-l-4 border-primary"
-                            : "bg-muted/50"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs font-medium text-muted-foreground uppercase">
-                            {message.role === "user" ? "You" : "AI"}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(message.timestamp).toLocaleTimeString(
-                              [],
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
-                            )}
-                          </span>
+                    .map((message, index) => {
+                      if (!isLoading && index === 0) {
+                        return null;
+                      }
+                      return (
+                        <div
+                          key={message.id}
+                          className={`p-3 rounded-lg text-sm ${
+                            message.role === "user"
+                              ? "bg-primary/10 border-l-4 border-primary"
+                              : "bg-muted/50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xs font-medium text-muted-foreground uppercase">
+                              {message.role === "user" ? "You" : "AI"}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(message.timestamp).toLocaleTimeString(
+                                [],
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </span>
+                          </div>
+                          <Markdown>{message.content}</Markdown>
                         </div>
-                        <Markdown>{message.content}</Markdown>
-                      </div>
-                    ))}
+                      );
+                    })}
                 </div>
-              ) : null}
+              )}
             </div>
           </ScrollArea>
         </PopoverContent>
