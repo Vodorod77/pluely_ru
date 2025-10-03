@@ -755,7 +755,7 @@ export const useCompletion = () => {
   // Keyboard arrow key support for scrolling
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isPopoverOpen || !keepEngaged) return;
+      if (!isPopoverOpen) return;
 
       const activeScrollRef = scrollAreaRef.current || scrollAreaRef.current;
       const scrollElement = activeScrollRef?.querySelector(
@@ -777,7 +777,7 @@ export const useCompletion = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isPopoverOpen, keepEngaged, scrollAreaRef]);
+  }, [isPopoverOpen, scrollAreaRef]);
 
   // Keyboard shortcut for toggling keep engaged mode (Cmd+K / Ctrl+K)
   useEffect(() => {
