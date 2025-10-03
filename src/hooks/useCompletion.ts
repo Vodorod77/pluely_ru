@@ -248,6 +248,11 @@ export const useCompletion = () => {
 
         setState((prev) => ({ ...prev, isLoading: false }));
 
+        // Focus input after AI response is complete
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 100);
+
         // Save the conversation after successful completion
         if (fullResponse) {
           await saveCurrentConversation(
@@ -609,6 +614,11 @@ export const useCompletion = () => {
 
           setState((prev) => ({ ...prev, isLoading: false }));
 
+          // Focus input after screenshot AI response is complete
+          setTimeout(() => {
+            inputRef.current?.focus();
+          }, 100);
+
           // Save the conversation after successful completion
           if (fullResponse) {
             await saveCurrentConversation(prompt, fullResponse, [attachedFile]);
@@ -741,6 +751,54 @@ export const useCompletion = () => {
       }
     }
   }, [state.response, keepEngaged]);
+
+  // Keyboard arrow key support for scrolling
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isPopoverOpen || !keepEngaged) return;
+
+      const activeScrollRef = scrollAreaRef.current || scrollAreaRef.current;
+      const scrollElement = activeScrollRef?.querySelector(
+        "[data-radix-scroll-area-viewport]"
+      ) as HTMLElement;
+
+      if (!scrollElement) return;
+
+      const scrollAmount = 100; // pixels to scroll
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        scrollElement.scrollBy({ top: scrollAmount, behavior: "smooth" });
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        scrollElement.scrollBy({ top: -scrollAmount, behavior: "smooth" });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isPopoverOpen, keepEngaged, scrollAreaRef]);
+
+  // Keyboard shortcut for toggling keep engaged mode (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleToggleShortcut = (e: KeyboardEvent) => {
+      // Only trigger when popover is open
+      if (!isPopoverOpen) return;
+
+      // Check for Cmd+K (Mac) or Ctrl+K (Windows/Linux)
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setKeepEngaged((prev) => !prev);
+        // Focus the input after toggle (with delay to ensure DOM is ready)
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 100);
+      }
+    };
+
+    window.addEventListener("keydown", handleToggleShortcut);
+    return () => window.removeEventListener("keydown", handleToggleShortcut);
+  }, [isPopoverOpen]);
 
   const captureScreenshot = async () => {
     if (!screenshotConfiguration.enabled || !handleScreenshotSubmit) return;

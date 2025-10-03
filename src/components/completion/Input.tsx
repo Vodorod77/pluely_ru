@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Loader2, XIcon } from "lucide-react";
 import {
   Popover,
@@ -36,33 +35,6 @@ export const Input = ({
   keepEngaged,
   setKeepEngaged,
 }: UseCompletionReturn & { isHidden: boolean }) => {
-  // Keyboard arrow key support for scrolling
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isPopoverOpen || !keepEngaged) return;
-
-      const activeScrollRef = scrollAreaRef.current || scrollAreaRef.current;
-      const scrollElement = activeScrollRef?.querySelector(
-        "[data-radix-scroll-area-viewport]"
-      ) as HTMLElement;
-
-      if (!scrollElement) return;
-
-      const scrollAmount = 100; // pixels to scroll
-
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        scrollElement.scrollBy({ top: scrollAmount, behavior: "smooth" });
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        scrollElement.scrollBy({ top: -scrollAmount, behavior: "smooth" });
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isPopoverOpen, keepEngaged, scrollAreaRef]);
-
   return (
     <div className="relative flex-1">
       <Popover
@@ -135,9 +107,21 @@ export const Input = ({
                 <p className="text-sm">{`Toggle ${
                   keepEngaged ? "AI response" : "conversation mode"
                 }`}</p>
+                <span className="text-xs text-muted-foreground/60 bg-muted/30 px-1 py-0 rounded border border-input/50">
+                  {navigator.platform.toLowerCase().includes("mac")
+                    ? "⌘"
+                    : "Ctrl"}{" "}
+                  + K
+                </span>
                 <Switch
                   checked={keepEngaged}
-                  onCheckedChange={setKeepEngaged}
+                  onCheckedChange={(checked) => {
+                    setKeepEngaged(checked);
+                    // Focus input after toggle
+                    setTimeout(() => {
+                      inputRef?.current?.focus();
+                    }, 100);
+                  }}
                 />
               </div>
               <CopyButton content={response} />
