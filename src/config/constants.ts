@@ -1,6 +1,7 @@
 // Storage keys
 export const STORAGE_KEYS = {
   THEME: "theme",
+  TRANSPARENCY: "transparency",
   SYSTEM_PROMPT: "system_prompt",
   SELECTED_SYSTEM_PROMPT_ID: "selected_system_prompt_id",
   SCREENSHOT_CONFIG: "screenshot_config",

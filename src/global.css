@@ -122,3 +122,16 @@
 * {
   cursor: none !important;
 }
+
+/* Apply global transparency */
+[data-slot="card"] {
+  background-color: rgb(from var(--card) r g b / var(--opacity, 1)) !important;
+  backdrop-filter: var(--backdrop-blur, none);
+}
+
+[data-slot="popover-content"] {
+  background-color: rgb(
+    from var(--popover) r g b / var(--opacity, 1)
+  ) !important;
+  backdrop-filter: var(--backdrop-blur, none);
+}

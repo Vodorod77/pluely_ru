@@ -17,6 +17,7 @@ import { AIProviders } from "./ai-configs";
 import { STTProviders } from "./stt-configs";
 import { DeleteChats } from "./DeleteChats";
 import { PluelyApiSetup } from "./PluelyApiSetup";
+import Theme from "./Theme";
 
 export const Settings = () => {
   const settings = useSettings();
@@ -30,7 +31,7 @@ export const Settings = () => {
         <Button
           size="icon"
           aria-label="Open Settings"
-          className="cursor-pointer [data-state=open]:bg-[red]"
+          className="cursor-pointer"
           title="Open Settings"
         >
           <SettingsIcon className="h-4 w-4" />
@@ -51,6 +52,9 @@ export const Settings = () => {
 
             {/* System Prompt */}
             <SystemPrompt {...settings} />
+
+            {/* Theme */}
+            <Theme />
 
             {/* Screenshot Configs */}
             <ScreenshotConfigs {...settings} />
