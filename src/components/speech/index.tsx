@@ -16,37 +16,45 @@ import { Header } from "./Header";
 import { SetupInstructions } from "./SetupInstructions";
 import { OperationSection } from "./OperationSection";
 import { Context } from "./Context";
+import { VadConfigPanel } from "./VadConfigPanel";
+import { PermissionFlow } from "./PermissionFlow";
 import { useSystemAudioType } from "@/hooks";
 
-export const SystemAudio = ({
-  capturing,
-  isProcessing,
-  isAIProcessing,
-  lastTranscription,
-  lastAIResponse,
-  error,
-  setupRequired,
-  startCapture,
-  stopCapture,
-  isPopoverOpen,
-  setIsPopoverOpen,
-  useSystemPrompt,
-  setUseSystemPrompt,
-  contextContent,
-  setContextContent,
-  startNewConversation,
-  conversation,
-  resizeWindow,
-  handleSetup,
-  quickActions,
-  addQuickAction,
-  removeQuickAction,
-  isManagingQuickActions,
-  setIsManagingQuickActions,
-  showQuickActions,
-  setShowQuickActions,
-  handleQuickActionClick,
-}: useSystemAudioType) => {
+export const SystemAudio = (props: useSystemAudioType) => {
+  const {
+    capturing,
+    isProcessing,
+    isAIProcessing,
+    lastTranscription,
+    lastAIResponse,
+    error,
+    setupRequired,
+    startCapture,
+    stopCapture,
+    isPopoverOpen,
+    setIsPopoverOpen,
+    useSystemPrompt,
+    setUseSystemPrompt,
+    contextContent,
+    setContextContent,
+    startNewConversation,
+    conversation,
+    resizeWindow,
+    handleSetup,
+    quickActions,
+    addQuickAction,
+    removeQuickAction,
+    isManagingQuickActions,
+    setIsManagingQuickActions,
+    showQuickActions,
+    setShowQuickActions,
+    handleQuickActionClick,
+    vadConfig,
+    updateVadConfiguration,
+    isContinuousMode,
+    recordingProgress,
+    manualStopAndSend,
+  } = props;
   const platform = navigator.platform.toLowerCase();
   const handleToggleCapture = async () => {
     if (capturing) {
@@ -123,6 +131,65 @@ export const SystemAudio = ({
                 />
               )}
 
+              {/* Continuous Recording UI - Show Stop & Send button */}
+              {isContinuousMode && capturing && (
+                <div className="space-y-3">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      <AudioLinesIcon className="w-5 h-5 text-blue-600 animate-pulse mt-0.5" />
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm text-blue-900 mb-1">
+                          Recording Audio (Continuous Mode)
+                        </h4>
+                        <p className="text-xs text-blue-800">
+                          VAD is disabled. Recording will continue until you
+                          manually stop or reach max duration.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs text-blue-800">
+                        <span>Duration: {recordingProgress}s</span>
+                        <span>
+                          Max: {vadConfig.max_recording_duration_secs}s
+                        </span>
+                      </div>
+                      <div className="w-full bg-blue-100 rounded-full h-2">
+                        <div
+                          className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${
+                              (recordingProgress /
+                                vadConfig.max_recording_duration_secs) *
+                              100
+                            }%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Stop & Send Button */}
+                    <Button
+                      onClick={manualStopAndSend}
+                      disabled={isProcessing}
+                      className="w-full mt-3 bg-blue-600 hover:bg-blue-700"
+                      size="lg"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <LoaderIcon className="w-4 h-4 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>Stop & Send for Transcription</>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Error Display - Show simple error messages for non-setup issues */}
               {error && !setupRequired && (
                 <div className="space-y-3">
@@ -143,11 +210,21 @@ export const SystemAudio = ({
               )}
 
               {setupRequired ? (
-                // Setup Instructions Section
-                <SetupInstructions
-                  setupRequired={setupRequired}
-                  handleSetup={handleSetup}
-                />
+                // Enhanced Permission Flow
+                <div className="space-y-4">
+                  <PermissionFlow
+                    onPermissionGranted={() => {
+                      startCapture();
+                    }}
+                    onPermissionDenied={() => {
+                      // Permission was denied, keep showing setup instructions
+                    }}
+                  />
+                  <SetupInstructions
+                    setupRequired={setupRequired}
+                    handleSetup={handleSetup}
+                  />
+                </div>
               ) : (
                 <>
                   {/* Operation Section */}
@@ -172,6 +249,12 @@ export const SystemAudio = ({
                     setUseSystemPrompt={setUseSystemPrompt}
                     contextContent={contextContent}
                     setContextContent={setContextContent}
+                  />
+
+                  {/* VAD Configuration */}
+                  <VadConfigPanel
+                    vadConfig={vadConfig}
+                    onUpdate={updateVadConfiguration}
                   />
                 </>
               )}

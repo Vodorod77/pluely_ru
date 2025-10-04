@@ -18,7 +18,11 @@ mod linux;
 use linux::{SpeakerInput as PlatformSpeakerInput, SpeakerStream as PlatformSpeakerStream};
 
 mod commands;
+mod devices;
+
+// Re-export commands for tauri handler
 pub use commands::*;
+pub use devices::*;
 
 // Pluely speaker input and stream
 pub struct SpeakerInput {

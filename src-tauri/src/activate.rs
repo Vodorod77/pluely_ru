@@ -238,7 +238,6 @@ pub async fn activate_license_api(license_key: String) -> Result<ActivationRespo
             format!("Failed to make chat request: {}", error_msg)
         }
     })?;
-    println!("Activation response: {:?}", activation_response);
     Ok(activation_response)
 }
 
@@ -356,7 +355,6 @@ pub async fn validate_license_api(app: AppHandle) -> Result<ValidateResponse, St
             format!("Failed to make chat request: {}", error_msg)
         }
     })?;
-    println!("Validate response: {:?}", validate_response);
     Ok(validate_response)
 }
 

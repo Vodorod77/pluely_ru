@@ -20,6 +20,32 @@ import {
 } from "@/lib";
 import { Message } from "@/types/completion";
 
+// VAD Configuration interface matching Rust
+export interface VadConfig {
+  enabled: boolean;
+  hop_size: number;
+  sensitivity_rms: number;
+  peak_threshold: number;
+  silence_chunks: number;
+  min_speech_chunks: number;
+  pre_speech_chunks: number;
+  noise_gate_threshold: number;
+  max_recording_duration_secs: number;
+}
+
+// OPTIMIZED VAD defaults - matches backend exactly for perfect performance
+const DEFAULT_VAD_CONFIG: VadConfig = {
+  enabled: true,
+  hop_size: 1024,
+  sensitivity_rms: 0.012, // Much less sensitive - only real speech
+  peak_threshold: 0.035, // Higher threshold - filters clicks/noise
+  silence_chunks: 18, // ~0.4s - FASTER response for real-time
+  min_speech_chunks: 7, // ~0.16s - captures short answers
+  pre_speech_chunks: 12, // ~0.27s - enough to catch word start
+  noise_gate_threshold: 0.003, // Stronger noise filtering
+  max_recording_duration_secs: 180, // 3 minutes default
+};
+
 // Chat message interface (reusing from useCompletion)
 interface ChatMessage {
   id: string;
@@ -54,6 +80,9 @@ export function useSystemAudio() {
   const [isManagingQuickActions, setIsManagingQuickActions] =
     useState<boolean>(false);
   const [showQuickActions, setShowQuickActions] = useState<boolean>(true);
+  const [vadConfig, setVadConfig] = useState<VadConfig>(DEFAULT_VAD_CONFIG);
+  const [recordingProgress, setRecordingProgress] = useState<number>(0); // For continuous mode
+  const [isContinuousMode, setIsContinuousMode] = useState<boolean>(false);
 
   const [conversation, setConversation] = useState<ChatConversation>({
     id: "",
@@ -78,7 +107,7 @@ export function useSystemAudio() {
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isSavingRef = useRef<boolean>(false);
 
-  // Load context settings from localStorage on mount
+  // Load context settings and VAD config from localStorage on mount
   useEffect(() => {
     const savedContext = safeLocalStorage.getItem(
       STORAGE_KEYS.SYSTEM_AUDIO_CONTEXT
@@ -90,6 +119,17 @@ export function useSystemAudio() {
         setContextContent(parsed.contextContent ?? "");
       } catch (error) {
         console.error("Failed to load system audio context:", error);
+      }
+    }
+
+    // Load VAD config
+    const savedVadConfig = safeLocalStorage.getItem("vad_config");
+    if (savedVadConfig) {
+      try {
+        const parsed = JSON.parse(savedVadConfig);
+        setVadConfig(parsed);
+      } catch (error) {
+        console.error("Failed to load VAD config:", error);
       }
     }
   }, []);
@@ -112,7 +152,66 @@ export function useSystemAudio() {
     }
   }, []);
 
-  // Handle single speech detection event
+  // Handle continuous recording progress events AND error events
+  useEffect(() => {
+    let progressUnlisten: (() => void) | undefined;
+    let startUnlisten: (() => void) | undefined;
+    let stopUnlisten: (() => void) | undefined;
+    let errorUnlisten: (() => void) | undefined;
+    let discardedUnlisten: (() => void) | undefined;
+
+    const setupContinuousListeners = async () => {
+      try {
+        // Progress updates (every second)
+        progressUnlisten = await listen("recording-progress", (event) => {
+          const seconds = event.payload as number;
+          setRecordingProgress(seconds);
+        });
+
+        // Recording started
+        startUnlisten = await listen("continuous-recording-start", () => {
+          setRecordingProgress(0);
+        });
+
+        // Recording stopped
+        stopUnlisten = await listen("continuous-recording-stopped", () => {
+          setRecordingProgress(0);
+          setIsProcessing(false); // Clear processing state
+          setIsContinuousMode(false);
+        });
+
+        // Audio encoding errors
+        errorUnlisten = await listen("audio-encoding-error", (event) => {
+          const errorMsg = event.payload as string;
+          console.error("Audio encoding error:", errorMsg);
+          setError(`Failed to process audio: ${errorMsg}`);
+          setIsProcessing(false);
+          setIsAIProcessing(false);
+        });
+
+        // Speech discarded (too short)
+        discardedUnlisten = await listen("speech-discarded", (event) => {
+          const reason = event.payload as string;
+          console.log("Speech discarded:", reason);
+          // Don't show error - this is expected behavior
+        });
+      } catch (err) {
+        console.error("Failed to setup continuous recording listeners:", err);
+      }
+    };
+
+    setupContinuousListeners();
+
+    return () => {
+      if (progressUnlisten) progressUnlisten();
+      if (startUnlisten) startUnlisten();
+      if (stopUnlisten) stopUnlisten();
+      if (errorUnlisten) errorUnlisten();
+      if (discardedUnlisten) discardedUnlisten();
+    };
+  }, []);
+
+  // Handle single speech detection event (both VAD and continuous modes)
   useEffect(() => {
     let speechUnlisten: (() => void) | undefined;
 
@@ -147,12 +246,26 @@ export function useSystemAudio() {
             }
 
             setIsProcessing(true);
+
+            // Add timeout wrapper for STT request (30 seconds)
+            const sttPromise = fetchSTT({
+              provider: providerConfig,
+              selectedProvider: selectedSttProvider,
+              audio: audioBlob,
+            });
+
+            const timeoutPromise = new Promise<string>((_, reject) => {
+              setTimeout(
+                () => reject(new Error("Speech transcription timed out (30s)")),
+                30000
+              );
+            });
+
             try {
-              const transcription = await fetchSTT({
-                provider: providerConfig,
-                selectedProvider: selectedSttProvider,
-                audio: audioBlob,
-              });
+              const transcription = await Promise.race([
+                sttPromise,
+                timeoutPromise,
+              ]);
 
               if (transcription.trim()) {
                 setLastTranscription(transcription);
@@ -171,10 +284,12 @@ export function useSystemAudio() {
                   effectiveSystemPrompt,
                   previousMessages
                 );
+              } else {
+                setError("Received empty transcription");
               }
             } catch (sttError: any) {
+              console.error("STT Error:", sttError);
               setError(sttError.message || "Failed to transcribe audio");
-              setCapturing(false);
               setIsPopoverOpen(true);
             }
           } catch (err) {
@@ -371,13 +486,22 @@ export function useSystemAudio() {
       const hasAccess = await invoke<boolean>("check_system_audio_access");
       if (!hasAccess) {
         setSetupRequired(true);
+        setIsPopoverOpen(true);
         return;
       }
 
+      // Stop any existing capture
       await invoke<string>("stop_system_audio_capture");
 
-      await invoke<string>("start_system_audio_capture");
+      // Start capture with VAD config
+      await invoke<string>("start_system_audio_capture", {
+        vadConfig: vadConfig,
+      });
+
       setCapturing(true);
+      setIsPopoverOpen(true);
+      setIsContinuousMode(!vadConfig.enabled);
+      setRecordingProgress(0);
 
       const conversationId = generateConversationId("sysaudio");
       setConversation({
@@ -390,31 +514,59 @@ export function useSystemAudio() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       setError(errorMessage);
+      setIsPopoverOpen(true);
     }
-  }, []);
+  }, [vadConfig]);
 
   const stopCapture = useCallback(async () => {
     try {
+      // Abort any ongoing AI requests
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
         abortControllerRef.current = null;
       }
 
+      // Stop the audio capture
+      await invoke<string>("stop_system_audio_capture");
+
+      // Reset ALL states
       setCapturing(false);
       setIsProcessing(false);
       setIsAIProcessing(false);
-
-      await invoke<string>("stop_system_audio_capture");
-
+      setIsContinuousMode(false);
+      setRecordingProgress(0);
       setLastTranscription("");
       setLastAIResponse("");
       setError("");
-
+      setIsPopoverOpen(false);
       window.location.reload();
     } catch (err) {
-      setError("Failed to stop capture");
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(`Failed to stop capture: ${errorMessage}`);
+      console.error("Stop capture error:", err);
     }
   }, []);
+
+  // Manual stop for continuous recording
+  const manualStopAndSend = useCallback(async () => {
+    try {
+      if (!isContinuousMode) {
+        console.warn("Not in continuous mode");
+        return;
+      }
+
+      // Show processing state immediately
+      setIsProcessing(true);
+
+      // Trigger manual stop event
+      await invoke("manual_stop_continuous");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(`Failed to manually stop: ${errorMessage}`);
+      setIsProcessing(false); // Clear processing state on error
+      console.error("Manual stop error:", err);
+    }
+  }, [isContinuousMode]);
 
   const handleSetup = useCallback(async () => {
     try {
@@ -542,6 +694,17 @@ export function useSystemAudio() {
     setUseSystemPrompt(true);
   }, []);
 
+  // Update VAD configuration
+  const updateVadConfiguration = useCallback(async (config: VadConfig) => {
+    try {
+      setVadConfig(config);
+      safeLocalStorage.setItem("vad_config", JSON.stringify(config));
+      await invoke("update_vad_config", { config });
+    } catch (error) {
+      console.error("Failed to update VAD config:", error);
+    }
+  }, []);
+
   return {
     capturing,
     isProcessing,
@@ -576,5 +739,12 @@ export function useSystemAudio() {
     showQuickActions,
     setShowQuickActions,
     handleQuickActionClick,
+    // VAD configuration
+    vadConfig,
+    updateVadConfiguration,
+    // Continuous recording
+    isContinuousMode,
+    recordingProgress,
+    manualStopAndSend,
   };
 }

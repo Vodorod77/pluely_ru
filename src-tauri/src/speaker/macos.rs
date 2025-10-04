@@ -2,7 +2,6 @@
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 use std::task::{Poll, Waker};
-
 use anyhow::Result;
 use futures_util::Stream;
 use ringbuf::{
@@ -50,13 +49,6 @@ impl SpeakerInput {
     pub fn new() -> Result<Self> {
         let output_device = ca::System::default_output_device()?;
         let output_uid = output_device.uid()?;
-
-        tracing::info!(
-            name = ?output_device.name().unwrap_or("Unknown Speaker".into()),
-            nominal_sample_rate = ?output_device.nominal_sample_rate().unwrap(),
-            actual_sample_rate = ?output_device.actual_sample_rate().unwrap(),
-            "speaker_output_device"
-        );
 
         let sub_device = cf::DictionaryOf::with_keys_values(
             &[ca::sub_device_keys::uid()],
@@ -189,32 +181,34 @@ impl SpeakerInput {
 fn process_audio_data(ctx: &mut Ctx, data: &[f32]) {
     let buffer_size = data.len();
     let pushed = ctx.producer.push_slice(data);
-
+    
+    // Consistent buffer overflow handling
     if pushed < buffer_size {
         let consecutive = ctx.consecutive_drops.fetch_add(1, Ordering::AcqRel) + 1;
-
-        if consecutive > 10 {
+        
+        // Only terminate after many consecutive drops (prevents temporary spikes from killing stream)
+        if consecutive > 50 {
             ctx.should_terminate.store(true, Ordering::Release);
             return;
         }
     } else {
+        // Success - reset consecutive drops counter
         ctx.consecutive_drops.store(0, Ordering::Release);
     }
 
-    if pushed > 0 {
-        let should_wake = {
-            let mut waker_state = ctx.waker_state.lock().unwrap();
-            if !waker_state.has_data {
-                waker_state.has_data = true;
-                waker_state.waker.take()
-            } else {
-                None
-            }
-        };
-
-        if let Some(waker) = should_wake {
-            waker.wake();
+    // Wake up consumer if we have new data
+    let should_wake = {
+        let mut waker_state = ctx.waker_state.lock().unwrap();
+        if !waker_state.has_data {
+            waker_state.has_data = true;
+            waker_state.waker.take()
+        } else {
+            None
         }
+    };
+
+    if let Some(waker) = should_wake {
+        waker.wake();
     }
 }
 

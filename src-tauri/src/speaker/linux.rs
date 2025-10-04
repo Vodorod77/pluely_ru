@@ -92,7 +92,7 @@ impl SpeakerStream {
         let spec = Spec {
             format: Format::F32le,
             channels: 1,
-            rate: 16000,
+            rate: 44100, // Fixed: Use 44100 Hz to match macOS/Windows
         };
 
         if !spec.is_valid() {
@@ -141,7 +141,30 @@ impl SpeakerStream {
                                 .collect();
 
                             if !samples.is_empty() {
-                                sample_queue.lock().unwrap().extend(samples);
+                                // Consistent buffer overflow handling
+                                let dropped = {
+                                    let mut queue = sample_queue.lock().unwrap();
+                                    let max_buffer_size = 131072; // 128KB buffer (matching macOS/Windows)
+                                    
+                                    queue.extend(samples.iter());
+                                    
+                                    // If buffer exceeds maximum, drop oldest samples
+                                    let dropped_count = if queue.len() > max_buffer_size {
+                                        let to_drop = queue.len() - max_buffer_size;
+                                        queue.drain(0..to_drop);
+                                        to_drop
+                                    } else {
+                                        0
+                                    };
+                                    
+                                    dropped_count
+                                };
+                                
+                                if dropped > 0 {
+                                    eprintln!("Linux buffer overflow - dropped {} samples", dropped);
+                                }
+                                
+                                // Wake up consumer
                                 if let Some(waker) = waker_state.lock().unwrap().waker.take() {
                                     waker.wake();
                                 }

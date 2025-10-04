@@ -16,10 +16,13 @@ use std::sync::{Arc, Mutex};
 use tokio::task::JoinHandle;
 
 mod speaker;
+use speaker::VadConfig;
 
 #[derive(Default)]
 pub struct AudioState {
     stream_task: Arc<Mutex<Option<JoinHandle<()>>>>,
+    vad_config: Arc<Mutex<VadConfig>>,
+    is_capturing: Arc<Mutex<bool>>,
 }
 
 #[tauri::command]
@@ -66,7 +69,9 @@ pub fn run() {
                 .build(),
         )
         .manage(AudioState::default())
-        .manage(shortcuts::WindowVisibility(Mutex::new(false)))
+        .manage(shortcuts::WindowVisibility {
+            is_hidden: Mutex::new(false),
+        })
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_http::init())
@@ -97,8 +102,15 @@ pub fn run() {
             api::check_license_status,
             speaker::start_system_audio_capture,
             speaker::stop_system_audio_capture,
+            speaker::manual_stop_continuous,
             speaker::check_system_audio_access,
-            speaker::request_system_audio_access
+            speaker::request_system_audio_access,
+            speaker::get_vad_config,
+            speaker::update_vad_config,
+            speaker::get_capture_status,
+            speaker::get_audio_sample_rate,
+            speaker::list_system_audio_devices,
+            speaker::get_default_audio_device
         ])
         .setup(|app| {
             // Setup main window positioning

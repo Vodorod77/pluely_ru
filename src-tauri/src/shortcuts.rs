@@ -3,7 +3,10 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, Runtime};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 // State for window visibility
-pub struct WindowVisibility(pub Mutex<bool>);
+pub struct WindowVisibility {
+    #[allow(dead_code)]
+    pub is_hidden: Mutex<bool>,
+}
 
 // Default shortcuts
 #[cfg(target_os = "macos")]
@@ -92,14 +95,13 @@ pub fn setup_global_shortcuts<R: Runtime>(
 fn handle_toggle_window<R: Runtime>(app: &AppHandle<R>) {
     // Get the main window
     let Some(window) = app.get_webview_window("main") else {
-        eprintln!("Main window not found");
         return;
     };
 
     #[cfg(target_os = "windows")]
     {
         let state = app.state::<WindowVisibility>();
-        let mut is_hidden = state.0.lock().unwrap();
+        let mut is_hidden = state.is_hidden.lock().unwrap();
         *is_hidden = !*is_hidden;
 
         if let Err(e) = window.emit("toggle-window-visibility", *is_hidden) {
@@ -142,8 +144,7 @@ fn handle_audio_shortcut<R: Runtime>(app: &AppHandle<R>) {
     if let Some(window) = app.get_webview_window("main") {
         // Ensure window is visible
         if let Ok(false) = window.is_visible() {
-            if let Err(e) = window.show() {
-                eprintln!("Failed to show window: {}", e);
+            if let Err(_e) = window.show() {
                 return;
             }
             if let Err(e) = window.set_focus() {
@@ -226,16 +227,13 @@ pub fn check_shortcuts_registered<R: Runtime>(app: AppHandle<R>) -> Result<bool,
 // Tauri command to set app icon visibility in dock/taskbar
 #[tauri::command]
 pub fn set_app_icon_visibility<R: Runtime>(app: AppHandle<R>, visible: bool) -> Result<(), String> {
-    println!("Setting app icon visibility to: {}", visible);
 
     #[cfg(target_os = "macos")]
     {
         // On macOS, use activation policy to control dock icon
         let policy = if visible {
-            println!("Setting macOS activation policy to Regular (visible)");
             tauri::ActivationPolicy::Regular
         } else {
-            println!("Setting macOS activation policy to Accessory (hidden)");
             tauri::ActivationPolicy::Accessory
         };
 
@@ -243,20 +241,15 @@ pub fn set_app_icon_visibility<R: Runtime>(app: AppHandle<R>, visible: bool) -> 
             eprintln!("Failed to set activation policy: {}", e);
             format!("Failed to set activation policy: {}", e)
         })?;
-
-        println!("Successfully set macOS activation policy");
     }
 
     #[cfg(target_os = "windows")]
     {
         // On Windows, control taskbar icon visibility
         if let Some(window) = app.get_webview_window("main") {
-            println!("Setting Windows taskbar visibility to: {}", visible);
             window.set_skip_taskbar(!visible).map_err(|e| {
-                eprintln!("Failed to set taskbar visibility: {}", e);
                 format!("Failed to set taskbar visibility: {}", e)
             })?;
-            println!("Successfully set Windows taskbar visibility");
         } else {
             eprintln!("Main window not found on Windows");
         }
@@ -266,12 +259,9 @@ pub fn set_app_icon_visibility<R: Runtime>(app: AppHandle<R>, visible: bool) -> 
     {
         // On Linux, control panel icon visibility
         if let Some(window) = app.get_webview_window("main") {
-            println!("Setting Linux panel visibility to: {}", visible);
             window.set_skip_taskbar(!visible).map_err(|e| {
-                eprintln!("Failed to set panel visibility: {}", e);
                 format!("Failed to set panel visibility: {}", e)
             })?;
-            println!("Successfully set Linux panel visibility");
         } else {
             eprintln!("Main window not found on Linux");
         }
@@ -283,17 +273,12 @@ pub fn set_app_icon_visibility<R: Runtime>(app: AppHandle<R>, visible: bool) -> 
 /// Tauri command to set always on top state
 #[tauri::command]
 pub fn set_always_on_top<R: Runtime>(app: AppHandle<R>, enabled: bool) -> Result<(), String> {
-    println!("Setting always on top to: {}", enabled);
-
     if let Some(window) = app.get_webview_window("main") {
         window.set_always_on_top(enabled).map_err(|e| {
-            eprintln!("Failed to set always on top: {}", e);
             format!("Failed to set always on top: {}", e)
         })?;
 
-        println!("Successfully set always on top to: {}", enabled);
     } else {
-        eprintln!("Main window not found");
         return Err("Main window not found".to_string());
     }
 
