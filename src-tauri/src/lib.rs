@@ -11,7 +11,7 @@ use tauri_plugin_http;
 #[cfg(target_os = "macos")]
 use tauri_plugin_macos_permissions;
 use xcap::Monitor;
-
+use tauri::Manager;
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinHandle;
 
@@ -72,10 +72,10 @@ pub fn run() {
         .manage(shortcuts::WindowVisibility {
             is_hidden: Mutex::new(false),
         })
+        .manage(shortcuts::RegisteredShortcuts::default())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_http::init())
-        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_keychain::init())
         .plugin(tauri_plugin_shell::init()) // Add shell plugin
         .invoke_handler(tauri::generate_handler![
@@ -83,8 +83,10 @@ pub fn run() {
             get_app_version,
             window::set_window_height,
             capture_to_base64,
-            shortcuts::get_shortcuts,
             shortcuts::check_shortcuts_registered,
+            shortcuts::get_registered_shortcuts,
+            shortcuts::update_shortcuts,
+            shortcuts::validate_shortcut_key,
             shortcuts::set_app_icon_visibility,
             shortcuts::set_always_on_top,
             activate::activate_license_api,
@@ -116,7 +118,37 @@ pub fn run() {
             // Setup main window positioning
             window::setup_main_window(app).expect("Failed to setup main window");
 
-            // Setup global shortcuts
+            // Initialize global shortcut plugin with centralized handler
+            app.handle().plugin(
+                tauri_plugin_global_shortcut::Builder::new()
+                    .with_handler(move |app, shortcut, event| {
+                        use tauri_plugin_global_shortcut::{Shortcut, ShortcutState};
+                        
+                        if event.state() == ShortcutState::Pressed {
+                            // Get registered shortcuts and find matching action
+                            let state = app.state::<shortcuts::RegisteredShortcuts>();
+                            let registered = match state.shortcuts.lock() {
+                                Ok(guard) => guard,
+                                Err(poisoned) => {
+                                    eprintln!("Mutex poisoned in handler, recovering...");
+                                    poisoned.into_inner()
+                                }
+                            };
+                            
+                            // Find which action this shortcut maps to
+                            for (action_id, shortcut_str) in registered.iter() {
+                                if let Ok(s) = shortcut_str.parse::<Shortcut>() {
+                                    if &s == shortcut {
+                                        eprintln!("Shortcut triggered: {} ({})", action_id, shortcut_str);
+                                        shortcuts::handle_shortcut_action(&app, action_id);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    })
+                    .build(),
+            ).expect("Failed to initialize global shortcut plugin");
             if let Err(e) = shortcuts::setup_global_shortcuts(app.handle()) {
                 eprintln!("Failed to setup global shortcuts: {}", e);
             }

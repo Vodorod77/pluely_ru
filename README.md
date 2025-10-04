@@ -76,16 +76,15 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 ## **Keyboard Shortcuts**
 
-Pluely comes with powerful global keyboard shortcuts that work from anywhere on your system:
+Pluely features a comprehensive, **fully customizable** keyboard shortcuts system.
 
 <div align="center">
-
-| **Shortcut**      | **macOS**         | **Windows/Linux**  | **Function**                                             |
-| :---------------- | :---------------- | :----------------- | :------------------------------------------------------- |
-| **Toggle Window** | `Cmd + \`         | `Ctrl + \`         | Show/Hide the main window + app icon (based on settings) |
-| **Voice Input**   | `Cmd + Shift + A` | `Ctrl + Shift + A` | Start voice recording                                    |
-| **Screenshot**    | `Cmd + Shift + S` | `Ctrl + Shift + S` | Capture screenshot                                       |
-| **System Audio**  | `Cmd + Shift + M` | `Ctrl + Shift + M` | Toggle system audio capture                              |
+| **Shortcut**      | **macOS (Default)** | **Windows/Linux (Default)** | **Function**                                             |
+| :---------------- | :------------------ | :-------------------------- | :------------------------------------------------------- |
+| **Toggle Window** | `Cmd + \`           | `Ctrl + \`                  | Show/Hide the main window + app icon (based on settings) |
+| **System Audio**  | `Cmd + Shift + M`   | `Ctrl + Shift + M`          | Toggle system audio capture                              |
+| **Voice Input**   | `Cmd + Shift + A`   | `Ctrl + Shift + A`          | Start voice recording                                    |
+| **Screenshot**    | `Cmd + Shift + S`   | `Ctrl + Shift + S`          | Capture screenshot                                       |
 
 </div>
 

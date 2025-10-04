@@ -240,7 +240,7 @@ async fn run_continuous_capture(
     let mut stream = stream;
     let max_samples = (sr as u64 * config.max_recording_duration_secs) as usize;
     
-    // Pre-allocate buffer to prevent reallocations (CRITICAL FIX)
+    // Pre-allocate buffer to prevent reallocations
     let mut audio_buffer = Vec::with_capacity(max_samples);
     let start_time = Instant::now();
     let max_duration = Duration::from_secs(config.max_recording_duration_secs);
@@ -506,7 +506,7 @@ pub async fn get_vad_config(app: AppHandle) -> Result<VadConfig, String> {
 
 #[tauri::command]
 pub async fn update_vad_config(app: AppHandle, config: VadConfig) -> Result<(), String> {    
-    // Validate config (SECURITY FIX)
+    // Validate config
     if config.sensitivity_rms < 0.0 || config.sensitivity_rms > 1.0 {
         return Err("Invalid sensitivity_rms: must be 0.0-1.0".to_string());
     }

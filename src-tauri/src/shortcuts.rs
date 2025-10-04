@@ -1,94 +1,76 @@
+use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::collections::HashMap;
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, Runtime};
-use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
+use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
+
 // State for window visibility
 pub struct WindowVisibility {
     #[allow(dead_code)]
     pub is_hidden: Mutex<bool>,
 }
 
-// Default shortcuts
-#[cfg(target_os = "macos")]
-const DEFAULT_TOGGLE_SHORTCUT: &str = "cmd+backslash";
-#[cfg(not(target_os = "macos"))]
-const DEFAULT_TOGGLE_SHORTCUT: &str = "ctrl+backslash";
+// State for registered shortcuts
+pub struct RegisteredShortcuts {
+    pub shortcuts: Mutex<HashMap<String, String>>, // action_id -> shortcut_key
+}
 
-#[cfg(target_os = "macos")]
-const DEFAULT_AUDIO_SHORTCUT: &str = "cmd+shift+a";
-#[cfg(not(target_os = "macos"))]
-const DEFAULT_AUDIO_SHORTCUT: &str = "ctrl+shift+a";
+impl Default for RegisteredShortcuts {
+    fn default() -> Self {
+        RegisteredShortcuts {
+            shortcuts: Mutex::new(HashMap::new()),
+        }
+    }
+}
 
-#[cfg(target_os = "macos")]
-const DEFAULT_SCREENSHOT_SHORTCUT: &str = "cmd+shift+s";
-#[cfg(not(target_os = "macos"))]
-const DEFAULT_SCREENSHOT_SHORTCUT: &str = "ctrl+shift+s";
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ShortcutBinding {
+    pub action: String,
+    pub key: String,
+    pub enabled: bool,
+}
 
-#[cfg(target_os = "macos")]
-const DEFAULT_SYSTEM_AUDIO_SHORTCUT: &str = "cmd+shift+m";
-#[cfg(not(target_os = "macos"))]
-const DEFAULT_SYSTEM_AUDIO_SHORTCUT: &str = "ctrl+shift+m";
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ShortcutsConfig {
+    pub bindings: HashMap<String, ShortcutBinding>,
+}
+
 
 /// Initialize global shortcuts for the application
 pub fn setup_global_shortcuts<R: Runtime>(
     app: &AppHandle<R>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let toggle_shortcut = DEFAULT_TOGGLE_SHORTCUT.parse::<Shortcut>()?;
-    let audio_shortcut = DEFAULT_AUDIO_SHORTCUT.parse::<Shortcut>()?;
-    let screenshot_shortcut = DEFAULT_SCREENSHOT_SHORTCUT.parse::<Shortcut>()?;
-    let system_audio_shortcut = DEFAULT_SYSTEM_AUDIO_SHORTCUT.parse::<Shortcut>()?;
-
-    // Register global shortcuts
-    app.global_shortcut()
-        .on_shortcut(toggle_shortcut, move |app, _shortcut, event| {
-            if event.state() == ShortcutState::Pressed {
-                handle_toggle_window(&app);
-            }
-        })
-        .map_err(|e| format!("Failed to register toggle shortcut: {}", e))?;
-
-    let app_handle = app.clone();
-    app.global_shortcut()
-        .on_shortcut(audio_shortcut, move |_app, _shortcut, event| {
-            if event.state() == ShortcutState::Pressed {
-                handle_audio_shortcut(&app_handle);
-            }
-        })
-        .map_err(|e| format!("Failed to register audio shortcut: {}", e))?;
-
-    let app_handle = app.clone();
-    app.global_shortcut()
-        .on_shortcut(screenshot_shortcut, move |_app, _shortcut, event| {
-            if event.state() == ShortcutState::Pressed {
-                handle_screenshot_shortcut(&app_handle);
-            }
-        })
-        .map_err(|e| format!("Failed to register screenshot shortcut: {}", e))?;
-
-    let app_handle = app.clone();
-    app.global_shortcut()
-        .on_shortcut(system_audio_shortcut, move |_app, _shortcut, event| {
-            if event.state() == ShortcutState::Pressed {
-                handle_system_audio_shortcut(&app_handle);
-            }
-        })
-        .map_err(|e| format!("Failed to register system audio shortcut: {}", e))?;
-
-    // Register all shortcuts
-    app.global_shortcut()
-        .register(toggle_shortcut)
-        .map_err(|e| format!("Failed to register toggle shortcut: {}", e))?;
-    app.global_shortcut()
-        .register(audio_shortcut)
-        .map_err(|e| format!("Failed to register audio shortcut: {}", e))?;
-    app.global_shortcut()
-        .register(screenshot_shortcut)
-        .map_err(|e| format!("Failed to register screenshot shortcut: {}", e))?;
-    app.global_shortcut()
-        .register(system_audio_shortcut)
-        .map_err(|e| format!("Failed to register system audio shortcut: {}", e))?;
-
+    // Let the frontend initialize from localStorage
+    let state = app.state::<RegisteredShortcuts>();
+    let _registered = match state.shortcuts.lock() {
+        Ok(guard) => guard,
+        Err(poisoned) => {
+            eprintln!("Mutex poisoned in setup, recovering...");
+            poisoned.into_inner()
+        }
+    };
+    eprintln!("Global shortcuts state initialized, waiting for frontend config");
+    
     Ok(())
+}
+
+/// Handle shortcut action based on action_id
+pub fn handle_shortcut_action<R: Runtime>(app: &AppHandle<R>, action_id: &str) {
+    match action_id {
+        "toggle_window" => handle_toggle_window(app),
+        "audio_recording" => handle_audio_shortcut(app),
+        "screenshot" => handle_screenshot_shortcut(app),
+        "system_audio" => handle_system_audio_shortcut(app),
+        custom_action => {
+            // Emit custom action event for frontend to handle
+            if let Some(window) = app.get_webview_window("main") {
+                if let Err(e) = window.emit("custom-shortcut-triggered", json!({ "action": custom_action })) {
+                    eprintln!("Failed to emit custom shortcut event: {}", e);
+                }
+            }
+        }
+    }
 }
 
 /// Handle app toggle (hide/show) with input focus and app icon management
@@ -159,7 +141,7 @@ fn handle_audio_shortcut<R: Runtime>(app: &AppHandle<R>) {
     }
 }
 
-/// Handle screenshot shortcut - mode will be determined by user settings in frontend
+/// Handle screenshot shortcut
 fn handle_screenshot_shortcut<R: Runtime>(app: &AppHandle<R>) {
     if let Some(window) = app.get_webview_window("main") {
         // Emit event to trigger screenshot - frontend will determine auto/manual mode
@@ -190,41 +172,135 @@ fn handle_system_audio_shortcut<R: Runtime>(app: &AppHandle<R>) {
     }
 }
 
-/// Tauri command to get current shortcuts
+/// Tauri command to get all registered shortcuts
 #[tauri::command]
-pub fn get_shortcuts() -> serde_json::Value {
-    json!({
-        "toggle": DEFAULT_TOGGLE_SHORTCUT,
-        "audio": DEFAULT_AUDIO_SHORTCUT,
-        "screenshot": DEFAULT_SCREENSHOT_SHORTCUT,
-        "systemAudio": DEFAULT_SYSTEM_AUDIO_SHORTCUT
-    })
+pub fn get_registered_shortcuts<R: Runtime>(app: AppHandle<R>) -> Result<HashMap<String, String>, String> {
+    let state = app.state::<RegisteredShortcuts>();
+    let registered = match state.shortcuts.lock() {
+        Ok(guard) => guard,
+        Err(poisoned) => {
+            eprintln!("Mutex poisoned in get_registered_shortcuts, recovering...");
+            poisoned.into_inner()
+        }
+    };
+    Ok(registered.clone())
+}
+
+/// Tauri command to update shortcuts dynamically
+#[tauri::command]
+pub fn update_shortcuts<R: Runtime>(
+    app: AppHandle<R>,
+    config: ShortcutsConfig,
+) -> Result<(), String> {
+    eprintln!("Updating shortcuts with {} bindings", config.bindings.len());
+    
+    let mut shortcuts_to_register = Vec::new();
+    
+    for (action_id, binding) in &config.bindings {
+        if binding.enabled && !binding.key.is_empty() {
+            // Validate before adding
+            match binding.key.parse::<Shortcut>() {
+                Ok(shortcut) => {
+                    shortcuts_to_register.push((action_id.clone(), binding.key.clone(), shortcut));
+                }
+                Err(e) => {
+                    eprintln!("Invalid shortcut '{}' for action '{}': {}", binding.key, action_id, e);
+                    return Err(format!("Invalid shortcut '{}' for action '{}': {}", binding.key, action_id, e));
+                }
+            }
+        }
+    }
+    
+    // First, unregister all existing shortcuts
+    unregister_all_shortcuts(&app)?;
+    
+    // Now register all new shortcuts
+    let mut successfully_registered = HashMap::new();
+    
+    for (action_id, shortcut_str, shortcut) in shortcuts_to_register {
+        match app.global_shortcut().register(shortcut.clone()) {
+            Ok(_) => {
+                eprintln!("Registered shortcut: {} -> {}", action_id, shortcut_str);
+                successfully_registered.insert(action_id, shortcut_str);
+            }
+            Err(e) => {
+                eprintln!("Failed to register {} shortcut: {}", action_id, e);
+            }
+        }
+    }
+    
+    // Update state with successfully registered shortcuts
+    {
+        let state = app.state::<RegisteredShortcuts>();
+        let mut registered = match state.shortcuts.lock() {
+            Ok(guard) => guard,
+            Err(poisoned) => {
+                eprintln!("Mutex poisoned in update_shortcuts, recovering...");
+                poisoned.into_inner()
+            }
+        };
+        
+        registered.clear();
+        registered.extend(successfully_registered);
+    }
+    
+    Ok(())
+}
+
+/// Unregister all currently registered shortcuts
+fn unregister_all_shortcuts<R: Runtime>(app: &AppHandle<R>) -> Result<(), String> {
+    let state = app.state::<RegisteredShortcuts>();
+    let registered = match state.shortcuts.lock() {
+        Ok(guard) => guard,
+        Err(poisoned) => {
+            eprintln!("Mutex poisoned in unregister_all_shortcuts, recovering...");
+            poisoned.into_inner()
+        }
+    };
+    
+    for (action_id, shortcut_str) in registered.iter() {
+        if let Ok(shortcut) = shortcut_str.parse::<Shortcut>() {
+            match app.global_shortcut().unregister(shortcut) {
+                Ok(_) => {
+                    eprintln!("Unregistered shortcut: {} -> {}", action_id, shortcut_str);
+                }
+                Err(e) => {
+                    eprintln!("Failed to unregister shortcut {}: {}", shortcut_str, e);
+                }
+            }
+        }
+    }
+    
+    Ok(())
 }
 
 /// Tauri command to check if shortcuts are registered
 #[tauri::command]
 pub fn check_shortcuts_registered<R: Runtime>(app: AppHandle<R>) -> Result<bool, String> {
-    let shortcuts = [
-        DEFAULT_TOGGLE_SHORTCUT,
-        DEFAULT_AUDIO_SHORTCUT,
-        DEFAULT_SCREENSHOT_SHORTCUT,
-        DEFAULT_SYSTEM_AUDIO_SHORTCUT,
-    ];
+    let state = app.state::<RegisteredShortcuts>();
+    let registered = match state.shortcuts.lock() {
+        Ok(guard) => guard,
+        Err(poisoned) => {
+            eprintln!("Mutex poisoned in check_shortcuts_registered, recovering...");
+            poisoned.into_inner()
+        }
+    };
+    Ok(!registered.is_empty())
+}
 
-    for shortcut_str in shortcuts {
-        if let Ok(shortcut) = shortcut_str.parse::<Shortcut>() {
-            let registered = app.global_shortcut().is_registered(shortcut);
-            if !registered {
-                return Ok(false);
-            }
-        } else {
-            return Err(format!("Failed to parse shortcut: {}", shortcut_str));
+/// Tauri command to validate shortcut key
+#[tauri::command]
+pub fn validate_shortcut_key(key: String) -> Result<bool, String> {
+    match key.parse::<Shortcut>() {
+        Ok(_) => Ok(true),
+        Err(e) => {
+            eprintln!("Invalid shortcut '{}': {}", key, e);
+            Ok(false)
         }
     }
-
-    Ok(true)
 }
-// Tauri command to set app icon visibility in dock/taskbar
+
+/// Tauri command to set app icon visibility in dock/taskbar
 #[tauri::command]
 pub fn set_app_icon_visibility<R: Runtime>(app: AppHandle<R>, visible: bool) -> Result<(), String> {
 
