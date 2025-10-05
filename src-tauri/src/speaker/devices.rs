@@ -84,72 +84,74 @@ pub fn list_audio_output_devices() -> Result<Vec<AudioDeviceInfo>, String> {
 
 #[cfg(target_os = "linux")]
 pub fn list_audio_output_devices() -> Result<Vec<AudioDeviceInfo>, String> {
-    use libpulse_binding as pulse;
-    use pulse::context::{Context, introspect::SinkInfo};
-    use pulse::mainloop::standard::{Mainloop, IterateResult};
-    use std::sync::{Arc, Mutex};
-    use std::rc::Rc;
-    use std::cell::RefCell;
+    let mut devices = Vec::new();
+
+    // use libpulse_binding as pulse;
+    // use pulse::context::{Context, introspect::SinkInfo};
+    // use pulse::mainloop::standard::{Mainloop, IterateResult};
+    // use std::sync::{Arc, Mutex};
+    // use std::rc::Rc;
+    // use std::cell::RefCell;
         
-    let devices = Arc::new(Mutex::new(Vec::new()));
-    let devices_clone = devices.clone();
+    // let devices = Arc::new(Mutex::new(Vec::new()));
+    // let devices_clone = devices.clone();
     
-    // Create mainloop
-    let mut mainloop = Mainloop::new()
-        .ok_or("Failed to create mainloop")?;
+    // // Create mainloop
+    // let mut mainloop = Mainloop::new()
+    //     .ok_or("Failed to create mainloop")?;
     
-    let mut context = Context::new(&mainloop, "pluely-device-list")
-        .ok_or("Failed to create context")?;
+    // let mut context = Context::new(&mainloop, "pluely-device-list")
+    //     .ok_or("Failed to create context")?;
     
-    // Connect to PulseAudio server
-    context.connect(None, pulse::context::FlagSet::NOFLAGS, None)
-        .map_err(|e| format!("Failed to connect to PulseAudio: {}", e))?;
+    // // Connect to PulseAudio server
+    // context.connect(None, pulse::context::FlagSet::NOFLAGS, None)
+    //     .map_err(|e| format!("Failed to connect to PulseAudio: {}", e))?;
     
-    // Wait for connection
-    loop {
-        match mainloop.iterate(false) {
-            IterateResult::Quit(_) | IterateResult::Err(_) => {
-                return Err("Mainloop error".to_string());
-            }
-            IterateResult::Success(_) => {}
-        }
+    // // Wait for connection
+    // loop {
+    //     match mainloop.iterate(false) {
+    //         IterateResult::Quit(_) | IterateResult::Err(_) => {
+    //             return Err("Mainloop error".to_string());
+    //         }
+    //         IterateResult::Success(_) => {}
+    //     }
         
-        match context.get_state() {
-            pulse::context::State::Ready => break,
-            pulse::context::State::Failed | pulse::context::State::Terminated => {
-                return Err("Connection failed".to_string());
-            }
-            _ => {}
-        }
-    }
+    //     match context.get_state() {
+    //         pulse::context::State::Ready => break,
+    //         pulse::context::State::Failed | pulse::context::State::Terminated => {
+    //             return Err("Connection failed".to_string());
+    //         }
+    //         _ => {}
+    //     }
+    // }
     
-    // Query sinks (output devices)
-    let introspector = context.introspect();
-    let op = introspector.get_sink_info_list(move |sink_list| {
-        for sink in sink_list {
-            let mut devices = devices_clone.lock().unwrap();
-            devices.push(AudioDeviceInfo {
-                id: sink.name.as_ref().map(|n| n.to_string()).unwrap_or_default(),
-                name: sink.description.as_ref().map(|d| d.to_string()).unwrap_or_else(|| "Unknown".to_string()),
-                is_default: false, // Would need to check server info for default
-                sample_rate: Some(sink.sample_spec.rate),
-                channels: Some(sink.sample_spec.channels as u16),
-            });
-        }
-    });
+    // // Query sinks (output devices)
+    // let introspector = context.introspect();
+    // let op = introspector.get_sink_info_list(move |sink_list| {
+    //     for sink in sink_list {
+    //         let mut devices = devices_clone.lock().unwrap();
+    //         devices.push(AudioDeviceInfo {
+    //             id: sink.name.as_ref().map(|n| n.to_string()).unwrap_or_default(),
+    //             name: sink.description.as_ref().map(|d| d.to_string()).unwrap_or_else(|| "Unknown".to_string()),
+    //             is_default: false, // Would need to check server info for default
+    //             sample_rate: Some(sink.sample_spec.rate),
+    //             channels: Some(sink.sample_spec.channels as u16),
+    //         });
+    //     }
+    // });
     
-    // Wait for operation to complete
-    while op.get_state() == pulse::operation::State::Running {
-        match mainloop.iterate(false) {
-            IterateResult::Quit(_) | IterateResult::Err(_) => {
-                return Err("Operation error".to_string());
-            }
-            IterateResult::Success(_) => {}
-        }
-    }
+    // // Wait for operation to complete
+    // while op.get_state() == pulse::operation::State::Running {
+    //     match mainloop.iterate(false) {
+    //         IterateResult::Quit(_) | IterateResult::Err(_) => {
+    //             return Err("Operation error".to_string());
+    //         }
+    //         IterateResult::Success(_) => {}
+    //     }
+    // }
     
-    let result = devices.lock().unwrap().clone();
-    Ok(result)
+    // let result = devices.lock().unwrap().clone();
+    Ok(devices)
 }
 
 #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]

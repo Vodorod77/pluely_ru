@@ -53,6 +53,7 @@ jobs:
           echo "API_ACCESS_KEY=${{ secrets.API_ACCESS_KEY }}" > src-tauri/.env
           echo "PAYMENT_ENDPOINT=${{ secrets.PAYMENT_ENDPOINT }}" >> src-tauri/.env
           echo "APP_ENDPOINT=${{ secrets.APP_ENDPOINT }}" >> src-tauri/.env
+          echo "POSTHOG_API_KEY=${{ secrets.POSTHOG_API_KEY }}" >> src-tauri/.env
 
       - name: Install frontend deps
         run: npm ci
@@ -66,6 +67,7 @@ jobs:
           API_ACCESS_KEY: ${{ secrets.API_ACCESS_KEY }}
           PAYMENT_ENDPOINT: ${{ secrets.PAYMENT_ENDPOINT }}
           APP_ENDPOINT: ${{ secrets.APP_ENDPOINT }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
         with:
           tagName: app-v__VERSION__
           releaseName: "Pluely v__VERSION__"
