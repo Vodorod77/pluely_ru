@@ -97,15 +97,23 @@ pub async fn start_system_audio_capture(
     // Emit capture started event
     let _ = app_clone.emit("capture-started", sr);
     
+    let state_clone = app.state::<crate::AudioState>();
     let task = tokio::spawn(async move {
         if vad_config.enabled {
-            run_vad_capture(app_clone, stream, sr, vad_config).await;
+            run_vad_capture(app_clone.clone(), stream, sr, vad_config).await;
         } else {
-            run_continuous_capture(app_clone, stream, sr, vad_config).await;
+            run_continuous_capture(app_clone.clone(), stream, sr, vad_config).await;
+        }
+        
+        let state = app_clone.state::<crate::AudioState>();
+        {
+            if let Ok(mut guard) = state.stream_task.lock() {
+                *guard = None;
+            };
         }
     });
 
-    *state.stream_task.lock()
+    *state_clone.stream_task.lock()
         .map_err(|e| format!("Failed to store task: {}", e))? = Some(task);
     
     Ok(())
@@ -258,12 +266,21 @@ async fn run_continuous_capture(
     // Emit recording started
     let _ = app.emit("continuous-recording-start", config.max_recording_duration_secs);
 
-    // Accumulate audio - check flag frequently
+    // Accumulate audio - check stop flag on EVERY sample for immediate response
     loop {
+        // Check stop flag FIRST on every iteration for immediate stopping
+        if stop_flag.load(Ordering::Acquire) {
+            break;
+        }
+        
         tokio::select! {
             sample_opt = stream.next() => {
                 match sample_opt {
                     Some(sample) => {
+                        if stop_flag.load(Ordering::Acquire) {
+                            break;
+                        }
+                        
                         audio_buffer.push(sample);
                         
                         let elapsed = start_time.elapsed();
@@ -289,11 +306,7 @@ async fn run_continuous_capture(
                     }
                 }
             }
-            _ = tokio::time::sleep(tokio::time::Duration::from_millis(50)) => {
-                // Check manual stop flag MORE FREQUENTLY (50ms instead of 100ms)
-                if stop_flag.load(Ordering::Acquire) {
-                    break;
-                }
+            _ = tokio::time::sleep(tokio::time::Duration::from_millis(10)) => {
             }
         }
     }
@@ -428,8 +441,7 @@ pub async fn stop_system_audio_capture(app: AppHandle) -> Result<(), String> {
 pub async fn manual_stop_continuous(app: AppHandle) -> Result<(), String> {
     let _ = app.emit("manual-stop-continuous", ());
     
-    // Give backend time to process stop
-    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+    tokio::time::sleep(tokio::time::Duration::from_millis(20)).await;
     
     Ok(())
 }

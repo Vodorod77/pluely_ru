@@ -83,6 +83,8 @@ export function useSystemAudio() {
   const [vadConfig, setVadConfig] = useState<VadConfig>(DEFAULT_VAD_CONFIG);
   const [recordingProgress, setRecordingProgress] = useState<number>(0); // For continuous mode
   const [isContinuousMode, setIsContinuousMode] = useState<boolean>(false);
+  const [isRecordingInContinuousMode, setIsRecordingInContinuousMode] =
+    useState<boolean>(false);
 
   const [conversation, setConversation] = useState<ChatConversation>({
     id: "",
@@ -106,6 +108,7 @@ export function useSystemAudio() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isSavingRef = useRef<boolean>(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Load context settings and VAD config from localStorage on mount
   useEffect(() => {
@@ -171,13 +174,13 @@ export function useSystemAudio() {
         // Recording started
         startUnlisten = await listen("continuous-recording-start", () => {
           setRecordingProgress(0);
+          setIsRecordingInContinuousMode(true);
         });
 
         // Recording stopped
         stopUnlisten = await listen("continuous-recording-stopped", () => {
           setRecordingProgress(0);
-          setIsProcessing(false); // Clear processing state
-          setIsContinuousMode(false);
+          setIsRecordingInContinuousMode(false);
         });
 
         // Audio encoding errors
@@ -187,6 +190,7 @@ export function useSystemAudio() {
           setError(`Failed to process audio: ${errorMsg}`);
           setIsProcessing(false);
           setIsAIProcessing(false);
+          setIsRecordingInContinuousMode(false);
         });
 
         // Speech discarded (too short)
@@ -397,6 +401,40 @@ export function useSystemAudio() {
     await processWithAI(action, effectiveSystemPrompt, previousMessages);
   };
 
+  // Start continuous recording manually
+  const startContinuousRecording = useCallback(async () => {
+    try {
+      setRecordingProgress(0);
+      setError("");
+
+      // Start a new continuous recording session
+      await invoke<string>("start_system_audio_capture", {
+        vadConfig: vadConfig,
+      });
+    } catch (err) {
+      console.error("Failed to start continuous recording:", err);
+      setError(`Failed to start recording: ${err}`);
+    }
+  }, [vadConfig]);
+
+  // Ignore current recording (stop without transcription)
+  const ignoreContinuousRecording = useCallback(async () => {
+    try {
+      if (!isContinuousMode || !isRecordingInContinuousMode) return;
+
+      // Stop the capture without processing
+      await invoke<string>("stop_system_audio_capture");
+
+      // Reset states
+      setRecordingProgress(0);
+      setIsProcessing(false);
+      setIsRecordingInContinuousMode(false);
+    } catch (err) {
+      console.error("Failed to ignore recording:", err);
+      setError(`Failed to ignore recording: ${err}`);
+    }
+  }, [isContinuousMode, isRecordingInContinuousMode]);
+
   // AI Processing function
   const processWithAI = useCallback(
     async (
@@ -474,6 +512,7 @@ export function useSystemAudio() {
         setError("Failed to get AI response");
       } finally {
         setIsAIProcessing(false);
+        // No auto-restart - user manually controls when to start next recording
       }
     },
     [selectedAIProvider, allAiProviders, conversation.messages]
@@ -490,19 +529,9 @@ export function useSystemAudio() {
         return;
       }
 
-      // Stop any existing capture
-      await invoke<string>("stop_system_audio_capture");
+      const isContinuous = !vadConfig.enabled;
 
-      // Start capture with VAD config
-      await invoke<string>("start_system_audio_capture", {
-        vadConfig: vadConfig,
-      });
-
-      setCapturing(true);
-      setIsPopoverOpen(true);
-      setIsContinuousMode(!vadConfig.enabled);
-      setRecordingProgress(0);
-
+      // Set up conversation
       const conversationId = generateConversationId("sysaudio");
       setConversation({
         id: conversationId,
@@ -510,6 +539,26 @@ export function useSystemAudio() {
         messages: [],
         createdAt: 0,
         updatedAt: 0,
+      });
+
+      setCapturing(true);
+      setIsPopoverOpen(true);
+      setIsContinuousMode(isContinuous);
+      setRecordingProgress(0);
+
+      // If continuous mode
+      if (isContinuous) {
+        setIsRecordingInContinuousMode(false);
+        return;
+      }
+
+      // VAD mode: Start recording immediately
+      // Stop any existing capture
+      await invoke<string>("stop_system_audio_capture");
+
+      // Start capture with VAD config
+      await invoke<string>("start_system_audio_capture", {
+        vadConfig: vadConfig,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
@@ -534,6 +583,7 @@ export function useSystemAudio() {
       setIsProcessing(false);
       setIsAIProcessing(false);
       setIsContinuousMode(false);
+      setIsRecordingInContinuousMode(false);
       setRecordingProgress(0);
       setLastTranscription("");
       setLastAIResponse("");
@@ -705,6 +755,92 @@ export function useSystemAudio() {
     }
   }, []);
 
+  useEffect(() => {
+    if (capturing) {
+      setIsContinuousMode(!vadConfig.enabled);
+
+      if (!vadConfig.enabled) {
+        setIsRecordingInContinuousMode(false);
+      }
+    }
+  }, [vadConfig.enabled, capturing]);
+
+  // Keyboard arrow key support for scrolling (local shortcut)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isPopoverOpen) return;
+
+      const scrollElement = scrollAreaRef.current?.querySelector(
+        "[data-radix-scroll-area-viewport]"
+      ) as HTMLElement;
+
+      if (!scrollElement) return;
+
+      const scrollAmount = 100; // pixels to scroll
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        scrollElement.scrollBy({ top: scrollAmount, behavior: "smooth" });
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        scrollElement.scrollBy({ top: -scrollAmount, behavior: "smooth" });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isPopoverOpen]);
+
+  // Keyboard shortcuts for continuous mode recording (local shortcuts)
+  useEffect(() => {
+    const handleRecordingShortcuts = (e: KeyboardEvent) => {
+      if (!isPopoverOpen || !isContinuousMode) return;
+      if (isProcessing || isAIProcessing) return;
+
+      // Enter: Start recording (when not recording) or Stop & Send (when recording)
+      if (e.key === "Enter" && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        if (!isRecordingInContinuousMode) {
+          startContinuousRecording();
+        } else {
+          manualStopAndSend();
+        }
+      }
+
+      // Escape: Ignore recording (when recording)
+      if (e.key === "Escape" && isRecordingInContinuousMode) {
+        e.preventDefault();
+        ignoreContinuousRecording();
+      }
+
+      // Space: Start recording (when not recording) - only if not typing in input
+      if (
+        e.key === " " &&
+        !isRecordingInContinuousMode &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !(e.target instanceof HTMLInputElement) &&
+        !(e.target instanceof HTMLTextAreaElement)
+      ) {
+        e.preventDefault();
+        startContinuousRecording();
+      }
+    };
+
+    window.addEventListener("keydown", handleRecordingShortcuts);
+    return () =>
+      window.removeEventListener("keydown", handleRecordingShortcuts);
+  }, [
+    isPopoverOpen,
+    isContinuousMode,
+    isRecordingInContinuousMode,
+    isProcessing,
+    isAIProcessing,
+    startContinuousRecording,
+    manualStopAndSend,
+    ignoreContinuousRecording,
+  ]);
+
   return {
     capturing,
     isProcessing,
@@ -744,7 +880,12 @@ export function useSystemAudio() {
     updateVadConfiguration,
     // Continuous recording
     isContinuousMode,
+    isRecordingInContinuousMode,
     recordingProgress,
     manualStopAndSend,
+    startContinuousRecording,
+    ignoreContinuousRecording,
+    // Scroll area ref for keyboard navigation
+    scrollAreaRef,
   };
 }
