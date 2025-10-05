@@ -203,9 +203,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       // Load license and data
       await getActiveLicenseStatus();
 
-      // Load data
-      loadData();
-
       // Track app start
       try {
         const appVersion = await invoke<string>("get_app_version");
@@ -217,7 +214,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         console.debug("Failed to track app start:", error);
       }
     };
-
+    // Load data
+    loadData();
     initializeApp();
   }, []);
 

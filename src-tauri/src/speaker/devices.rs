@@ -60,24 +60,24 @@ pub fn list_audio_output_devices() -> Result<Vec<AudioDeviceInfo>, String> {
     let mut devices = Vec::new();
     
     // Get default device
-    let default_device = get_default_device(&Direction::Render)
-        .map_err(|e| format!("Failed to get default device: {}", e))?;
-    let default_name = default_device.get_friendlyname()
-        .unwrap_or_else(|_| "Default".to_string());
+    // let default_device = get_default_device(&Direction::Render)
+    //     .map_err(|e| format!("Failed to get default device: {}", e))?;
+    // let default_name = default_device.get_friendlyname()
+    //     .unwrap_or_else(|_| "Default".to_string());
     
     // Get all render (output) devices
-    let device_names = get_device_names(&Direction::Render)
-        .map_err(|e| format!("Failed to list devices: {}", e))?;
+    // let device_names = get_device_names(&Direction::Render)
+    //     .map_err(|e| format!("Failed to list devices: {}", e))?;
     
-    for (idx, name) in device_names.iter().enumerate() {
-        devices.push(AudioDeviceInfo {
-            id: format!("win_out_{}", idx),
-            name: name.clone(),
-            is_default: name == &default_name,
-            sample_rate: Some(44100), // Standard rate
-            channels: Some(2),
-        });
-    }
+    // for (idx, name) in device_names.iter().enumerate() {
+    //     devices.push(AudioDeviceInfo {
+    //         id: format!("win_out_{}", idx),
+    //         name: name.clone(),
+    //         is_default: name == &default_name,
+    //         sample_rate: Some(44100), // Standard rate
+    //         channels: Some(2),
+    //     });
+    // }
     
     Ok(devices)
 }
