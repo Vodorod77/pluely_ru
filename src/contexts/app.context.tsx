@@ -4,7 +4,7 @@ import {
   SPEECH_TO_TEXT_PROVIDERS,
   STORAGE_KEYS,
 } from "@/config";
-import { safeLocalStorage } from "@/lib";
+import { safeLocalStorage, trackAppStart } from "@/lib";
 import {
   getCustomizableState,
   updateAppIconVisibility,
@@ -199,8 +199,26 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   // Load data on mount
   useEffect(() => {
-    getActiveLicenseStatus();
-    loadData();
+    const initializeApp = async () => {
+      // Load license and data
+      await getActiveLicenseStatus();
+
+      // Load data
+      loadData();
+
+      // Track app start
+      try {
+        const appVersion = await invoke<string>("get_app_version");
+        const storage = await invoke<{
+          instance_id: string;
+        }>("secure_storage_get");
+        await trackAppStart(appVersion, storage.instance_id || "");
+      } catch (error) {
+        console.debug("Failed to track app start:", error);
+      }
+    };
+
+    initializeApp();
   }, []);
 
   // Handle customizable settings on state changes

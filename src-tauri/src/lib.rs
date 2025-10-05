@@ -10,6 +10,7 @@ use image::{ColorType, ImageEncoder};
 use tauri_plugin_http;
 #[cfg(target_os = "macos")]
 use tauri_plugin_macos_permissions;
+use tauri_plugin_posthog::{init as posthog_init, PostHogConfig, PostHogOptions};
 use xcap::Monitor;
 use tauri::Manager;
 use std::sync::{Arc, Mutex};
@@ -62,6 +63,10 @@ fn capture_to_base64() -> Result<String, String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Get PostHog API key
+    let posthog_api_key = option_env!("POSTHOG_API_KEY")
+        .unwrap_or("")
+        .to_string();
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_sql::Builder::default()
@@ -78,6 +83,19 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_keychain::init())
         .plugin(tauri_plugin_shell::init()) // Add shell plugin
+        .plugin(posthog_init(PostHogConfig {
+            api_key: posthog_api_key,
+            options: Some(PostHogOptions {
+                // disable session recording
+                disable_session_recording: Some(true),
+                // disable pageview
+                capture_pageview: Some(false),
+                // disable pageleave
+                capture_pageleave: Some(false),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }))
         .invoke_handler(tauri::generate_handler![
             greet,
             get_app_version,

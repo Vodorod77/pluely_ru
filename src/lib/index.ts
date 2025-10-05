@@ -6,3 +6,4 @@ export * from "./platform-instructions";
 export * from "./database";
 export * from "./chat-constants";
 export * from "./platform";
+export * from "./analytics";
