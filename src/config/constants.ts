@@ -1,8 +1,9 @@
 // Storage keys
 export const STORAGE_KEYS = {
   THEME: "theme",
-  CHAT_HISTORY: "chat_history",
+  TRANSPARENCY: "transparency",
   SYSTEM_PROMPT: "system_prompt",
+  SELECTED_SYSTEM_PROMPT_ID: "selected_system_prompt_id",
   SCREENSHOT_CONFIG: "screenshot_config",
   // add curl_ prefix because we are using curl to store the providers
   CUSTOM_AI_PROVIDERS: "curl_custom_ai_providers",
@@ -13,6 +14,7 @@ export const STORAGE_KEYS = {
   SYSTEM_AUDIO_QUICK_ACTIONS: "system_audio_quick_actions",
   CUSTOMIZABLE: "customizable",
   PLUELY_API_ENABLED: "pluely_api_enabled",
+  SHORTCUTS: "shortcuts",
 } as const;
 
 // Max number of files that can be attached to a message

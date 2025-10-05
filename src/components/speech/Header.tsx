@@ -1,4 +1,4 @@
-import { InfoIcon, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "../ui";
 
 type Props = {
@@ -22,7 +22,7 @@ export const Header = ({
           <p className="text-xs text-muted-foreground mt-1">
             {setupRequired
               ? "Setup required to capture system audio"
-              : "Real-time AI assistant using system audio, until and unless sound is detected from your audio speakers no api calls will be made (expect responses in ~2-4 seconds)"}
+              : "Until and unless sound is detected from your speakers no api calls will be made"}
           </p>
         </div>
         {!capturing ? (
@@ -39,17 +39,6 @@ export const Header = ({
             </Button>
           </div>
         ) : null}
-      </div>
-
-      <div className="flex flex-col items-start gap-2">
-        <div className="flex flex-row items-center gap-2">
-          <InfoIcon className="w-4 h-4" />
-          <p className="text-sm text-muted-foreground">
-            Pluely audio features are being actively developed and enhanced in
-            future versions. also you can always change your Audio settings for
-            better performance.
-          </p>
-        </div>
       </div>
     </div>
   );

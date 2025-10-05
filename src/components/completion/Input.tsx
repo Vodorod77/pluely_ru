@@ -7,6 +7,7 @@ import {
   ScrollArea,
   Input as InputComponent,
   Markdown,
+  Switch,
 } from "@/components";
 import { MessageHistory } from "../history";
 import { UseCompletionReturn } from "@/types";
@@ -31,13 +32,15 @@ export const Input = ({
   scrollAreaRef,
   inputRef,
   isHidden,
+  keepEngaged,
+  setKeepEngaged,
 }: UseCompletionReturn & { isHidden: boolean }) => {
   return (
     <div className="relative flex-1">
       <Popover
         open={isPopoverOpen}
         onOpenChange={(open) => {
-          if (!open && !isLoading) {
+          if (!open && !isLoading && !keepEngaged) {
             reset();
           }
         }}
@@ -55,7 +58,7 @@ export const Input = ({
               className={`${
                 currentConversationId && conversationHistory.length > 0
                   ? "pr-14"
-                  : "pr-12"
+                  : "pr-2"
               }`}
             />
 
@@ -91,8 +94,36 @@ export const Input = ({
           sideOffset={8}
         >
           <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
-            <h3 className="font-semibold text-sm select-none">AI Response</h3>
+            <div className="flex flex-row gap-1 items-center">
+              <h3 className="font-semibold text-sm select-none">
+                {keepEngaged ? "Conversation Mode" : "AI Response"}
+              </h3>
+              <div className="text-xs text-muted-foreground/70">
+                (Use arrow keys to scroll)
+              </div>
+            </div>
             <div className="flex items-center gap-2 select-none">
+              <div className="flex flex-row items-center gap-2 mr-2">
+                <p className="text-sm">{`Toggle ${
+                  keepEngaged ? "AI response" : "conversation mode"
+                }`}</p>
+                <span className="text-xs text-muted-foreground/60 bg-muted/30 px-1 py-0 rounded border border-input/50">
+                  {navigator.platform.toLowerCase().includes("mac")
+                    ? "⌘"
+                    : "Ctrl"}{" "}
+                  + K
+                </span>
+                <Switch
+                  checked={keepEngaged}
+                  onCheckedChange={(checked) => {
+                    setKeepEngaged(checked);
+                    // Focus input after toggle
+                    setTimeout(() => {
+                      inputRef?.current?.focus();
+                    }, 100);
+                  }}
+                />
+              </div>
               <CopyButton content={response} />
               <Button
                 size="icon"
@@ -100,12 +131,22 @@ export const Input = ({
                 onClick={() => {
                   if (isLoading) {
                     cancel();
+                  } else if (keepEngaged) {
+                    // When keepEngaged is on, close everything and start new conversation
+                    setKeepEngaged(false);
+                    startNewConversation();
                   } else {
                     reset();
                   }
                 }}
                 className="cursor-pointer"
-                title={isLoading ? "Cancel loading" : "Clear conversation"}
+                title={
+                  isLoading
+                    ? "Cancel loading"
+                    : keepEngaged
+                    ? "Close and start new conversation"
+                    : "Clear conversation"
+                }
               >
                 <XIcon />
               </Button>
@@ -119,13 +160,50 @@ export const Input = ({
                   <strong>Error:</strong> {error}
                 </div>
               )}
-
-              {response && <Markdown>{response}</Markdown>}
-
               {isLoading && (
-                <div className="flex items-center gap-2 mt-4 text-muted-foreground animate-pulse select-none">
+                <div className="flex items-center gap-2 my-4 text-muted-foreground animate-pulse select-none">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span className="text-sm">Generating response...</span>
+                </div>
+              )}
+              {response && <Markdown>{response}</Markdown>}
+
+              {/* Conversation History - Separate scroll, no auto-scroll */}
+              {keepEngaged && conversationHistory.length > 1 && (
+                <div className="space-y-3 pt-3">
+                  {conversationHistory
+                    .sort((a, b) => b?.timestamp - a?.timestamp)
+                    .map((message, index) => {
+                      if (!isLoading && index === 0) {
+                        return null;
+                      }
+                      return (
+                        <div
+                          key={message.id}
+                          className={`p-3 rounded-lg text-sm ${
+                            message.role === "user"
+                              ? "bg-primary/10 border-l-4 border-primary"
+                              : "bg-muted/50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-xs font-medium text-muted-foreground uppercase">
+                              {message.role === "user" ? "You" : "AI"}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(message.timestamp).toLocaleTimeString(
+                                [],
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </span>
+                          </div>
+                          <Markdown>{message.content}</Markdown>
+                        </div>
+                      );
+                    })}
                 </div>
               )}
             </div>

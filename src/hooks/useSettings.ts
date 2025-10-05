@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useWindowResize } from "@/hooks";
 import { useApp } from "@/contexts";
-import { extractVariables, safeLocalStorage } from "@/lib";
+import {
+  extractVariables,
+  safeLocalStorage,
+  deleteAllConversations,
+} from "@/lib";
 import { STORAGE_KEYS } from "@/config";
 
 export const useSettings = () => {
@@ -86,9 +90,13 @@ export const useSettings = () => {
     }
   }, [selectedSttProvider.provider]);
 
-  const handleDeleteAllChatsConfirm = () => {
-    safeLocalStorage.removeItem(STORAGE_KEYS.CHAT_HISTORY);
-    setShowDeleteConfirmDialog(false);
+  const handleDeleteAllChatsConfirm = async () => {
+    try {
+      await deleteAllConversations();
+      setShowDeleteConfirmDialog(false);
+    } catch (error) {
+      console.error("Failed to delete all conversations:", error);
+    }
   };
 
   return {

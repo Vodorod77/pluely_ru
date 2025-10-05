@@ -1,68 +1,24 @@
-import { useEffect, useState } from "react";
-import { Card, Settings, SystemAudio, Updater } from "./components";
-import { Completion } from "./components/completion";
-import { ChatHistory } from "./components/history";
-import { AudioVisualizer } from "./components/speech/audio-visualizer";
-import { StatusIndicator } from "./components/speech/StatusIndicator";
-import { useTitles } from "./hooks";
-import { useSystemAudio } from "./hooks/useSystemAudio";
-import { listen } from "@tauri-apps/api/event";
+import {
+  Card,
+  Settings,
+  SystemAudio,
+  Updater,
+  DragButton,
+  CustomCursor,
+  Completion,
+  ChatHistory,
+  AudioVisualizer,
+  StatusIndicator,
+} from "@/components";
+import { useApp } from "@/hooks";
 
 const App = () => {
-  const systemAudio = useSystemAudio();
-  const [isHidden, setIsHidden] = useState(false);
-  // Initialize title management
-  useTitles();
-  const handleSelectConversation = (conversation: any) => {
-    // Use localStorage to communicate the selected conversation to Completion component
-    localStorage.setItem("selectedConversation", JSON.stringify(conversation));
-    // Trigger a custom event to notify Completion component
-    window.dispatchEvent(
-      new CustomEvent("conversationSelected", {
-        detail: conversation,
-      })
-    );
-  };
-
-  const handleNewConversation = () => {
-    // Clear any selected conversation and trigger new conversation
-    localStorage.removeItem("selectedConversation");
-    window.dispatchEvent(new CustomEvent("newConversation"));
-  };
-
-  // WINDOWS HIDE/SHOW TOGGLE WINDOW WORKAROUND FOR SHORTCUTS
-  useEffect(() => {
-    const unlistenPromise = listen<boolean>(
-      "toggle-window-visibility",
-      (event) => {
-        const platform = navigator.platform.toLowerCase();
-        if (typeof event.payload === "boolean" && platform.includes("win")) {
-          setIsHidden(!event.payload);
-          // find popover open and close it
-          const popover = document.getElementById("popover-content");
-          // set display to none, change data-state to closed
-          if (popover) {
-            popover.style.setProperty("display", "none", "important");
-            // update the data-state to closed
-            popover.setAttribute("data-state", "closed");
-
-            // Also find and update the popover trigger's data-state
-            const popoverTriggers = document.querySelectorAll(
-              '[data-slot="popover-trigger"]'
-            );
-            popoverTriggers.forEach((trigger) => {
-              trigger.setAttribute("data-state", "closed");
-            });
-          }
-        }
-      }
-    );
-
-    return () => {
-      unlistenPromise.then((unlisten) => unlisten());
-    };
-  }, []);
-
+  const {
+    isHidden,
+    systemAudio,
+    handleSelectConversation,
+    handleNewConversation,
+  } = useApp();
   return (
     <div
       className={`w-screen h-screen flex overflow-hidden justify-center items-start ${
@@ -105,7 +61,9 @@ const App = () => {
         </div>
 
         <Updater />
+        <DragButton />
       </Card>
+      <CustomCursor />
     </div>
   );
 };

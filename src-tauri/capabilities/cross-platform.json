@@ -16,6 +16,11 @@
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister",
     "shell:allow-open",
+    "core:window:allow-start-dragging",
+    "sql:default",
+    "sql:allow-execute",
+    "posthog:default",
+    "posthog:allow-capture",
     {
       "identifier": "http:default",
       "allow": [{ "url": "http://**" }, { "url": "https://**" }]

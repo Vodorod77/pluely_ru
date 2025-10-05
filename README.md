@@ -76,18 +76,49 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 ## **Keyboard Shortcuts**
 
-Pluely comes with powerful global keyboard shortcuts that work from anywhere on your system:
+**Fully customizable keyboard shortcuts for instant access to all features:**
 
-<div align="center">
+<img src="images/shortcuts.gif" width="800" alt="Pluely keyboard shortcuts"/>
 
-| **Shortcut**      | **macOS**         | **Windows/Linux**  | **Function**                                             |
-| :---------------- | :---------------- | :----------------- | :------------------------------------------------------- |
-| **Toggle Window** | `Cmd + \`         | `Ctrl + \`         | Show/Hide the main window + app icon (based on settings) |
-| **Voice Input**   | `Cmd + Shift + A` | `Ctrl + Shift + A` | Start voice recording                                    |
-| **Screenshot**    | `Cmd + Shift + S` | `Ctrl + Shift + S` | Capture screenshot                                       |
-| **System Audio**  | `Cmd + Shift + M` | `Ctrl + Shift + M` | Toggle system audio capture                              |
+Pluely features a comprehensive, **fully customizable** keyboard shortcuts system.
 
-</div>
+| Shortcut          | macOS (Default)   | Windows/Linux (Default) | Function                                                 |
+| ----------------- | ----------------- | ----------------------- | -------------------------------------------------------- |
+| **Toggle Window** | `Cmd + \`         | `Ctrl + \`              | Show/Hide the main window + app icon (based on settings) |
+| **System Audio**  | `Cmd + Shift + M` | `Ctrl + Shift + M`      | Toggle system audio capture                              |
+| **Voice Input**   | `Cmd + Shift + A` | `Ctrl + Shift + A`      | Start voice recording                                    |
+| **Screenshot**    | `Cmd + Shift + S` | `Ctrl + Shift + S`      | Capture screenshot                                       |
+
+## **Transparent Window Overlay**
+
+**Adjust window transparency to see through Pluely while working:**
+
+<img src="images/transparent.gif" width="800" alt="Pluely transparent window overlay"/>
+
+**Control exactly how transparent your AI assistant appears with real-time adjustments**
+
+- **Adjustable Transparency:** Fine-tune opacity from 0% to 100% with a smooth slider control
+- **See-Through Design:** Higher transparency lets you see content behind Pluely perfectly
+- **Backdrop Blur Effect:** Intelligent blur applied automatically for better text readability
+- **Perfect Dark Overlay:** Ideal for maintaining focus while seeing underlying content
+- **Instant Application:** Changes apply immediately without any lag or restart
+- **Stealth Enhancement:** Makes Pluely even more discreet during screen shares and presentations
+- **Settings Control:** Adjust transparency level in Settings → Window Transparency
+
+## **Draggable Window**
+
+**Move Pluely anywhere on your screen for the perfect positioning:**
+
+<img src="images/draggable.gif" width="800" alt="Pluely draggable window"/>
+
+**Position your AI assistant exactly where you need it with smooth drag-and-drop functionality**
+
+- **Flexible Positioning:** Click and drag the window to any location on your screen
+- **Persistent Position:** Window remembers your preferred location across sessions
+- **Smooth Movement:** Fluid drag-and-drop experience with no lag
+- **Multi-Monitor Support:** Works seamlessly across multiple displays
+- **Perfect Workflow:** Position Pluely alongside your work for optimal productivity
+- **Intuitive Control:** Natural drag behavior that feels native to your operating system
 
 ## **System Audio Capture**
 
@@ -229,6 +260,43 @@ _Browse, reuse, download, and delete your AI conversations with complete local s
 - **Download Markdown** - Export conversations as formatted markdown files with timestamps
 - **Delete Chats** - Remove individual conversations or delete all from Settings
 - **Quick Navigation** - Browse all your conversations with auto-generated titles
+
+## **Advanced Features**
+
+### **AI-Powered System Prompt Generation**
+
+**Generate intelligent, context-aware system prompts with AI assistance:**
+
+- **Smart Prompt Creation:** Generate custom system prompts using AI to match your specific use case
+- **Instant Generation:** Create optimized prompts in seconds with AI suggestions
+- **Context-Aware:** AI understands your needs and generates relevant instructions
+- **Easy Customization:** Edit and refine AI-generated prompts to perfect your workflow
+- **Quick Access:** Available in Settings → System Prompt section
+- **Time-Saving:** No need to manually craft complex system instructions
+
+### **Invisible Cursor Mode**
+
+**Complete stealth with hidden cursor for maximum discretion:**
+
+- **Hidden Cursor:** Pluely's custom cursor becomes completely invisible during use
+- **Zero Detection:** Ensures absolute stealth during screen shares and recordings
+- **Perfect Privacy:** No visible indicators when using the AI assistant
+- **Seamless Experience:** Cursor remains fully functional while invisible
+- **Critical for Stealth:** Essential feature for maintaining complete discretion
+- **Always Active:** Works automatically across all interactions
+
+### **Voice Activity Detection (VAD) Configuration**
+
+**Advanced voice detection with real-time customization:**
+
+- **Smart Voice Detection:** Automatically detects when you start and stop speaking
+- **Real-Time Adjustments:** Fine-tune VAD sensitivity on the fly without restarts
+- **Custom Thresholds:** Configure speech detection levels for your environment
+- **System Audio VAD:** Toggle VAD for system audio capture (enabled/disabled modes)
+- **Improved Configuration Panel:** Modern interface with live feedback and adjustments
+- **Noise Filtering:** Reduces false positives from background noise
+- **Optimal Performance:** Balanced settings for accuracy and responsiveness
+- **Settings Control:** Access advanced VAD settings in Settings → Voice Activity Detection
 
 ---
 

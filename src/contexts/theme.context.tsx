@@ -12,11 +12,15 @@ type ThemeProviderProps = {
 type ThemeProviderState = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  transparency: number;
+  onSetTransparency: (transparency: number) => void;
 };
 
 const initialState: ThemeProviderState = {
   theme: "system",
   setTheme: () => null,
+  transparency: 10,
+  onSetTransparency: () => null,
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
@@ -29,6 +33,11 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+  );
+  const [transparency, setTransparency] = useState<number>(
+    () =>
+      (localStorage.getItem(STORAGE_KEYS.TRANSPARENCY) as unknown as number) ||
+      10
   );
 
   const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -67,6 +76,27 @@ export function ThemeProvider({
     };
   }, [theme]);
 
+  // Apply transparency globally
+  useEffect(() => {
+    const root = window.document.documentElement;
+    const opacity = (100 - transparency) / 100;
+
+    // Apply opacity to CSS variables
+    root.style.setProperty("--opacity", opacity.toString());
+
+    // Apply backdrop filter when transparency is active
+    if (transparency > 0) {
+      root.style.setProperty("--backdrop-blur", "blur(12px)");
+    } else {
+      root.style.setProperty("--backdrop-blur", "none");
+    }
+  }, [transparency]);
+
+  const onSetTransparency = (transparency: number) => {
+    localStorage.setItem(STORAGE_KEYS.TRANSPARENCY, transparency.toString());
+    setTransparency(transparency);
+  };
+
   const value = {
     theme,
     setTheme: (newTheme: Theme) => {
@@ -74,6 +104,8 @@ export function ThemeProvider({
       setTheme(newTheme);
     },
     isSystemThemeDark,
+    transparency,
+    onSetTransparency,
   };
 
   return (

@@ -16,37 +16,49 @@ import { Header } from "./Header";
 import { SetupInstructions } from "./SetupInstructions";
 import { OperationSection } from "./OperationSection";
 import { Context } from "./Context";
+import { VadConfigPanel } from "./VadConfigPanel";
+import { PermissionFlow } from "./PermissionFlow";
 import { useSystemAudioType } from "@/hooks";
 
-export const SystemAudio = ({
-  capturing,
-  isProcessing,
-  isAIProcessing,
-  lastTranscription,
-  lastAIResponse,
-  error,
-  setupRequired,
-  startCapture,
-  stopCapture,
-  isPopoverOpen,
-  setIsPopoverOpen,
-  useSystemPrompt,
-  setUseSystemPrompt,
-  contextContent,
-  setContextContent,
-  startNewConversation,
-  conversation,
-  resizeWindow,
-  handleSetup,
-  quickActions,
-  addQuickAction,
-  removeQuickAction,
-  isManagingQuickActions,
-  setIsManagingQuickActions,
-  showQuickActions,
-  setShowQuickActions,
-  handleQuickActionClick,
-}: useSystemAudioType) => {
+export const SystemAudio = (props: useSystemAudioType) => {
+  const {
+    capturing,
+    isProcessing,
+    isAIProcessing,
+    lastTranscription,
+    lastAIResponse,
+    error,
+    setupRequired,
+    startCapture,
+    stopCapture,
+    isPopoverOpen,
+    setIsPopoverOpen,
+    useSystemPrompt,
+    setUseSystemPrompt,
+    contextContent,
+    setContextContent,
+    startNewConversation,
+    conversation,
+    resizeWindow,
+    handleSetup,
+    quickActions,
+    addQuickAction,
+    removeQuickAction,
+    isManagingQuickActions,
+    setIsManagingQuickActions,
+    showQuickActions,
+    setShowQuickActions,
+    handleQuickActionClick,
+    vadConfig,
+    updateVadConfiguration,
+    isContinuousMode,
+    isRecordingInContinuousMode,
+    recordingProgress,
+    manualStopAndSend,
+    startContinuousRecording,
+    ignoreContinuousRecording,
+    scrollAreaRef,
+  } = props;
   const platform = navigator.platform.toLowerCase();
   const handleToggleCapture = async () => {
     if (capturing) {
@@ -105,7 +117,7 @@ export const SystemAudio = ({
           className="select-none w-screen p-0 border overflow-hidden border-input/50"
           sideOffset={8}
         >
-          <ScrollArea className="h-[calc(100vh-4rem)]">
+          <ScrollArea className="h-[calc(100vh-4rem)]" ref={scrollAreaRef}>
             <div
               className={`p-6 ${
                 !lastTranscription && !lastAIResponse
@@ -121,6 +133,99 @@ export const SystemAudio = ({
                   resizeWindow={resizeWindow}
                   capturing={capturing}
                 />
+              )}
+
+              {/* Continuous Recording UI - Show when in continuous mode */}
+              {isContinuousMode && (
+                <div className="space-y-3">
+                  <div className="border rounded-lg p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      {isProcessing || isAIProcessing ? (
+                        <LoaderIcon className="w-5 h-5 animate-spin mt-0.5" />
+                      ) : isRecordingInContinuousMode ? (
+                        <AudioLinesIcon className="w-5 h-5 animate-pulse mt-0.5" />
+                      ) : (
+                        <AudioLinesIcon className="w-5 h-5 mt-0.5 opacity-50" />
+                      )}
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm mb-1">
+                          {isProcessing || isAIProcessing
+                            ? "Processing Your Audio..."
+                            : isRecordingInContinuousMode
+                            ? "Recording Audio (Continuous Mode)"
+                            : "Continuous Mode (Not Recording)"}
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          {isProcessing || isAIProcessing
+                            ? "Transcribing and generating AI response..."
+                            : isRecordingInContinuousMode
+                            ? `Recording up to ${vadConfig.max_recording_duration_secs}s. You can stop anytime.`
+                            : "Click Start to begin recording, or adjust settings below."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Progress Bar - Only show when actively recording */}
+                    {isRecordingInContinuousMode &&
+                      !isProcessing &&
+                      !isAIProcessing && (
+                        <div className="space-y-2 mb-3">
+                          <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>Duration: {recordingProgress}s</span>
+                            <span>
+                              Max: {vadConfig.max_recording_duration_secs}s
+                            </span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div
+                              className="bg-primary h-2 rounded-full transition-all duration-500"
+                              style={{
+                                width: `${
+                                  (recordingProgress /
+                                    vadConfig.max_recording_duration_secs) *
+                                  100
+                                }%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Control Buttons */}
+                    {!isProcessing && !isAIProcessing && (
+                      <div className="grid grid-cols-3 gap-2">
+                        {!isRecordingInContinuousMode ? (
+                          <Button
+                            onClick={startContinuousRecording}
+                            variant="default"
+                            className="col-span-3"
+                            size="lg"
+                          >
+                            <AudioLinesIcon className="w-4 h-4 mr-2" />
+                            Start Recording
+                          </Button>
+                        ) : (
+                          <>
+                            <Button
+                              onClick={ignoreContinuousRecording}
+                              variant="outline"
+                              className="col-span-1"
+                            >
+                              Ignore
+                            </Button>
+                            <Button
+                              onClick={manualStopAndSend}
+                              variant="default"
+                              className="col-span-2"
+                            >
+                              Stop & Send
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
 
               {/* Error Display - Show simple error messages for non-setup issues */}
@@ -143,11 +248,21 @@ export const SystemAudio = ({
               )}
 
               {setupRequired ? (
-                // Setup Instructions Section
-                <SetupInstructions
-                  setupRequired={setupRequired}
-                  handleSetup={handleSetup}
-                />
+                // Enhanced Permission Flow
+                <div className="space-y-4">
+                  <PermissionFlow
+                    onPermissionGranted={() => {
+                      startCapture();
+                    }}
+                    onPermissionDenied={() => {
+                      // Permission was denied, keep showing setup instructions
+                    }}
+                  />
+                  <SetupInstructions
+                    setupRequired={setupRequired}
+                    handleSetup={handleSetup}
+                  />
+                </div>
               ) : (
                 <>
                   {/* Operation Section */}
@@ -172,6 +287,12 @@ export const SystemAudio = ({
                     setUseSystemPrompt={setUseSystemPrompt}
                     contextContent={contextContent}
                     setContextContent={setContextContent}
+                  />
+
+                  {/* VAD Configuration */}
+                  <VadConfigPanel
+                    vadConfig={vadConfig}
+                    onUpdate={updateVadConfiguration}
                   />
                 </>
               )}

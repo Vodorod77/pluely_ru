@@ -1,13 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useRef } from "react";
-
-interface Shortcuts {
-  toggle: string;
-  audio: string;
-  screenshot: string;
-  systemAudio: string;
-}
+import { getShortcutsConfig } from "@/lib";
 
 // Global singleton to prevent multiple event listeners in StrictMode
 let globalEventListeners: {
@@ -15,6 +9,7 @@ let globalEventListeners: {
   audio?: UnlistenFn;
   screenshot?: UnlistenFn;
   systemAudio?: UnlistenFn;
+  customShortcut?: UnlistenFn;
 } = {};
 
 // Global debounce for screenshot events to prevent duplicates
@@ -25,6 +20,7 @@ export const useGlobalShortcuts = () => {
   const audioCallbackRef = useRef<(() => void) | null>(null);
   const screenshotCallbackRef = useRef<(() => void) | null>(null);
   const systemAudioCallbackRef = useRef<(() => void) | null>(null);
+  const customShortcutCallbacksRef = useRef<Map<string, () => void>>(new Map());
 
   const checkShortcutsRegistered = useCallback(async (): Promise<boolean> => {
     try {
@@ -36,13 +32,29 @@ export const useGlobalShortcuts = () => {
     }
   }, []);
 
-  const getShortcuts = useCallback(async (): Promise<Shortcuts | null> => {
+  const getShortcuts = useCallback(async (): Promise<Record<
+    string,
+    string
+  > | null> => {
     try {
-      const shortcuts = await invoke<Shortcuts>("get_shortcuts");
+      const shortcuts = await invoke<Record<string, string>>(
+        "get_registered_shortcuts"
+      );
       return shortcuts;
     } catch (error) {
       console.error("Failed to get shortcuts:", error);
       return null;
+    }
+  }, []);
+
+  const updateShortcuts = useCallback(async (): Promise<boolean> => {
+    try {
+      const config = getShortcutsConfig();
+      await invoke("update_shortcuts", { config });
+      return true;
+    } catch (error) {
+      console.error("Failed to update shortcuts:", error);
+      return false;
     }
   }, []);
 
@@ -64,6 +76,19 @@ export const useGlobalShortcuts = () => {
   // Register system audio callback
   const registerSystemAudioCallback = useCallback((callback: () => void) => {
     systemAudioCallbackRef.current = callback;
+  }, []);
+
+  // Register custom shortcut callback
+  const registerCustomShortcutCallback = useCallback(
+    (actionId: string, callback: () => void) => {
+      customShortcutCallbacksRef.current.set(actionId, callback);
+    },
+    []
+  );
+
+  // Unregister custom shortcut callback
+  const unregisterCustomShortcutCallback = useCallback((actionId: string) => {
+    customShortcutCallbacksRef.current.delete(actionId);
   }, []);
 
   // Setup event listeners using global singleton
@@ -99,10 +124,16 @@ export const useGlobalShortcuts = () => {
             console.warn("Error cleaning up system audio listener:", error);
           }
         }
+        if (globalEventListeners.customShortcut) {
+          try {
+            globalEventListeners.customShortcut();
+          } catch (error) {
+            console.warn("Error cleaning up custom shortcut listener:", error);
+          }
+        }
 
         // Listen for focus text input event
         const unlistenFocus = await listen("focus-text-input", () => {
-          // Add small delay to ensure window is fully shown
           setTimeout(() => {
             if (inputRef.current) {
               inputRef.current.focus();
@@ -144,6 +175,23 @@ export const useGlobalShortcuts = () => {
           }
         });
         globalEventListeners.systemAudio = unlistenSystemAudio;
+
+        // Listen for custom shortcut events
+        const unlistenCustomShortcut = await listen<{ action: string }>(
+          "custom-shortcut-triggered",
+          (event) => {
+            const actionId = event.payload.action;
+            const callback = customShortcutCallbacksRef.current.get(actionId);
+            if (callback) {
+              callback();
+            } else {
+              console.warn(
+                `No callback registered for custom shortcut: ${actionId}`
+              );
+            }
+          }
+        );
+        globalEventListeners.customShortcut = unlistenCustomShortcut;
       } catch (error) {
         console.error("Failed to setup event listeners:", error);
       }
@@ -155,9 +203,12 @@ export const useGlobalShortcuts = () => {
   return {
     checkShortcutsRegistered,
     getShortcuts,
+    updateShortcuts,
     registerInputRef,
     registerAudioCallback,
     registerScreenshotCallback,
     registerSystemAudioCallback,
+    registerCustomShortcutCallback,
+    unregisterCustomShortcutCallback,
   };
 };

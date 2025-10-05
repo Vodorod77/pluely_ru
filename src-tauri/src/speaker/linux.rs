@@ -9,9 +9,9 @@ use std::thread;
 use libpulse_binding as pulse;
 use libpulse_simple_binding as psimple;
 
-use pulse::sample::{Spec, Format};
-use pulse::stream::Direction;
 use psimple::Simple;
+use pulse::sample::{Format, Spec};
+use pulse::stream::Direction;
 
 pub struct SpeakerInput {
     server_name: Option<String>,
@@ -19,9 +19,7 @@ pub struct SpeakerInput {
 
 impl SpeakerInput {
     pub fn new() -> Result<Self> {
-        Ok(Self { 
-            server_name: None 
-        })
+        Ok(Self { server_name: None })
     }
 
     pub fn stream(self) -> SpeakerStream {
@@ -94,9 +92,9 @@ impl SpeakerStream {
         let spec = Spec {
             format: Format::F32le,
             channels: 1,
-            rate: 16000,
+            rate: 44100, // Fixed: Use 44100 Hz to match macOS/Windows
         };
-        
+
         if !spec.is_valid() {
             return Err(anyhow!("Invalid audio specification"));
         }
@@ -106,15 +104,16 @@ impl SpeakerStream {
 
         let init_result: Result<(Simple, u32)> = (|| {
             let simple = Simple::new(
-                None,                        // Use default server
-                "pluely",           // Application name
-                Direction::Record,          // Record direction
-                source_name.as_deref(),     // Source name (monitor)
-                "System Audio Capture",     // Stream description
-                &spec,                      // Sample specification
-                None,                       // Channel map (use default)
-                None,                       // Buffer attributes (use default)
-            ).map_err(|e| anyhow!("Failed to create PulseAudio simple connection: {}", e))?;
+                None,                   // Use default server
+                "pluely",               // Application name
+                Direction::Record,      // Record direction
+                source_name.as_deref(), // Source name (monitor)
+                "System Audio Capture", // Stream description
+                &spec,                  // Sample specification
+                None,                   // Channel map (use default)
+                None,                   // Buffer attributes (use default)
+            )
+            .map_err(|e| anyhow!("Failed to create PulseAudio simple connection: {}", e))?;
 
             Ok((simple, spec.rate))
         })();
@@ -142,7 +141,30 @@ impl SpeakerStream {
                                 .collect();
 
                             if !samples.is_empty() {
-                                sample_queue.lock().unwrap().extend(samples);
+                                // Consistent buffer overflow handling
+                                let dropped = {
+                                    let mut queue = sample_queue.lock().unwrap();
+                                    let max_buffer_size = 131072; // 128KB buffer (matching macOS/Windows)
+                                    
+                                    queue.extend(samples.iter());
+                                    
+                                    // If buffer exceeds maximum, drop oldest samples
+                                    let dropped_count = if queue.len() > max_buffer_size {
+                                        let to_drop = queue.len() - max_buffer_size;
+                                        queue.drain(0..to_drop);
+                                        to_drop
+                                    } else {
+                                        0
+                                    };
+                                    
+                                    dropped_count
+                                };
+                                
+                                if dropped > 0 {
+                                    eprintln!("Linux buffer overflow - dropped {} samples", dropped);
+                                }
+                                
+                                // Wake up consumer
                                 if let Some(waker) = waker_state.lock().unwrap().waker.take() {
                                     waker.wake();
                                 }

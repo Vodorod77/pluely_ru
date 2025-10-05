@@ -15,13 +15,17 @@ interface MarkdownRendererProps {
 }
 
 export function Markdown({ children }: MarkdownRendererProps) {
+  const fixedMarkdown = children
+    .replace(/\\\[(.*?)\\\]/gs, "$$$1$$") // display math
+    .replace(/\\\((.*?)\\\)/gs, "$$$1$"); // inline math
+
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm, remarkMath]}
       rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeKatex]}
       components={COMPONENTS as any}
     >
-      {children}
+      {fixedMarkdown}
     </ReactMarkdown>
   );
 }
