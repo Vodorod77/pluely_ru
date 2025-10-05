@@ -5,6 +5,7 @@ use std::fs;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 use uuid::Uuid;
+use tauri_plugin_machine_uid::MachineUidExt;
 
 fn get_payment_endpoint() -> Result<String, String> {
     if let Ok(endpoint) = env::var("PAYMENT_ENDPOINT") {
@@ -153,6 +154,8 @@ pub async fn secure_storage_remove(app: AppHandle, keys: Vec<String>) -> Result<
 pub struct ActivationRequest {
     license_key: String,
     instance_name: String,
+    machine_id: String,
+    app_version: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -184,18 +187,21 @@ pub struct CheckoutResponse {
 }
 
 #[tauri::command]
-pub async fn activate_license_api(license_key: String) -> Result<ActivationResponse, String> {
+pub async fn activate_license_api(app: AppHandle, license_key: String) -> Result<ActivationResponse, String> {
     // Get payment endpoint and API access key from environment
     let payment_endpoint = get_payment_endpoint()?;
     let api_access_key = get_api_access_key()?;
 
     // Generate UUID for instance name
     let instance_name = Uuid::new_v4().to_string();
-
+    let machine_id: String = app.machine_uid().get_machine_uid().unwrap().id.unwrap();
+    let app_version: String = env!("CARGO_PKG_VERSION").to_string();
     // Prepare activation request
     let activation_request = ActivationRequest {
         license_key: license_key.clone(),
         instance_name: instance_name.clone(),
+        machine_id: machine_id.clone(),
+        app_version: app_version.clone(),
     };
 
     // Make HTTP request to activation endpoint with authorization header
@@ -246,12 +252,14 @@ pub async fn deactivate_license_api(app: AppHandle) -> Result<ActivationResponse
     // Get payment endpoint and API access key from environment
     let payment_endpoint = get_payment_endpoint()?;
     let api_access_key = get_api_access_key()?;
-
+    let machine_id: String = app.machine_uid().get_machine_uid().unwrap().id.unwrap();
     let (license_key, instance_id, _) = get_stored_credentials(&app).await?;
-
+    let app_version: String = env!("CARGO_PKG_VERSION").to_string();
     let deactivation_request = ActivationRequest {
         license_key: license_key.clone(),
         instance_name: instance_id.clone(),
+        machine_id: machine_id.clone(),
+        app_version: app_version.clone(),
     };
     // Make HTTP request to activation endpoint with authorization header
     let client = reqwest::Client::new();
@@ -300,12 +308,14 @@ pub async fn validate_license_api(app: AppHandle) -> Result<ValidateResponse, St
     // Get payment endpoint and API access key from environment
     let payment_endpoint = get_payment_endpoint()?;
     let api_access_key = get_api_access_key()?;
-
+    let machine_id: String = app.machine_uid().get_machine_uid().unwrap().id.unwrap();
     let (license_key, instance_id, _) = get_stored_credentials(&app).await?;
-
+    let app_version: String = env!("CARGO_PKG_VERSION").to_string();
     let validate_request = ActivationRequest {
         license_key: license_key.clone(),
         instance_name: instance_id.clone(),
+        machine_id: machine_id.clone(),
+        app_version: app_version.clone(),
     };
 
     if license_key.is_empty() || instance_id.is_empty() {

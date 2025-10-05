@@ -4,6 +4,7 @@ use std::env;
 use std::fs;
 use std::path::PathBuf;
 use tauri::{AppHandle, Emitter, Manager};
+use tauri_plugin_machine_uid::MachineUidExt;
 
 fn get_app_endpoint() -> Result<String, String> {
     if let Ok(endpoint) = env::var("APP_ENDPOINT") {
@@ -138,7 +139,7 @@ pub async fn transcribe_audio(
     // Get environment variables
     let app_endpoint = get_app_endpoint()?;
     let api_access_key = get_api_access_key()?;
-
+    let machine_id: String = app.machine_uid().get_machine_uid().unwrap().id.unwrap();
     // Get stored credentials
     let (license_key, instance_id, _) = get_stored_credentials(&app).await?;
 
@@ -155,6 +156,7 @@ pub async fn transcribe_audio(
         .header("Authorization", format!("Bearer {}", api_access_key))
         .header("license_key", &license_key)
         .header("instance", &instance_id)
+        .header("machine_id", &machine_id)
         .json(&audio_request)
         .send()
         .await
@@ -213,7 +215,7 @@ pub async fn chat_stream(
     // Get environment variables
     let app_endpoint = get_app_endpoint()?;
     let api_access_key = get_api_access_key()?;
-
+    let machine_id: String = app.machine_uid().get_machine_uid().unwrap().id.unwrap();
     // Get stored credentials
     let (license_key, instance_id, selected_model) = get_stored_credentials(&app).await?;
     let (provider, model) = selected_model.as_ref().map_or((None, None), |m| {
@@ -240,6 +242,7 @@ pub async fn chat_stream(
         .header("instance", &instance_id)
         .header("provider", &provider.unwrap_or("None".to_string()))
         .header("model", &model.unwrap_or("None".to_string()))
+        .header("machine_id", &machine_id)
         .json(&chat_request)
         .send()
         .await
@@ -413,7 +416,7 @@ pub async fn create_system_prompt(
     let app_endpoint = get_app_endpoint()?;
     let api_access_key = get_api_access_key()?;
     let (license_key, instance_id, _) = get_stored_credentials(&app).await?;
-
+    let machine_id: String = app.machine_uid().get_machine_uid().unwrap().id.unwrap();
     // Make HTTP request to models endpoint
     let client = reqwest::Client::new();
     let url = format!("{}/api/prompt", app_endpoint);
@@ -424,6 +427,7 @@ pub async fn create_system_prompt(
         .header("Authorization", format!("Bearer {}", api_access_key))
         .header("license_key", &license_key)
         .header("instance", &instance_id)
+        .header("machine_id", &machine_id)
         .json(&serde_json::json!({
             "user_prompt": user_prompt
         }))

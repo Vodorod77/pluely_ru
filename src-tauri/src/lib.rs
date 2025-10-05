@@ -96,6 +96,7 @@ pub fn run() {
             }),
             ..Default::default()
         }))
+        .plugin(tauri_plugin_machine_uid::init())
         .invoke_handler(tauri::generate_handler![
             greet,
             get_app_version,

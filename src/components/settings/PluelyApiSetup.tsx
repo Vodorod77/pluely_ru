@@ -204,7 +204,6 @@ export const PluelyApiSetup = () => {
     setSuccess(null);
     setHasActiveLicense(false);
     try {
-      await invoke("deactivate_license_api");
       // Remove all license data from secure storage in one call
       await invoke("secure_storage_remove", {
         keys: [
@@ -225,6 +224,7 @@ export const PluelyApiSetup = () => {
       setError("Failed to remove license");
     } finally {
       setIsLoading(false);
+      await invoke("deactivate_license_api");
     }
   };
 
@@ -422,6 +422,15 @@ export const PluelyApiSetup = () => {
             </Command>
           </PopoverContent>
         </Popover>
+        {/* this model only supports these modalities */}
+        {selectedModel && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium">
+              This model only supports these modalities:{" "}
+              {selectedModel.modality}
+            </p>
+          </div>
+        )}
         {/* License Key Input or Display */}
         <div className="space-y-2">
           {!storedLicenseKey ? (
