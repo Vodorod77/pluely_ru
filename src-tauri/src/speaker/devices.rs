@@ -55,7 +55,7 @@ pub fn list_audio_output_devices() -> Result<Vec<AudioDeviceInfo>, String> {
 
 #[cfg(target_os = "windows")]
 pub fn list_audio_output_devices() -> Result<Vec<AudioDeviceInfo>, String> {
-    use wasapi::{get_default_device, get_device_names, Direction};
+    // use wasapi::{get_default_device, get_device_names, Direction};
         
     let mut devices = Vec::new();
     
