@@ -4,22 +4,25 @@ mod api;
 mod shortcuts;
 mod window;
 mod db;
-use base64::Engine;
-use image::codecs::png::PngEncoder;
-use image::{ColorType, ImageEncoder};
+mod capture;
 use tauri_plugin_http;
 #[cfg(target_os = "macos")]
 use tauri_plugin_macos_permissions;
 use tauri_plugin_posthog::{init as posthog_init, PostHogConfig, PostHogOptions};
-use xcap::Monitor;
-use tauri::Manager;
+use tauri::{Manager, AppHandle, WebviewWindow};
 use std::sync::{Arc, Mutex};
 use tokio::task::JoinHandle;
-
 mod speaker;
 use speaker::VadConfig;
+use capture::CaptureState;
 
-#[derive(Default)]
+
+#[allow(deprecated)]
+use tauri_nspanel::{
+    cocoa::appkit::NSWindowCollectionBehavior, panel_delegate, WebviewWindowExt,
+  };
+
+  #[derive(Default)]
 pub struct AudioState {
     stream_task: Arc<Mutex<Option<JoinHandle<()>>>>,
     vad_config: Arc<Mutex<VadConfig>>,
@@ -27,38 +30,8 @@ pub struct AudioState {
 }
 
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-#[tauri::command]
 fn get_app_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
-}
-
-#[tauri::command]
-fn capture_to_base64() -> Result<String, String> {
-    let monitors = Monitor::all().map_err(|e| format!("Failed to get monitors: {}", e))?;
-    let primary_monitor = monitors
-        .into_iter()
-        .find(|m| m.is_primary())
-        .ok_or("No primary monitor found".to_string())?;
-
-    let image = primary_monitor
-        .capture_image()
-        .map_err(|e| format!("Failed to capture image: {}", e))?;
-    let mut png_buffer = Vec::new();
-    PngEncoder::new(&mut png_buffer)
-        .write_image(
-            image.as_raw(),
-            image.width(),
-            image.height(),
-            ColorType::Rgba8.into(),
-        )
-        .map_err(|e| format!("Failed to encode to PNG: {}", e))?;
-    let base64_str = base64::engine::general_purpose::STANDARD.encode(png_buffer);
-
-    Ok(base64_str)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -74,6 +47,7 @@ pub fn run() {
                 .build(),
         )
         .manage(AudioState::default())
+        .manage(CaptureState::default())
         .manage(shortcuts::WindowVisibility {
             is_hidden: Mutex::new(false),
         })
@@ -97,11 +71,14 @@ pub fn run() {
             ..Default::default()
         }))
         .plugin(tauri_plugin_machine_uid::init())
+        .plugin(tauri_nspanel::init())
         .invoke_handler(tauri::generate_handler![
-            greet,
             get_app_version,
             window::set_window_height,
-            capture_to_base64,
+            capture::capture_to_base64,
+            capture::start_screen_capture,
+            capture::capture_selected_area,
+            capture::close_overlay_window,
             shortcuts::check_shortcuts_registered,
             shortcuts::get_registered_shortcuts,
             shortcuts::update_shortcuts,
@@ -131,11 +108,13 @@ pub fn run() {
             speaker::get_capture_status,
             speaker::get_audio_sample_rate,
             speaker::list_system_audio_devices,
-            speaker::get_default_audio_device
+            speaker::get_default_audio_device,
         ])
         .setup(|app| {
             // Setup main window positioning
             window::setup_main_window(app).expect("Failed to setup main window");
+            #[cfg(target_os = "macos")]
+            init(app.app_handle());
 
             // Initialize global shortcut plugin with centralized handler
             app.handle().plugin(
@@ -185,3 +164,49 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
+#[cfg(target_os = "macos")]
+#[allow(deprecated, unexpected_cfgs)]
+fn init(app_handle: &AppHandle) {
+    let window: WebviewWindow = app_handle.get_webview_window("main").unwrap();
+  
+    let panel = window.to_panel().unwrap();
+  
+    let delegate = panel_delegate!(MyPanelDelegate {
+      window_did_become_key,
+      window_did_resign_key
+    });
+  
+    let handle = app_handle.to_owned();
+  
+    delegate.set_listener(Box::new(move |delegate_name: String| {
+      match delegate_name.as_str() {
+        "window_did_become_key" => {
+          let app_name = handle.package_info().name.to_owned();
+  
+          println!("[info]: {:?} panel becomes key window!", app_name);
+        }
+        "window_did_resign_key" => {
+          println!("[info]: panel resigned from key window!");
+        }
+        _ => (),
+      }
+    }));
+  
+    // Set the window to float level
+    #[allow(non_upper_case_globals)]
+    const NSFloatWindowLevel: i32 = 4;
+    panel.set_level(NSFloatWindowLevel);
+  
+    #[allow(non_upper_case_globals)]
+    const NSWindowStyleMaskNonActivatingPanel: i32 = 1 << 7;
+    panel.set_style_mask(NSWindowStyleMaskNonActivatingPanel);
+  
+    #[allow(deprecated)]
+    panel.set_collection_behaviour(
+      NSWindowCollectionBehavior::NSWindowCollectionBehaviorFullScreenAuxiliary
+        | NSWindowCollectionBehavior::NSWindowCollectionBehaviorCanJoinAllSpaces,
+    );
+  
+    panel.set_delegate(delegate);
+  }

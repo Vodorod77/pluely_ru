@@ -57,11 +57,11 @@ export const Settings = () => {
             {/* Theme */}
             <Theme />
 
-            {/* Keyboard Shortcuts */}
-            <ShortcutManager />
-
             {/* Screenshot Configs */}
             <ScreenshotConfigs {...settings} />
+
+            {/* Keyboard Shortcuts */}
+            <ShortcutManager />
 
             {/* App Icon Toggle */}
             <AppIconToggle />

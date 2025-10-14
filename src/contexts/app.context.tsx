@@ -117,6 +117,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       "validate_license_api"
     );
     setHasActiveLicense(response.is_active);
+    // Check if the auto configs are enabled
+    const autoConfigsEnabled = localStorage.getItem("auto-configs-enabled");
+    if (response.is_active && !autoConfigsEnabled) {
+      setScreenshotConfiguration({
+        mode: "auto",
+        autoPrompt: "Analyze the screenshot and provide insights",
+        enabled: false,
+      });
+      // Set the flag to true so that we don't change the mode again
+      localStorage.setItem("auto-configs-enabled", "true");
+    }
   };
 
   // Function to load AI, STT, system prompt and screenshot config data from storage
@@ -142,7 +153,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             autoPrompt:
               parsed.autoPrompt ||
               "Analyze this screenshot and provide insights",
-            enabled: parsed.enabled !== undefined ? parsed.enabled : true,
+            enabled: parsed.enabled !== undefined ? parsed.enabled : false,
           });
         }
       } catch {
