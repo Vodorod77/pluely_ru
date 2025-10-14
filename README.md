@@ -799,6 +799,7 @@ This project is licensed under the **GNU General Public License v3.0** - see the
 
 - **[Cluely](https://cluely.com/)** - Inspiration for this open source alternative
 - **[Tauri](https://tauri.app/)** - Amazing desktop framework
+- **[tauri-nspanel](https://github.com/ahkohd/tauri-nspanel)** - macOS native panel integration for Tauri
 - **[shadcn/ui](https://ui.shadcn.com/)** - Beautiful UI components
 - **[@ricky0123/vad-react](https://github.com/ricky0123/vad)** - Voice Activity Detection
 - **[OpenAI](https://openai.com/)** - GPT models and Whisper API

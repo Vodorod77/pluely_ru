@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, Runtime};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
-
+use tauri_nspanel::ManagerExt;
 // State for window visibility
 pub struct WindowVisibility {
     #[allow(dead_code)]
@@ -95,10 +95,15 @@ fn handle_toggle_window<R: Runtime>(app: &AppHandle<R>) {
     #[cfg(not(target_os = "windows"))]
     match window.is_visible() {
         Ok(true) => {
+            #[cfg(target_os = "macos")]
+            {
+                let panel = app.get_webview_window("main").unwrap();
+                let _ = panel.hide();
+            }
             // Window is visible, hide it and handle app icon based on user settings
             if let Err(e) = window.hide() {
                 eprintln!("Failed to hide window: {}", e);
-            }
+            }  
         }
         Ok(false) => {
             // Window is hidden, show it and handle app icon based on user settings
@@ -113,6 +118,11 @@ fn handle_toggle_window<R: Runtime>(app: &AppHandle<R>) {
             // Emit event to focus text input
             if let Err(e) = window.emit("focus-text-input", json!({})) {
                 eprintln!("Failed to emit focus event: {}", e);
+            }
+            #[cfg(target_os = "macos")]
+            {
+                let panel = app.get_webview_panel("main").unwrap();
+                panel.show();
             }
         }
         Err(e) => {
