@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, Runtime};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
+
+#[cfg(target_os = "macos")]
 use tauri_nspanel::ManagerExt;
 // State for window visibility
 pub struct WindowVisibility {

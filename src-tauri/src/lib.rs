@@ -16,7 +16,7 @@ mod speaker;
 use speaker::VadConfig;
 use capture::CaptureState;
 
-
+#[cfg(target_os = "macos")]
 #[allow(deprecated)]
 use tauri_nspanel::{
     cocoa::appkit::NSWindowCollectionBehavior, panel_delegate, WebviewWindowExt,
@@ -70,9 +70,12 @@ pub fn run() {
             }),
             ..Default::default()
         }))
-        .plugin(tauri_plugin_machine_uid::init())
-        .plugin(tauri_nspanel::init())
-        .invoke_handler(tauri::generate_handler![
+        .plugin(tauri_plugin_machine_uid::init());
+        #[cfg(target_os = "macos")]
+        {
+            builder = builder.plugin(tauri_nspanel::init());
+        }
+        let mut builder = builder.invoke_handler(tauri::generate_handler![
             get_app_version,
             window::set_window_height,
             capture::capture_to_base64,
