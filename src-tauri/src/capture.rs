@@ -6,6 +6,7 @@ use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
 use std::sync::{Arc, Mutex};
 use serde::{Deserialize, Serialize};
 use tauri::Emitter;
+use std::{thread, time::Duration};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SelectionCoords {
@@ -62,13 +63,17 @@ pub async fn start_screen_capture(app: tauri::AppHandle) -> Result<(), String> {
     .closable(false)
     .minimizable(false)
     .maximizable(false)
-    .visible(true)
+    .visible(false)
     .focused(true)
     .accept_first_mouse(true)
     .build()
     .map_err(|e| format!("Failed to create overlay window: {}", e))?;
 
-    // Ensure the overlay window gets focus and can receive events
+    // Wait a short moment for content to load before showing
+    thread::sleep(Duration::from_millis(100));
+
+    // Show the window (now fully loaded) without white flash
+    overlay.show().ok();
     overlay.set_focus().ok();
     overlay.set_always_on_top(true).ok();
     overlay.request_user_attention(Some(tauri::UserAttentionType::Critical)).ok();
