@@ -119,6 +119,19 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             init(app.app_handle());
 
+            #[cfg(desktop)]
+            {
+                use tauri_plugin_autostart::MacosLauncher;
+
+                #[allow(deprecated, unexpected_cfgs)]
+                if let Err(e) = app.handle().plugin(tauri_plugin_autostart::init(
+                    MacosLauncher::LaunchAgent,
+                    Some(vec![]),
+                )) {
+                    eprintln!("Failed to initialize autostart plugin: {}", e);
+                }
+            }
+
             // Initialize global shortcut plugin with centralized handler
             app.handle().plugin(
                 tauri_plugin_global_shortcut::Builder::new()
@@ -153,8 +166,7 @@ pub fn run() {
             if let Err(e) = shortcuts::setup_global_shortcuts(app.handle()) {
                 eprintln!("Failed to setup global shortcuts: {}", e);
             }
-
-            Ok(())
+           Ok(())
         });
 
     // Add macOS-specific permissions plugin

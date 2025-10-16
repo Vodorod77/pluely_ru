@@ -7,9 +7,11 @@ import {
 import { safeLocalStorage, trackAppStart } from "@/lib";
 import {
   getCustomizableState,
+  setCustomizableState,
   updateAppIconVisibility,
   updateAlwaysOnTop,
   updateTitlesVisibility,
+  updateAutostart,
   CustomizableState,
 } from "@/lib/storage";
 import { IContextType, ScreenshotConfig, TYPE_PROVIDER } from "@/types";
@@ -104,6 +106,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     appIcon: { isVisible: true },
     alwaysOnTop: { isEnabled: true },
     titles: { isEnabled: true },
+    autostart: { isEnabled: true },
   });
   const [hasActiveLicense, setHasActiveLicense] = useState<boolean>(false);
 
@@ -199,6 +202,23 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const customizableState = getCustomizableState();
     setCustomizable(customizableState);
 
+    const stored = safeLocalStorage.getItem(STORAGE_KEYS.CUSTOMIZABLE);
+    if (!stored) {
+      // save the default state
+      setCustomizableState(customizableState);
+    } else {
+      // check if we need to update the schema
+      try {
+        const parsed = JSON.parse(stored);
+        if (!parsed.autostart) {
+          // save the merged state with new autostart property
+          setCustomizableState(customizableState);
+        }
+      } catch (error) {
+        console.debug("Failed to check customizable state schema:", error);
+      }
+    }
+
     // Load Pluely API enabled state
     const savedPluelyApiEnabled = safeLocalStorage.getItem(
       STORAGE_KEYS.PLUELY_API_ENABLED
@@ -234,6 +254,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const applyCustomizableSettings = async () => {
       try {
+        // Apply autostart setting
+        const autostartPromise = (async () => {
+          try {
+            const autostartEnabled = customizable?.autostart?.isEnabled ?? true;
+            if (autostartEnabled) {
+              await invoke("plugin:autostart|enable");
+            } else {
+              await invoke("plugin:autostart|disable");
+            }
+          } catch (error) {
+            console.debug("Autostart setting skipped:", error);
+          }
+        })();
+
         await Promise.all([
           invoke("set_app_icon_visibility", {
             visible: customizable.appIcon.isVisible,
@@ -241,6 +275,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           invoke("set_always_on_top", {
             enabled: customizable.alwaysOnTop.isEnabled,
           }),
+          autostartPromise,
         ]);
       } catch (error) {
         console.error("Failed to apply customizable settings:", error);
@@ -394,6 +429,23 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     loadData();
   };
 
+  const toggleAutostart = async (isEnabled: boolean) => {
+    const newState = updateAutostart(isEnabled);
+    setCustomizable(newState);
+    try {
+      if (isEnabled) {
+        await invoke("plugin:autostart|enable");
+      } else {
+        await invoke("plugin:autostart|disable");
+      }
+      loadData();
+    } catch (error) {
+      console.error("Failed to toggle autostart:", error);
+      const revertedState = updateAutostart(!isEnabled);
+      setCustomizable(revertedState);
+    }
+  };
+
   const setPluelyApiEnabled = (enabled: boolean) => {
     setPluelyApiEnabledState(enabled);
     safeLocalStorage.setItem(STORAGE_KEYS.PLUELY_API_ENABLED, String(enabled));
@@ -418,6 +470,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     toggleAppIconVisibility,
     toggleAlwaysOnTop,
     toggleTitlesVisibility,
+    toggleAutostart,
     loadData,
     pluelyApiEnabled,
     setPluelyApiEnabled,

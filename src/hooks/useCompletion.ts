@@ -237,6 +237,7 @@ export const useCompletion = () => {
           if (currentRequestIdRef.current === requestId && !signal.aborted) {
             setState((prev) => ({
               ...prev,
+              isLoading: false,
               error: e.message || "An error occurred",
             }));
           }
