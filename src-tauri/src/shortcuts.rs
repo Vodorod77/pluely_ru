@@ -117,15 +117,13 @@ fn handle_toggle_window<R: Runtime>(app: &AppHandle<R>) {
                 eprintln!("Failed to focus window: {}", e);
             }
 
-            // Emit event to focus text input
-            if let Err(e) = window.emit("focus-text-input", json!({})) {
-                eprintln!("Failed to emit focus event: {}", e);
-            }
             #[cfg(target_os = "macos")]
             {
                 let panel = app.get_webview_panel("main").unwrap();
                 panel.show();
             }
+            // Emit event to focus text input
+            window.emit("focus-text-input", json!({})).unwrap();
         }
         Err(e) => {
             eprintln!("Failed to check window visibility: {}", e);
