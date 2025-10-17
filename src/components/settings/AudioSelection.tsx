@@ -6,7 +6,7 @@ import {
   Header,
 } from "@/components";
 import { MicIcon, RefreshCwIcon, HeadphonesIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "../ui/button";
 import { useApp } from "@/contexts";
 import { STORAGE_KEYS } from "@/config/constants";
@@ -93,20 +93,6 @@ export const AudioSelection = () => {
       setIsLoadingDevices(false);
     }
   };
-
-  // Load all audio devices on mount and listen for changes
-  useEffect(() => {
-    loadAudioDevices();
-
-    navigator.mediaDevices.addEventListener("devicechange", loadAudioDevices);
-
-    return () => {
-      navigator.mediaDevices.removeEventListener(
-        "devicechange",
-        loadAudioDevices
-      );
-    };
-  }, []);
 
   // Handle device selection changes
   const handleDeviceChange = (type: "input" | "output", deviceId: string) => {
@@ -212,8 +198,11 @@ export const AudioSelection = () => {
           {/* Permission Notice */}
           {devices.input.length === 0 && !isLoadingDevices && (
             <div className="text-xs text-amber-500 bg-amber-500/10 p-3 rounded-md">
-              <strong>⚠️ No microphones detected.</strong> Please ensure you've
-              granted microphone permissions and a microphone is connected.
+              <strong>
+                ⚠️ Click the refresh button to load your microphone devices.
+              </strong>{" "}
+              If this doesn't work, try changing your default microphone in your
+              system settings.
             </div>
           )}
         </div>
@@ -305,8 +294,11 @@ export const AudioSelection = () => {
           {/* Permission Notice */}
           {devices.output.length === 0 && !isLoadingDevices && (
             <div className="text-xs text-amber-500 bg-amber-500/10 p-3 rounded-md">
-              <strong>⚠️ No output devices detected.</strong> Please ensure you
-              have audio output devices available on your system.
+              <strong>
+                ⚠️ Click the refresh button to load your system audio devices.
+              </strong>{" "}
+              If this doesn't work, try changing your default system audio
+              output in your system settings.
             </div>
           )}
         </div>
