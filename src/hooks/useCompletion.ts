@@ -893,6 +893,17 @@ export const useCompletion = () => {
     };
   }, [handleScreenshotSubmit]);
 
+  useEffect(() => {
+    const unlisten = listen("capture-closed", () => {
+      setIsScreenshotLoading(false);
+      isProcessingScreenshotRef.current = false;
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
+
   const toggleRecording = useCallback(() => {
     setEnableVAD(!enableVAD);
     setMicOpen(!micOpen);

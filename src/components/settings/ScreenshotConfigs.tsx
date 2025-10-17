@@ -85,8 +85,8 @@ export const ScreenshotConfigs = ({
               title="Processing Mode"
               description={
                 screenshotConfiguration.mode === "manual"
-                  ? "Screenshots will be captured and automatically added to your attached files. You can then submit them with your own prompt."
-                  : "Screenshots will be automatically submitted to AI using your custom prompt. No manual intervention required."
+                  ? "Screenshots will be captured and automatically added to your attached files. You can then submit them with your own prompt. you can capture multiple screenshots and submit them later."
+                  : "Screenshots will be automatically submitted to AI using your custom prompt. No manual intervention required. only one screenshot can be submitted at a time."
               }
             />
           </div>

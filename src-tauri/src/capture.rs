@@ -92,11 +92,19 @@ pub async fn start_screen_capture(app: tauri::AppHandle) -> Result<(), String> {
 pub fn close_overlay_window(app: tauri::AppHandle) -> Result<(), String> {
     println!("Force closing overlay window");
     if let Some(window) = app.get_webview_window("capture-overlay") {
-        window.destroy().map_err(|e| format!("Failed to close overlay: {}", e))?;
+        window
+            .destroy()
+            .map_err(|e| format!("Failed to close overlay: {}", e))?;
         println!("Overlay window closed successfully");
     } else {
         println!("Overlay window not found");
     }
+
+    // Emit an event to the main window to signal that the overlay has been closed
+    if let Some(main_window) = app.get_webview_window("main") {
+        main_window.emit("capture-closed", ()).unwrap();
+    }
+
     Ok(())
 }
 
