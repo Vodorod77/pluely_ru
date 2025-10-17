@@ -49,6 +49,7 @@ impl Default for VadConfig {
 pub async fn start_system_audio_capture(
     app: AppHandle,
     vad_config: Option<VadConfig>,
+    device_id: Option<String>,
 ) -> Result<(), String> {
 
     let state = app.state::<crate::AudioState>();
@@ -71,7 +72,7 @@ pub async fn start_system_audio_capture(
         *vad_cfg = config;
     }
 
-    let input = SpeakerInput::new().map_err(|e| {
+    let input = SpeakerInput::new_with_device(device_id).map_err(|e| {
         error!("Failed to create speaker input: {}", e);
         format!("Failed to access system audio: {}", e)
     })?;
@@ -80,7 +81,7 @@ pub async fn start_system_audio_capture(
     let sr = stream.sample_rate();
     
     // Validate sample rate
-    if sr < 8000 || sr > 96000 {
+    if !(8000..=96000).contains(&sr) {
         error!("Invalid sample rate: {}", sr);
         return Err(format!("Invalid sample rate: {}. Expected 8000-96000 Hz", sr));
     }
@@ -171,7 +172,8 @@ async fn run_vad_capture(
                 
                 // Safety cap: force emit if exceeds 30s
                 if speech_buffer.len() > max_samples {
-                    if let Ok(b64) = samples_to_wav_b64(sr, &speech_buffer) {
+                    let normalized_buffer = normalize_audio_level(&speech_buffer, 0.1);
+                    if let Ok(b64) = samples_to_wav_b64(sr, &normalized_buffer) {
                         // let duration = speech_buffer.len() as f32 / sr as f32;
                         let _ = app.emit("speech-detected", b64);
                     }
@@ -201,7 +203,8 @@ async fn run_vad_capture(
                             }
                             
                             // Emit complete speech segment
-                            if let Ok(b64) = samples_to_wav_b64(sr, &speech_buffer) {
+                            let normalized_buffer = normalize_audio_level(&speech_buffer, 0.1);
+                            if let Ok(b64) = samples_to_wav_b64(sr, &normalized_buffer) {
                                 // let duration = speech_buffer.len() as f32 / sr as f32;
                                 let _ = app.emit("speech-detected", b64);
                             } else {
@@ -320,6 +323,7 @@ async fn run_continuous_capture(
 
         // Apply noise gate
         let cleaned_audio = apply_noise_gate(&audio_buffer, config.noise_gate_threshold);
+        let cleaned_audio = normalize_audio_level(&cleaned_audio, 0.1);
         
         match samples_to_wav_b64(sr, &cleaned_audio) {
             Ok(b64) => {
@@ -340,11 +344,14 @@ async fn run_continuous_capture(
 
 // Apply noise gate
 fn apply_noise_gate(samples: &[f32], threshold: f32) -> Vec<f32> {
+    const KNEE_RATIO: f32 = 3.0; // Compression ratio for soft knee
+
     samples
         .iter()
         .map(|&s| {
-            if s.abs() < threshold {
-                0.0
+            let abs = s.abs();
+            if abs < threshold {
+                s * (abs / threshold).powf(1.0 / KNEE_RATIO)
             } else {
                 s
             }
@@ -365,6 +372,32 @@ fn calculate_audio_metrics(chunk: &[f32]) -> (f32, f32) {
     
     let rms = (sumsq / chunk.len() as f32).sqrt();
     (rms, peak)
+}
+
+fn normalize_audio_level(samples: &[f32], target_rms: f32) -> Vec<f32> {
+    if samples.is_empty() {
+        return Vec::new();
+    }
+    
+    let sum_squares: f32 = samples.iter().map(|&s| s * s).sum();
+    let current_rms = (sum_squares / samples.len() as f32).sqrt();
+    
+    if current_rms < 0.001 {
+        return samples.to_vec();
+    }
+    
+    let gain = (target_rms / current_rms).min(10.0);
+    
+    samples.iter()
+        .map(|&s| {
+            let amplified = s * gain;
+            if amplified.abs() > 1.0 {
+                amplified.signum() * (1.0 - (-amplified.abs()).exp())
+            } else {
+                amplified
+            }
+        })
+        .collect()
 }
 
 // Convert samples to WAV base64 (with proper error handling)
@@ -553,4 +586,82 @@ pub fn get_audio_sample_rate(_app: AppHandle) -> Result<u32, String> {
     let sr = stream.sample_rate();
     
     Ok(sr)
+}
+
+// Audio device information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AudioOutputDevice {
+    pub id: String,
+    pub name: String,
+    pub is_default: bool,
+}
+
+#[tauri::command]
+pub fn enumerate_output_devices(_app: AppHandle) -> Result<Vec<AudioOutputDevice>, String> {
+    #[cfg(target_os = "macos")]
+    {
+        use cidre::core_audio as ca;
+        
+         let default_device = ca::System::default_output_device()
+            .map_err(|e| format!("Failed to get default output device: {}", e))?;
+        
+        let name = default_device.name()
+            .map_err(|e| format!("Failed to get device name: {}", e))?;
+        let uid = default_device.uid()
+            .map_err(|e| format!("Failed to get device UID: {}", e))?;
+        
+        Ok(vec![AudioOutputDevice {
+            id: uid.to_string(),
+            name: name.to_string(),
+            is_default: true,
+        }])
+    }
+    
+    #[cfg(target_os = "windows")]
+    {
+        use wasapi::{Direction, DeviceCollection};
+        
+        let mut devices = Vec::new();
+        
+        match DeviceCollection::new(&Direction::Render) {
+            Ok(collection) => {
+                for i in 0..collection.get_nbr_devices() {
+                    if let Ok(device) = collection.get_device_at_index(i) {
+                        if let Ok(name) = device.get_friendlyname() {
+                            // Use index as device ID for Windows
+                            let device_id = format!("windows_output_{}", i);
+                            let is_default = i == 0; // First device is usually default
+                            
+                            devices.push(AudioOutputDevice {
+                                id: device_id,
+                                name,
+                                is_default,
+                            });
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                return Err(format!("Failed to enumerate Windows audio devices: {}", e));
+            }
+        }
+        
+        Ok(devices)
+    }
+    
+    #[cfg(target_os = "linux")]
+    {
+         Ok(vec![
+            AudioOutputDevice {
+                id: "@DEFAULT_MONITOR@".to_string(),
+                name: "Default Output (Monitor)".to_string(),
+                is_default: true,
+            }
+        ])
+    }
+    
+    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
+    {
+        Err("Platform not supported".to_string())
+    }
 }

@@ -46,8 +46,8 @@ struct Ctx {
 }
 
 impl SpeakerInput {
-    pub fn new() -> Result<Self> {
-        let output_device = ca::System::default_output_device()?;
+    pub fn new(_device_id: Option<String>) -> Result<Self> {
+         let output_device = ca::System::default_output_device()?;
         let output_uid = output_device.uid()?;
 
         let sub_device = cf::DictionaryOf::with_keys_values(
@@ -122,7 +122,7 @@ impl SpeakerInput {
                 let byte_count = first_buffer.data_bytes_size as usize;
                 let float_count = byte_count / std::mem::size_of::<f32>();
 
-                if float_count > 0 && first_buffer.data != std::ptr::null_mut() {
+                if float_count > 0 && !first_buffer.data.is_null() {
                     let data = unsafe {
                         std::slice::from_raw_parts(first_buffer.data as *const f32, float_count)
                     };
@@ -187,7 +187,12 @@ fn process_audio_data(ctx: &mut Ctx, data: &[f32]) {
         let consecutive = ctx.consecutive_drops.fetch_add(1, Ordering::AcqRel) + 1;
         
         // Only terminate after many consecutive drops (prevents temporary spikes from killing stream)
+        if consecutive == 25 {
+            eprintln!("Warning: Audio buffer experiencing drops - system may be overloaded");
+        }
+
         if consecutive > 50 {
+            eprintln!("Critical: Audio buffer overflow - capture stopping");
             ctx.should_terminate.store(true, Ordering::Release);
             return;
         }

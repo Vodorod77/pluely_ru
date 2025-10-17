@@ -5,9 +5,6 @@ mod shortcuts;
 mod window;
 mod db;
 mod capture;
-use tauri_plugin_http;
-#[cfg(target_os = "macos")]
-use tauri_plugin_macos_permissions;
 use tauri_plugin_posthog::{init as posthog_init, PostHogConfig, PostHogOptions};
 use tauri::{Manager, AppHandle, WebviewWindow};
 use std::sync::{Arc, Mutex};
@@ -110,8 +107,7 @@ pub fn run() {
             speaker::update_vad_config,
             speaker::get_capture_status,
             speaker::get_audio_sample_rate,
-            speaker::list_system_audio_devices,
-            speaker::get_default_audio_device,
+            speaker::enumerate_output_devices,
         ])
         .setup(|app| {
             // Setup main window positioning

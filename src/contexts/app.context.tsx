@@ -70,6 +70,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       DEFAULT_SYSTEM_PROMPT
   );
 
+  const [selectedAudioDevices, setSelectedAudioDevices] = useState<{
+    input: string;
+    output: string;
+  }>({
+    input:
+      safeLocalStorage.getItem(STORAGE_KEYS.SELECTED_AUDIO_INPUT_DEVICE) || "",
+    output:
+      safeLocalStorage.getItem(STORAGE_KEYS.SELECTED_AUDIO_OUTPUT_DEVICE) || "",
+  });
+
   // AI Providers
   const [customAiProviders, setCustomAiProviders] = useState<TYPE_PROVIDER[]>(
     []
@@ -477,6 +487,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     hasActiveLicense,
     setHasActiveLicense,
     getActiveLicenseStatus,
+    selectedAudioDevices,
+    setSelectedAudioDevices,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

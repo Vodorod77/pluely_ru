@@ -9,11 +9,18 @@ use std::time::Duration;
 use tracing::error;
 use wasapi::{get_default_device, Direction, SampleType, StreamMode, WaveFormat};
 
-pub struct SpeakerInput {}
+pub struct SpeakerInput {
+    device_index: Option<usize>,
+}
 
 impl SpeakerInput {
-    pub fn new() -> Result<Self> {
-        Ok(Self {})
+    pub fn new(device_id: Option<String>) -> Result<Self> {
+        let device_index = device_id.and_then(|id| {
+            id.strip_prefix("windows_output_")
+                .and_then(|s| s.parse::<usize>().ok())
+        });
+        
+        Ok(Self { device_index })
     }
 
     // Starts the audio stream
@@ -28,21 +35,31 @@ impl SpeakerInput {
 
         let queue_clone = sample_queue.clone();
         let waker_clone = waker_state.clone();
+        let device_index = self.device_index;
 
         let capture_thread = thread::spawn(move || {
-            if let Err(e) = SpeakerStream::capture_audio_loop(queue_clone, waker_clone, init_tx) {
+            if let Err(e) = SpeakerStream::capture_audio_loop(queue_clone, waker_clone, init_tx, device_index) {
                 error!("Pluely Audio capture loop failed: {}", e);
             }
         });
 
-        if let Ok(Err(e)) = init_rx.recv_timeout(Duration::from_secs(5)) {
-            error!("Pluely Audio initialization failed: {}", e);
-        }
+        let actual_sample_rate = match init_rx.recv_timeout(Duration::from_secs(5)) {
+            Ok(Ok(rate)) => rate,
+            Ok(Err(e)) => {
+                error!("Pluely Audio initialization failed: {}", e);
+                44100
+            }
+            Err(_) => {
+                error!("Pluely Audio initialization timeout");
+                44100
+            }
+        };
 
         SpeakerStream {
             sample_queue,
             waker_state,
             capture_thread: Some(capture_thread),
+            actual_sample_rate,
         }
     }
 }
@@ -57,23 +74,35 @@ pub struct SpeakerStream {
     sample_queue: Arc<Mutex<VecDeque<f32>>>,
     waker_state: Arc<Mutex<WakerState>>,
     capture_thread: Option<thread::JoinHandle<()>>,
+    actual_sample_rate: u32,
 }
 
 impl SpeakerStream {
     pub fn sample_rate(&self) -> u32 {
-        44100
+        self.actual_sample_rate
     }
 
     fn capture_audio_loop(
         sample_queue: Arc<Mutex<VecDeque<f32>>>,
         waker_state: Arc<Mutex<WakerState>>,
-        init_tx: mpsc::Sender<Result<()>>,
+        init_tx: mpsc::Sender<Result<u32>>,
+        device_index: Option<usize>,
     ) -> Result<()> {
         let init_result = (|| -> Result<_> {
-            let device = get_default_device(&Direction::Render)?;
+            let device = match device_index {
+                Some(index) => {
+                    use wasapi::DeviceCollection;
+                    let collection = DeviceCollection::new(&Direction::Render)?;
+                    collection.get_device_at_index(index)?
+                }
+                None => get_default_device(&Direction::Render)?,
+            };
             let mut audio_client = device.get_iaudioclient()?;
 
-            let desired_format = WaveFormat::new(32, 32, &SampleType::Float, 44100, 1, None);
+            let device_format = audio_client.get_mixformat()?;
+            let actual_rate = device_format.get_samplespersec();
+
+            let desired_format = WaveFormat::new(32, 32, &SampleType::Float, actual_rate, 1, None);
 
             let (_def_time, min_time) = audio_client.get_device_period()?;
 
@@ -89,12 +118,12 @@ impl SpeakerStream {
 
             audio_client.start_stream()?;
 
-            Ok((h_event, render_client))
+            Ok((h_event, render_client, actual_rate))
         })();
 
         match init_result {
-            Ok((h_event, render_client)) => {
-                let _ = init_tx.send(Ok(()));
+            Ok((h_event, render_client, sample_rate)) => {
+                let _ = init_tx.send(Ok(sample_rate));
 
                 loop {
                     {
@@ -135,7 +164,6 @@ impl SpeakerStream {
                         // Consistent buffer overflow handling
                         let dropped = {
                             let mut queue = sample_queue.lock().unwrap();
-                            let current_len = queue.len();
                             let max_buffer_size = 131072; // 128KB buffer (matching macOS)
                             
                             queue.extend(samples.iter());

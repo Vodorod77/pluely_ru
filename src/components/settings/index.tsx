@@ -10,6 +10,7 @@ import {
 import { Disclaimer } from "./Disclaimer";
 import { SystemPrompt } from "./system-prompt";
 import { ScreenshotConfigs } from "./ScreenshotConfigs";
+import { AudioSelection } from "./AudioSelection";
 import { AutostartToggle } from "./AutostartToggle";
 import { AppIconToggle } from "./AppIconToggle";
 import { AlwaysOnTopToggle } from "./AlwaysOnTopToggle";
@@ -63,6 +64,9 @@ export const Settings = () => {
 
             {/* Keyboard Shortcuts */}
             <ShortcutManager />
+
+            {/* Audio Selection */}
+            <AudioSelection />
 
             {/* Autostart Toggle */}
             <AutostartToggle />

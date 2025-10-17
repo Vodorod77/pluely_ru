@@ -12,7 +12,8 @@ export const Audio = ({
   submit,
   setState,
 }: UseCompletionReturn) => {
-  const { selectedSttProvider, pluelyApiEnabled } = useApp();
+  const { selectedSttProvider, pluelyApiEnabled, selectedAudioDevices } =
+    useApp();
 
   const speechProviderStatus = selectedSttProvider.provider;
 
@@ -21,9 +22,11 @@ export const Audio = ({
       <PopoverTrigger asChild>
         {(pluelyApiEnabled || speechProviderStatus) && enableVAD ? (
           <AutoSpeechVAD
+            key={selectedAudioDevices.input}
             submit={submit}
             setState={setState}
             setEnableVAD={setEnableVAD}
+            microphoneDeviceId={selectedAudioDevices.input}
           />
         ) : (
           <Button

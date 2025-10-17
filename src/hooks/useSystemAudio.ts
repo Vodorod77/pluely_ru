@@ -104,6 +104,7 @@ export function useSystemAudio() {
     selectedAIProvider,
     allAiProviders,
     systemPrompt,
+    selectedAudioDevices,
   } = useApp();
   const abortControllerRef = useRef<AbortController | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -407,15 +408,21 @@ export function useSystemAudio() {
       setRecordingProgress(0);
       setError("");
 
+      const deviceId =
+        selectedAudioDevices.output !== "default"
+          ? selectedAudioDevices.output
+          : null;
+
       // Start a new continuous recording session
       await invoke<string>("start_system_audio_capture", {
         vadConfig: vadConfig,
+        deviceId: deviceId,
       });
     } catch (err) {
       console.error("Failed to start continuous recording:", err);
       setError(`Failed to start recording: ${err}`);
     }
-  }, [vadConfig]);
+  }, [vadConfig, selectedAudioDevices.output]);
 
   // Ignore current recording (stop without transcription)
   const ignoreContinuousRecording = useCallback(async () => {
@@ -556,16 +563,22 @@ export function useSystemAudio() {
       // Stop any existing capture
       await invoke<string>("stop_system_audio_capture");
 
+      const deviceId =
+        selectedAudioDevices.output !== "default"
+          ? selectedAudioDevices.output
+          : null;
+
       // Start capture with VAD config
       await invoke<string>("start_system_audio_capture", {
         vadConfig: vadConfig,
+        deviceId: deviceId,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       setError(errorMessage);
       setIsPopoverOpen(true);
     }
-  }, [vadConfig]);
+  }, [vadConfig, selectedAudioDevices.output]);
 
   const stopCapture = useCallback(async () => {
     try {
