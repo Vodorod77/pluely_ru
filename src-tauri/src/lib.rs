@@ -107,7 +107,6 @@ pub fn run() {
             speaker::update_vad_config,
             speaker::get_capture_status,
             speaker::get_audio_sample_rate,
-            speaker::enumerate_output_devices,
         ])
         .setup(|app| {
             // Setup main window positioning

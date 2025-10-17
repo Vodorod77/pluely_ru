@@ -93,7 +93,7 @@ impl SpeakerStream {
                 Some(index) => {
                     use wasapi::DeviceCollection;
                     let collection = DeviceCollection::new(&Direction::Render)?;
-                    collection.get_device_at_index(index)?
+                    collection.get_device_at_index(index.try_into()?)?
                 }
                 None => get_default_device(&Direction::Render)?,
             };
@@ -102,7 +102,7 @@ impl SpeakerStream {
             let device_format = audio_client.get_mixformat()?;
             let actual_rate = device_format.get_samplespersec();
 
-            let desired_format = WaveFormat::new(32, 32, &SampleType::Float, actual_rate, 1, None);
+            let desired_format = WaveFormat::new(32, 32, &SampleType::Float, actual_rate as usize, 1, None);
 
             let (_def_time, min_time) = audio_client.get_device_period()?;
 
