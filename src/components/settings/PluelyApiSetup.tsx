@@ -397,7 +397,10 @@ export const PluelyApiSetup = () => {
                     >
                       <div className="flex flex-col">
                         <div className="flex flex-row items-center gap-2">
-                          <p className="text-sm font-medium">{`${model?.name} - (${model?.modality})`}</p>
+                          <p className="text-sm font-medium">{`${model?.name}`}</p>
+                          <div className="text-xs border border-input/50 bg-muted/50 rounded-full px-2">
+                            {model?.modality}
+                          </div>
                           {model?.isAvailable ? (
                             <div className="text-xs text-orange-600 bg-white rounded-full px-2">
                               {model?.provider}
@@ -424,11 +427,10 @@ export const PluelyApiSetup = () => {
         </Popover>
         {/* this model only supports these modalities */}
         {selectedModel && (
-          <div className="space-y-2">
-            <p className="text-sm font-medium">
-              This model only supports these modalities:{" "}
-              {selectedModel.modality}
-            </p>
+          <div className="text-xs text-amber-500 bg-amber-500/10 p-3 rounded-md">
+            {selectedModel.modality?.includes("image")
+              ? "This model accepts both text and images as input and generates text responses."
+              : "⚠️ This model ONLY accepts text input. Do NOT upload images - they will not work with this model. Use a text+image→text model if you need image support."}
           </div>
         )}
         {/* License Key Input or Display */}

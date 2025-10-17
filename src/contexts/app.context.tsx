@@ -18,6 +18,7 @@ import { IContextType, ScreenshotConfig, TYPE_PROVIDER } from "@/types";
 import curl2Json from "@bany/curl-to-json";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { enable, disable } from "@tauri-apps/plugin-autostart";
 import {
   ReactNode,
   createContext,
@@ -264,20 +265,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const applyCustomizableSettings = async () => {
       try {
-        // Apply autostart setting
-        const autostartPromise = (async () => {
-          try {
-            const autostartEnabled = customizable?.autostart?.isEnabled ?? true;
-            if (autostartEnabled) {
-              await invoke("plugin:autostart|enable");
-            } else {
-              await invoke("plugin:autostart|disable");
-            }
-          } catch (error) {
-            console.debug("Autostart setting skipped:", error);
-          }
-        })();
-
         await Promise.all([
           invoke("set_app_icon_visibility", {
             visible: customizable.appIcon.isVisible,
@@ -285,7 +272,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           invoke("set_always_on_top", {
             enabled: customizable.alwaysOnTop.isEnabled,
           }),
-          autostartPromise,
         ]);
       } catch (error) {
         console.error("Failed to apply customizable settings:", error);
@@ -294,6 +280,34 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     applyCustomizableSettings();
   }, [customizable]);
+
+  useEffect(() => {
+    const initializeAutostart = async () => {
+      try {
+        const autostartInitialized = safeLocalStorage.getItem(
+          STORAGE_KEYS.AUTOSTART_INITIALIZED
+        );
+
+        // Only apply autostart on the very first launch
+        if (!autostartInitialized) {
+          const autostartEnabled = customizable?.autostart?.isEnabled ?? true;
+
+          if (autostartEnabled) {
+            await enable();
+          } else {
+            await disable();
+          }
+
+          // Mark as initialized so this never runs again
+          safeLocalStorage.setItem(STORAGE_KEYS.AUTOSTART_INITIALIZED, "true");
+        }
+      } catch (error) {
+        console.debug("Autostart initialization skipped:", error);
+      }
+    };
+
+    initializeAutostart();
+  }, []);
 
   // Listen for app icon hide/show events when window is toggled
   useEffect(() => {
@@ -444,9 +458,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setCustomizable(newState);
     try {
       if (isEnabled) {
-        await invoke("plugin:autostart|enable");
+        await enable();
       } else {
-        await invoke("plugin:autostart|disable");
+        await disable();
       }
       loadData();
     } catch (error) {
