@@ -816,14 +816,15 @@ export const useCompletion = () => {
     return () => window.removeEventListener("keydown", handleToggleShortcut);
   }, [isPopoverOpen]);
 
-  const captureScreenshot = async () => {
+  const captureScreenshot = useCallback(async () => {
     if (!handleScreenshotSubmit) return;
 
     const config = screenshotConfigRef.current;
 
+    setIsScreenshotLoading(true);
+
     try {
       if (config.enabled) {
-        setIsScreenshotLoading(true);
         const base64 = await invoke("capture_to_base64");
 
         if (config.mode === "auto") {
@@ -833,7 +834,6 @@ export const useCompletion = () => {
           // Manual mode: Add to attached files without prompt
           await handleScreenshotSubmit(base64 as string);
         }
-        setIsScreenshotLoading(false);
       } else {
         // Selection Mode: Open overlay to select an area
         isProcessingScreenshotRef.current = false;
@@ -845,8 +845,12 @@ export const useCompletion = () => {
         error: "Failed to capture screenshot. Please try again.",
       }));
       isProcessingScreenshotRef.current = false;
+    } finally {
+      if (config.enabled) {
+        setIsScreenshotLoading(false);
+      }
     }
-  };
+  }, [handleScreenshotSubmit]);
 
   useEffect(() => {
     let unlisten: any;
@@ -889,10 +893,10 @@ export const useCompletion = () => {
     };
   }, [handleScreenshotSubmit]);
 
-  const toggleRecording = () => {
+  const toggleRecording = useCallback(() => {
     setEnableVAD(!enableVAD);
     setMicOpen(!micOpen);
-  };
+  }, [enableVAD, micOpen]);
 
   // Cleanup abort controller on unmount
   useEffect(() => {

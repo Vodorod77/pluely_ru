@@ -157,27 +157,31 @@ pub async fn capture_selected_area(
 }
 
 #[tauri::command]
-pub fn capture_to_base64() -> Result<String, String> {
-    let monitors = Monitor::all().map_err(|e| format!("Failed to get monitors: {}", e))?;
-    let primary_monitor = monitors
-        .into_iter()
-        .find(|m| m.is_primary())
-        .ok_or("No primary monitor found".to_string())?;
+pub async fn capture_to_base64() -> Result<String, String> {
+    tauri::async_runtime::spawn_blocking(|| {
+        let monitors = Monitor::all().map_err(|e| format!("Failed to get monitors: {}", e))?;
+        let primary_monitor = monitors
+            .into_iter()
+            .find(|m| m.is_primary())
+            .ok_or_else(|| "No primary monitor found".to_string())?;
 
-    let image = primary_monitor
-        .capture_image()
-        .map_err(|e| format!("Failed to capture image: {}", e))?;
-    let mut png_buffer = Vec::new();
-    PngEncoder::new(&mut png_buffer)
-        .write_image(
-            image.as_raw(),
-            image.width(),
-            image.height(),
-            ColorType::Rgba8.into(),
-        )
-        .map_err(|e| format!("Failed to encode to PNG: {}", e))?;
-    let base64_str = base64::engine::general_purpose::STANDARD.encode(png_buffer);
+        let image = primary_monitor
+            .capture_image()
+            .map_err(|e| format!("Failed to capture image: {}", e))?;
+        let mut png_buffer = Vec::new();
+        PngEncoder::new(&mut png_buffer)
+            .write_image(
+                image.as_raw(),
+                image.width(),
+                image.height(),
+                ColorType::Rgba8.into(),
+            )
+            .map_err(|e| format!("Failed to encode to PNG: {}", e))?;
+        let base64_str = base64::engine::general_purpose::STANDARD.encode(png_buffer);
 
-    Ok(base64_str)
+        Ok(base64_str)
+    })
+    .await
+    .map_err(|e| format!("Task panicked: {}", e))?
 }
 
