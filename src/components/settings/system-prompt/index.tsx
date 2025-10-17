@@ -255,7 +255,7 @@ export const SystemPrompt = ({
 
   return (
     <>
-      <div className="space-y-3">
+      <div id="system-prompt" className="space-y-3">
         <Header
           title="System Prompt"
           description="Define the AI's behavior and personality."

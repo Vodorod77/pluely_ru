@@ -13,7 +13,7 @@ export const AlwaysOnTopToggle = ({ className }: AlwaysOnTopToggleProps) => {
   };
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div id="always-on-top" className={`space-y-2 ${className}`}>
       <Header
         title="Always On Top Mode"
         description="Control whether the window stays above all other applications"

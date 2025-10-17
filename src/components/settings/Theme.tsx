@@ -13,7 +13,7 @@ const Theme = () => {
   const { hasActiveLicense } = useApp();
 
   return (
-    <div className="relative space-y-3">
+    <div id="theme" className="relative space-y-3">
       <Header
         title={`Theme Customization ${
           hasActiveLicense

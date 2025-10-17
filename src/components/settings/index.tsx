@@ -21,6 +21,7 @@ import { DeleteChats } from "./DeleteChats";
 import { PluelyApiSetup } from "./PluelyApiSetup";
 import { ShortcutManager } from "./shortcuts";
 import Theme from "./Theme";
+import { SettingsNavigation } from "./SettingsNavigation";
 
 export const Settings = () => {
   const settings = useSettings();
@@ -50,6 +51,9 @@ export const Settings = () => {
       >
         <ScrollArea className="h-[calc(100vh-7.2rem)]">
           <div className="p-6 space-y-6">
+            {/* Settings Navigation */}
+            <SettingsNavigation />
+
             {/* Pluely API Setup */}
             <PluelyApiSetup />
 
@@ -86,7 +90,7 @@ export const Settings = () => {
             {/* STT Providers */}
             <STTProviders {...settings} />
 
-            {/* Disclaimer */}
+            {/* Delete Chat History */}
             <DeleteChats {...settings} />
           </div>
 

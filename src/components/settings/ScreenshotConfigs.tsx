@@ -18,7 +18,7 @@ export const ScreenshotConfigs = ({
   hasActiveLicense,
 }: UseSettingsReturn) => {
   return (
-    <div className="space-y-3">
+    <div id="screenshot" className="space-y-3">
       <Header
         title="Screenshot Configuration"
         description="Configure how screenshots are handled - automatically submit to AI or manual mode."

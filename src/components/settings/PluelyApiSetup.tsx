@@ -290,7 +290,7 @@ export const PluelyApiSetup = () => {
     : "Explore all the models Pluely supports.";
 
   return (
-    <div className="space-y-3">
+    <div id="pluely-api" className="space-y-3 -mt-2">
       <div className="space-y-2 flex flex-row items-center justify-between border-b pb-2">
         <Header
           title="Support Pluely"

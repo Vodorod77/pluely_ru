@@ -13,7 +13,7 @@ export const TitleToggle = ({ className }: TitleToggleProps) => {
   };
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div id="titles" className={`space-y-2 ${className}`}>
       <Header
         title="Element Titles"
         description="Show or hide title attributes on buttons and interactive elements"

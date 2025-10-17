@@ -129,7 +129,7 @@ export const AudioSelection = () => {
   };
 
   return (
-    <div className="space-y-1">
+    <div id="audio" className="space-y-1">
       <Header
         title="Audio Settings"
         description="Configure your audio input and output devices for voice interaction and system audio capture."

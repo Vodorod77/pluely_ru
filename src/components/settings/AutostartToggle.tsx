@@ -15,7 +15,7 @@ export const AutostartToggle = ({ className }: AutostartToggleProps) => {
   };
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div id="autostart" className={`space-y-2 ${className}`}>
       <Header
         title="Launch on Startup"
         description="Automatically open Pluely when your system starts"
