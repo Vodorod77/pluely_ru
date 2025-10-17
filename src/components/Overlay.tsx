@@ -179,7 +179,19 @@ const Overlay: React.FC = () => {
         {/* Selection Rectangle */}
         <div
           ref={selectionRef}
-          className="absolute border-2 border-white bg-white/10 rounded-3xl rounded-br-none pointer-events-none"
+          className="absolute border-2 border-primary-foreground bg-primary/10 rounded-3xl rounded-br-none pointer-events-none"
+          style={{
+            left: selectionStyle.left,
+            top: selectionStyle.top,
+            width: selectionStyle.width,
+            height: selectionStyle.height,
+            display: selectionStyle.display,
+            zIndex: 4000,
+          }}
+        />
+        <div
+          ref={selectionRef}
+          className="absolute border-[0.5px] border-black bg-primary/5 rounded-3xl rounded-br-none pointer-events-none"
           style={{
             left: selectionStyle.left,
             top: selectionStyle.top,
