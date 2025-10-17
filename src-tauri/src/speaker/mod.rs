@@ -18,11 +18,9 @@ mod linux;
 use linux::{SpeakerInput as PlatformSpeakerInput, SpeakerStream as PlatformSpeakerStream};
 
 mod commands;
-mod devices;
 
 // Re-export commands for tauri handler
 pub use commands::*;
-pub use devices::*;
 
 // Pluely speaker input and stream
 pub struct SpeakerInput {
@@ -34,7 +32,14 @@ impl SpeakerInput {
     // Creates a new speaker input. Fails on unsupported platforms.
     #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
     pub fn new() -> Result<Self> {
-        let inner = PlatformSpeakerInput::new()?;
+        let inner = PlatformSpeakerInput::new(None)?;
+        Ok(Self { inner })
+    }
+
+    // Creates a new speaker input with a specific device ID
+    #[cfg(any(target_os = "macos", target_os = "windows", target_os = "linux"))]
+    pub fn new_with_device(device_id: Option<String>) -> Result<Self> {
+        let inner = PlatformSpeakerInput::new(device_id)?;
         Ok(Self { inner })
     }
 
@@ -42,6 +47,13 @@ impl SpeakerInput {
     pub fn new() -> Result<Self> {
         Err(anyhow::anyhow!(
             "SpeakerInput::new is not supported on this platform"
+        ))
+    }
+
+    #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
+    pub fn new_with_device(_device_id: Option<String>) -> Result<Self> {
+        Err(anyhow::anyhow!(
+            "SpeakerInput::new_with_device is not supported on this platform"
         ))
     }
 

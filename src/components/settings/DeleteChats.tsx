@@ -19,7 +19,7 @@ export const DeleteChats = ({
   };
 
   return (
-    <div className="space-y-3">
+    <div id="delete-chats" className="space-y-3">
       <Header
         title="Delete Chat History"
         description="Permanently delete all your chat conversations and history. This action cannot be undone and will remove all stored conversations from your local storage."

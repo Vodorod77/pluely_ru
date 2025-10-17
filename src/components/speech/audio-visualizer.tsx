@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 // Configuration constants for the audio analyzer
 const AUDIO_CONFIG = {
@@ -16,28 +16,10 @@ const AUDIO_CONFIG = {
 
 interface AudioVisualizerProps {
   isRecording: boolean;
+  stream: MediaStream | null;
 }
 
-export function AudioVisualizer({ isRecording }: AudioVisualizerProps) {
-  const [stream, setStream] = useState<MediaStream | null>(null);
-
-  // if we use real audio stream from output device, it will be much better and more accurate
-  // but it will be much more CPU intensive and will be much more battery intensive
-  // so we use the display media stream instead
-  const getStream = async (isRecording: boolean) => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: isRecording,
-    });
-    setStream(stream);
-  };
-
-  // Get stream when recording starts
-  useEffect(() => {
-    getStream(isRecording);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRecording]);
-
+export function AudioVisualizer({ stream, isRecording }: AudioVisualizerProps) {
   // Refs for managing audio context and animation
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);

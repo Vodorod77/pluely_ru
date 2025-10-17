@@ -11,9 +11,7 @@ export const Completion = ({ isHidden }: { isHidden: boolean }) => {
     <>
       <Audio {...completion} />
       <Input {...completion} isHidden={isHidden} />
-      {completion?.screenshotConfiguration?.enabled && (
-        <Screenshot {...completion} />
-      )}
+      <Screenshot {...completion} />
       <Files {...completion} />
     </>
   );

@@ -13,7 +13,7 @@
 
 ### 💝 **Support the Project & Connect**
 
-[![Buy Me a Coffee](https://img.shields.io/badge/☕%20Buy%20Me%20a%20Coffee-Support%20Project-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://www.buymeacoffee.com/srikanthnani) &nbsp; [![Hire Me](https://img.shields.io/badge/💼%20Hire%20Me-Available%20for%20Work-6366f1?style=for-the-badge&logo=gmail&logoColor=white)](mailto:srikanthnani1202@gmail.com?subject=Hiring%20Inquiry%20-%20Pluely%20Developer&body=Hi%20Srikanth,%0D%0A%0D%0AI%20came%20across%20your%20Pluely%20project%20and%20I'm%20interested%20in%20discussing%20potential%20opportunities.%0D%0A%0D%0ABest%20regards)
+[![Buy Me a Coffee](https://img.shields.io/badge/☕%20Buy%20Me%20a%20Coffee-Support%20Project-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://www.buymeacoffee.com/srikanthnani) &nbsp; [![Hire Me](https://img.shields.io/badge/💼%20Hire%20Me-Let's%20Connect-6366f1?style=for-the-badge&logo=gmail&logoColor=white)](mailto:srikanthnani1202@gmail.com?subject=Hiring%20Inquiry%20-%20Let's%20Connect&body=Hi%20Srikanth,%0D%0A%0D%0AI%20discovered%20your%20project%20Pluely%20I'm%20reaching%20out%20to%20discuss%20potential%20opportunities.%0D%0A%0D%0ABest%20regards,%0D%0A[Your%20Name]) &nbsp; [![Join Pluely](https://img.shields.io/badge/🤝%20Join%20Pluely-Let's%20connect-1e88e5?style=for-the-badge)](mailto:support@pluely.com?subject=Joining%20Pluely%20Inquiry&body=%5Badd%20your%20text%20here%5D%0D%0A%0D%0A---%0D%0APlease%20include%20links%20to%20your%20work%20or%20portfolio%2C%20and%20why%20are%20you%20intrested%20to%20join%20pluely.%20%20%0D%0AWe%20are%20primarily%20looking%20for%20marketing%20professionals%2C%20content%20writers%2C%20interns%2C%20and%20creative%20collaborators%20-%20but%20are%20open%20to%20all%20areas%20of%20expertise.%20%20%0D%0AWe%27ll%20be%20in%20touch%20if%20your%20profile%20is%20a%20good%20fit.)
 
 **Socials:**
 [![GitHub](https://img.shields.io/badge/GitHub-iamsrikanthnani-black?style=flat&logo=github)](https://github.com/iamsrikanthnani)
@@ -149,6 +149,15 @@ _Note: Pluely system audio capture is actively in development and improving._
 - **Multi-STT Provider Support:** Choose from OpenAI Whisper, Groq, ElevenLabs, Google, Deepgram, and more
 - **AI Integration:** Seamlessly connects transcription to AI models for instant contextual responses
 
+## **Audio Device Selection**
+
+**Fine-tune your audio setup by selecting specific input and output devices.**
+
+- **Microphone Selection:** Choose your preferred microphone for voice input, ensuring the best speech-to-text accuracy.
+- **System Audio Source:** Select which output device to capture for system audio, perfect for multi-device setups.
+- **Easy Configuration:** Manage your devices in Settings → Audio Devices.
+- **Real-time Switching:** Changes are applied instantly without needing to restart the app.
+
 ## **Interactive Input**
 
 **Smooth, instant input that appears first for quick AI help - paste any images directly:**
@@ -173,31 +182,32 @@ Experience the seamless input flow that prioritizes speed and simplicity:
 
 ## **Screenshot Capture**
 
-**Capture and analyze screenshots with intelligent auto/manual modes for instant AI assistance:**
+**Capture and analyze your screen with three powerful modes for ultimate flexibility:**
 
-Experience two powerful screenshot modes that adapt to your workflow:
+Pluely offers advanced screen capturing that adapts to your workflow, whether you need to select a specific area, capture the full screen for manual analysis, or automate the entire process.
 
 <div>
 
-|                                               Manual Mode Screenshot                                                |
+|                                                   Selection Mode                                                    |
 | :-----------------------------------------------------------------------------------------------------------------: |
-|                  <img src="images/leet-code.gif" alt="Pluely Manual Mode Screenshot" width="600"/>                  |
-| _Perfect for coding challenges - capture LeetCode problems and get step-by-step solutions with your custom prompts_ |
+|                <img src="images/leet-code.gif" alt="Pluely Selection Mode Screenshot" width="600"/>                 |
+| _Perfect for coding challenges - select a specific problem and get step-by-step solutions with your custom prompts_ |
 
-|                                                Auto Mode Screenshot                                                |
-| :----------------------------------------------------------------------------------------------------------------: |
-|                   <img src="images/youtube.gif" alt="Pluely Auto Mode Screenshot" width="600"/>                    |
-| _Ideal for single image - automatically analyze image content with your predefined AI prompt for instant insights_ |
+|                                                         Auto Screenshot Mode                                                          |
+| :-----------------------------------------------------------------------------------------------------------------------------------: |
+|                             <img src="images/youtube.gif" alt="Pluely Auto Mode Screenshot" width="600"/>                             |
+| _Ideal for quick analysis - automatically capture the full screen and analyze it with your predefined AI prompt for instant insights_ |
 
 </div>
 
-- **Manual Mode:** Capture multiple screenshots submit to AI analysis, with a prompt
-- **Auto Mode:** Screenshots automatically submit to AI using your saved custom prompt with instant analysis
+- **Selection Mode:** Click and drag to capture any specific area of your screen. Perfect for focusing on exactly what you need. (Requires active license)
+- **Manual Screenshot Mode:** Captures the entire screen and attaches it to your input, giving you full control to add more files or craft the perfect prompt before sending.
+- **Auto Screenshot Mode:** Captures the entire screen and automatically sends it for analysis using your saved custom prompt for instant insights.
 - **Shortcuts:** Capture screenshots with `Cmd+Shift+S` (macOS) or `Ctrl+Shift+S` (Windows/Linux)
-- **Smart Configuration:** Toggle between modes in Settings → Screenshot Configuration
-- **Custom Prompts:** Define your auto-analysis prompt for consistent, personalized AI responses
-- **Seamless Integration:** Screenshots work with all AI providers (OpenAI, Gemini, Claude, Grok, includes with your custom providers)
-- **Privacy First:** Screenshots are processed locally and only sent to your chosen AI provider
+- **Smart Configuration:** Easily switch between Selection and Screenshot capture methods, and configure Auto/Manual processing in Settings → Screenshot Configuration.
+- **Custom Prompts:** Define your auto-analysis prompt for consistent, personalized AI responses.
+- **Seamless Integration:** Works with all AI providers (OpenAI, Gemini, Claude, Grok, and custom providers).
+- **Privacy First:** Screenshots are processed locally and only sent to your chosen AI provider.
 
 ## **Always on Top**
 
@@ -241,6 +251,14 @@ Experience two powerful screenshot modes that adapt to your workflow:
 - **Instant Effect:** Changes apply immediately across all 50+ interactive elements
 - **Accessibility Aware:** Perfect for users who prefer clean interfaces without tooltip clutter
 - **Preserves Functionality:** Elements remain clickable and accessible, only tooltips are controlled |
+
+## **Launch on Startup**
+
+**Automatically open Pluely when you log in to your computer.**
+
+- **Enable/Disable:** Easily toggle autostart from Settings → App Startup.
+- **Seamless Integration:** Pluely will start in the background, ready whenever you need it.
+- **Always Ready:** Ensures your AI assistant is just a shortcut away from the moment you start working.
 
 ### 📚 **Conversation History**
 
@@ -298,6 +316,14 @@ _Browse, reuse, download, and delete your AI conversations with complete local s
 - **Optimal Performance:** Balanced settings for accuracy and responsiveness
 - **Settings Control:** Access advanced VAD settings in Settings → Voice Activity Detection
 
+### **Settings Quick Navigation**
+
+**Quickly jump to any section in the settings panel with a single click.**
+
+- **Sticky Navigation:** A navigation bar with links to all settings sections.
+- **Improved UX:** No more scrolling to find the setting you need.
+- **Intuitive:** Simplifies configuration and makes managing Pluely even faster.
+
 ---
 
 ## **Setup**
@@ -314,7 +340,7 @@ _Pluely License activation unlocks faster AI responses, premium features, and de
 
 #### **What You Get with Pluely License:**
 
-- **80+ premium AI models with instant access**
+- **120+ premium AI models with instant access**
 - **Zero-latency AI generation**
 - **One-click model switching**
 - **Zero maintenance and setup**
@@ -799,6 +825,7 @@ This project is licensed under the **GNU General Public License v3.0** - see the
 
 - **[Cluely](https://cluely.com/)** - Inspiration for this open source alternative
 - **[Tauri](https://tauri.app/)** - Amazing desktop framework
+- **[tauri-nspanel](https://github.com/ahkohd/tauri-nspanel)** - macOS native panel integration for Tauri
 - **[shadcn/ui](https://ui.shadcn.com/)** - Beautiful UI components
 - **[@ricky0123/vad-react](https://github.com/ricky0123/vad)** - Voice Activity Detection
 - **[OpenAI](https://openai.com/)** - GPT models and Whisper API

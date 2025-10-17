@@ -14,31 +14,33 @@ use pulse::sample::{Format, Spec};
 use pulse::stream::Direction;
 
 pub struct SpeakerInput {
-    server_name: Option<String>,
+    source_name: Option<String>,
 }
 
 impl SpeakerInput {
-    pub fn new() -> Result<Self> {
-        Ok(Self { server_name: None })
+    pub fn new(device_id: Option<String>) -> Result<Self> {
+        // For Linux, device_id is the PulseAudio source name
+        Ok(Self { source_name: device_id })
     }
 
     pub fn stream(self) -> SpeakerStream {
         let sample_queue = Arc::new(Mutex::new(VecDeque::new()));
         let waker_state = Arc::new(Mutex::new(WakerState {
             waker: None,
+            has_data: false,
             shutdown: false,
         }));
         let (init_tx, init_rx) = std::sync::mpsc::channel();
 
         let queue_clone = sample_queue.clone();
         let waker_clone = waker_state.clone();
-        let server_name = self.server_name;
+        let source_name = self.source_name;
 
         let capture_thread = thread::spawn(move || {
             if let Err(e) = SpeakerStream::capture_audio_loop(
                 queue_clone,
                 waker_clone,
-                server_name.as_deref(),
+                source_name.as_deref(),
                 init_tx,
             ) {
                 eprintln!("Audio capture loop failed: {}", e);
@@ -68,6 +70,7 @@ impl SpeakerInput {
 
 struct WakerState {
     waker: Option<Waker>,
+    has_data: bool,
     shutdown: bool,
 }
 
@@ -86,7 +89,7 @@ impl SpeakerStream {
     fn capture_audio_loop(
         sample_queue: Arc<Mutex<VecDeque<f32>>>,
         waker_state: Arc<Mutex<WakerState>>,
-        _server_name: Option<&str>,
+        source_name: Option<&str>,
         init_tx: std::sync::mpsc::Sender<Result<u32>>,
     ) -> Result<()> {
         let spec = Spec {
@@ -99,8 +102,7 @@ impl SpeakerStream {
             return Err(anyhow!("Invalid audio specification"));
         }
 
-        // Try to get the default sink monitor source
-        let source_name = get_default_monitor_source();
+        let source_name = source_name.map(|s| s.to_string()).or_else(get_default_monitor_source);
 
         let init_result: Result<(Simple, u32)> = (|| {
             let simple = Simple::new(
@@ -165,8 +167,15 @@ impl SpeakerStream {
                                 }
                                 
                                 // Wake up consumer
-                                if let Some(waker) = waker_state.lock().unwrap().waker.take() {
-                                    waker.wake();
+                                {
+                                    let mut state = waker_state.lock().unwrap();
+                                    if !state.has_data {
+                                        state.has_data = true;
+                                        if let Some(waker) = state.waker.take() {
+                                            drop(state);
+                                            waker.wake();
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -221,6 +230,7 @@ impl Stream for SpeakerStream {
             return Poll::Ready(None);
         }
 
+        state.has_data = false;
         state.waker = Some(cx.waker().clone());
         Poll::Pending
     }

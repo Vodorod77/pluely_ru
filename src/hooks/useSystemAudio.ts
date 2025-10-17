@@ -85,6 +85,8 @@ export function useSystemAudio() {
   const [isContinuousMode, setIsContinuousMode] = useState<boolean>(false);
   const [isRecordingInContinuousMode, setIsRecordingInContinuousMode] =
     useState<boolean>(false);
+  const [stream, setStream] = useState<MediaStream | null>(null); // for audio visualizer
+  const streamRef = useRef<MediaStream | null>(null);
 
   const [conversation, setConversation] = useState<ChatConversation>({
     id: "",
@@ -104,6 +106,7 @@ export function useSystemAudio() {
     selectedAIProvider,
     allAiProviders,
     systemPrompt,
+    selectedAudioDevices,
   } = useApp();
   const abortControllerRef = useRef<AbortController | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -407,15 +410,21 @@ export function useSystemAudio() {
       setRecordingProgress(0);
       setError("");
 
+      const deviceId =
+        selectedAudioDevices.output !== "default"
+          ? selectedAudioDevices.output
+          : null;
+
       // Start a new continuous recording session
       await invoke<string>("start_system_audio_capture", {
         vadConfig: vadConfig,
+        deviceId: deviceId,
       });
     } catch (err) {
       console.error("Failed to start continuous recording:", err);
       setError(`Failed to start recording: ${err}`);
     }
-  }, [vadConfig]);
+  }, [vadConfig, selectedAudioDevices.output]);
 
   // Ignore current recording (stop without transcription)
   const ignoreContinuousRecording = useCallback(async () => {
@@ -556,16 +565,22 @@ export function useSystemAudio() {
       // Stop any existing capture
       await invoke<string>("stop_system_audio_capture");
 
+      const deviceId =
+        selectedAudioDevices.output !== "default"
+          ? selectedAudioDevices.output
+          : null;
+
       // Start capture with VAD config
       await invoke<string>("start_system_audio_capture", {
         vadConfig: vadConfig,
+        deviceId: deviceId,
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       setError(errorMessage);
       setIsPopoverOpen(true);
     }
-  }, [vadConfig]);
+  }, [vadConfig, selectedAudioDevices.output]);
 
   const stopCapture = useCallback(async () => {
     try {
@@ -589,7 +604,6 @@ export function useSystemAudio() {
       setLastAIResponse("");
       setError("");
       setIsPopoverOpen(false);
-      window.location.reload();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       setError(`Failed to stop capture: ${errorMessage}`);
@@ -671,10 +685,40 @@ export function useSystemAudio() {
     });
   }, [startCapture, stopCapture]);
 
+  // Manage microphone stream for audio visualizer
+  useEffect(() => {
+    const getStream = async () => {
+      if (capturing) {
+        try {
+          const mediaStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          streamRef.current = mediaStream;
+          setStream(mediaStream);
+        } catch (error) {
+          console.error("Failed to get microphone stream:", error);
+        }
+      } else {
+        // Stop all tracks when not capturing
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+        }
+        setStream(null);
+      }
+    };
+
+    getStream();
+  }, [capturing]);
+
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+      }
+      // Clean up stream on unmount
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
       invoke("stop_system_audio_capture").catch(() => {});
     };
@@ -887,5 +931,6 @@ export function useSystemAudio() {
     ignoreContinuousRecording,
     // Scroll area ref for keyboard navigation
     scrollAreaRef,
+    stream,
   };
 }

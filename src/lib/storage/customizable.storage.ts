@@ -10,12 +10,16 @@ export interface CustomizableState {
   titles: {
     isEnabled: boolean;
   };
+  autostart: {
+    isEnabled: boolean;
+  };
 }
 
 export const DEFAULT_CUSTOMIZABLE_STATE: CustomizableState = {
   appIcon: { isVisible: true },
   alwaysOnTop: { isEnabled: false },
   titles: { isEnabled: true },
+  autostart: { isEnabled: true },
 };
 
 /**
@@ -24,7 +28,19 @@ export const DEFAULT_CUSTOMIZABLE_STATE: CustomizableState = {
 export const getCustomizableState = (): CustomizableState => {
   try {
     const stored = localStorage.getItem(STORAGE_KEYS.CUSTOMIZABLE);
-    return stored ? JSON.parse(stored) : DEFAULT_CUSTOMIZABLE_STATE;
+    if (!stored) {
+      return DEFAULT_CUSTOMIZABLE_STATE;
+    }
+
+    const parsedState = JSON.parse(stored);
+
+    return {
+      appIcon: parsedState.appIcon || DEFAULT_CUSTOMIZABLE_STATE.appIcon,
+      alwaysOnTop:
+        parsedState.alwaysOnTop || DEFAULT_CUSTOMIZABLE_STATE.alwaysOnTop,
+      titles: parsedState.titles || DEFAULT_CUSTOMIZABLE_STATE.titles,
+      autostart: parsedState.autostart || DEFAULT_CUSTOMIZABLE_STATE.autostart,
+    };
   } catch (error) {
     console.error("Failed to get customizable state:", error);
     return DEFAULT_CUSTOMIZABLE_STATE;
@@ -72,6 +88,16 @@ export const updateTitlesVisibility = (
 ): CustomizableState => {
   const currentState = getCustomizableState();
   const newState = { ...currentState, titles: { isEnabled } };
+  setCustomizableState(newState);
+  return newState;
+};
+
+/**
+ * Update autostart state
+ */
+export const updateAutostart = (isEnabled: boolean): CustomizableState => {
+  const currentState = getCustomizableState();
+  const newState = { ...currentState, autostart: { isEnabled } };
   setCustomizableState(newState);
   return newState;
 };

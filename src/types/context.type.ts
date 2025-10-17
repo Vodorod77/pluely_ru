@@ -39,10 +39,21 @@ export type IContextType = {
   toggleAppIconVisibility: (isVisible: boolean) => Promise<void>;
   toggleAlwaysOnTop: (isEnabled: boolean) => Promise<void>;
   toggleTitlesVisibility: (isEnabled: boolean) => void;
+  toggleAutostart: (isEnabled: boolean) => Promise<void>;
   loadData: () => void;
   pluelyApiEnabled: boolean;
   setPluelyApiEnabled: (enabled: boolean) => void;
   hasActiveLicense: boolean;
   setHasActiveLicense: Dispatch<SetStateAction<boolean>>;
   getActiveLicenseStatus: () => Promise<void>;
+  selectedAudioDevices: {
+    input: string;
+    output: string;
+  };
+  setSelectedAudioDevices: Dispatch<
+    SetStateAction<{
+      input: string;
+      output: string;
+    }>
+  >;
 };

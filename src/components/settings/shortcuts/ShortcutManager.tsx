@@ -115,7 +115,7 @@ export const ShortcutManager = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div id="shortcuts" className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

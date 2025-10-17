@@ -7,9 +7,11 @@ import {
 import { safeLocalStorage, trackAppStart } from "@/lib";
 import {
   getCustomizableState,
+  setCustomizableState,
   updateAppIconVisibility,
   updateAlwaysOnTop,
   updateTitlesVisibility,
+  updateAutostart,
   CustomizableState,
 } from "@/lib/storage";
 import { IContextType, ScreenshotConfig, TYPE_PROVIDER } from "@/types";
@@ -68,6 +70,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       DEFAULT_SYSTEM_PROMPT
   );
 
+  const [selectedAudioDevices, setSelectedAudioDevices] = useState<{
+    input: string;
+    output: string;
+  }>({
+    input:
+      safeLocalStorage.getItem(STORAGE_KEYS.SELECTED_AUDIO_INPUT_DEVICE) || "",
+    output:
+      safeLocalStorage.getItem(STORAGE_KEYS.SELECTED_AUDIO_OUTPUT_DEVICE) || "",
+  });
+
   // AI Providers
   const [customAiProviders, setCustomAiProviders] = useState<TYPE_PROVIDER[]>(
     []
@@ -104,6 +116,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     appIcon: { isVisible: true },
     alwaysOnTop: { isEnabled: true },
     titles: { isEnabled: true },
+    autostart: { isEnabled: true },
   });
   const [hasActiveLicense, setHasActiveLicense] = useState<boolean>(false);
 
@@ -117,6 +130,17 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       "validate_license_api"
     );
     setHasActiveLicense(response.is_active);
+    // Check if the auto configs are enabled
+    const autoConfigsEnabled = localStorage.getItem("auto-configs-enabled");
+    if (response.is_active && !autoConfigsEnabled) {
+      setScreenshotConfiguration({
+        mode: "auto",
+        autoPrompt: "Analyze the screenshot and provide insights",
+        enabled: false,
+      });
+      // Set the flag to true so that we don't change the mode again
+      localStorage.setItem("auto-configs-enabled", "true");
+    }
   };
 
   // Function to load AI, STT, system prompt and screenshot config data from storage
@@ -142,7 +166,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
             autoPrompt:
               parsed.autoPrompt ||
               "Analyze this screenshot and provide insights",
-            enabled: parsed.enabled !== undefined ? parsed.enabled : true,
+            enabled: parsed.enabled !== undefined ? parsed.enabled : false,
           });
         }
       } catch {
@@ -188,6 +212,23 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const customizableState = getCustomizableState();
     setCustomizable(customizableState);
 
+    const stored = safeLocalStorage.getItem(STORAGE_KEYS.CUSTOMIZABLE);
+    if (!stored) {
+      // save the default state
+      setCustomizableState(customizableState);
+    } else {
+      // check if we need to update the schema
+      try {
+        const parsed = JSON.parse(stored);
+        if (!parsed.autostart) {
+          // save the merged state with new autostart property
+          setCustomizableState(customizableState);
+        }
+      } catch (error) {
+        console.debug("Failed to check customizable state schema:", error);
+      }
+    }
+
     // Load Pluely API enabled state
     const savedPluelyApiEnabled = safeLocalStorage.getItem(
       STORAGE_KEYS.PLUELY_API_ENABLED
@@ -223,6 +264,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const applyCustomizableSettings = async () => {
       try {
+        // Apply autostart setting
+        const autostartPromise = (async () => {
+          try {
+            const autostartEnabled = customizable?.autostart?.isEnabled ?? true;
+            if (autostartEnabled) {
+              await invoke("plugin:autostart|enable");
+            } else {
+              await invoke("plugin:autostart|disable");
+            }
+          } catch (error) {
+            console.debug("Autostart setting skipped:", error);
+          }
+        })();
+
         await Promise.all([
           invoke("set_app_icon_visibility", {
             visible: customizable.appIcon.isVisible,
@@ -230,6 +285,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           invoke("set_always_on_top", {
             enabled: customizable.alwaysOnTop.isEnabled,
           }),
+          autostartPromise,
         ]);
       } catch (error) {
         console.error("Failed to apply customizable settings:", error);
@@ -383,6 +439,23 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     loadData();
   };
 
+  const toggleAutostart = async (isEnabled: boolean) => {
+    const newState = updateAutostart(isEnabled);
+    setCustomizable(newState);
+    try {
+      if (isEnabled) {
+        await invoke("plugin:autostart|enable");
+      } else {
+        await invoke("plugin:autostart|disable");
+      }
+      loadData();
+    } catch (error) {
+      console.error("Failed to toggle autostart:", error);
+      const revertedState = updateAutostart(!isEnabled);
+      setCustomizable(revertedState);
+    }
+  };
+
   const setPluelyApiEnabled = (enabled: boolean) => {
     setPluelyApiEnabledState(enabled);
     safeLocalStorage.setItem(STORAGE_KEYS.PLUELY_API_ENABLED, String(enabled));
@@ -407,12 +480,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     toggleAppIconVisibility,
     toggleAlwaysOnTop,
     toggleTitlesVisibility,
+    toggleAutostart,
     loadData,
     pluelyApiEnabled,
     setPluelyApiEnabled,
     hasActiveLicense,
     setHasActiveLicense,
     getActiveLicenseStatus,
+    selectedAudioDevices,
+    setSelectedAudioDevices,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

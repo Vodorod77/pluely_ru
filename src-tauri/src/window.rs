@@ -16,6 +16,12 @@ pub fn setup_main_window(app: &mut App) -> Result<(), Box<dyn std::error::Error>
         .ok_or("No window found")?;
 
     position_window_top_center(&window, TOP_OFFSET)?;
+    
+    // Set window as non-focusable on Windows
+    #[cfg(target_os = "windows")]
+    {
+        let _ = window.set_focusable(false);
+    }
 
     Ok(())
 }
