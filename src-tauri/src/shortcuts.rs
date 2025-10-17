@@ -370,3 +370,9 @@ pub fn set_always_on_top<R: Runtime>(app: AppHandle<R>, enabled: bool) -> Result
 
     Ok(())
 }
+
+/// Tauri command to exit the application
+#[tauri::command]
+ pub fn exit_app(app_handle: tauri::AppHandle) {
+    app_handle.exit(0);
+}

@@ -1,6 +1,7 @@
-import { GithubIcon } from "lucide-react";
+import { GithubIcon, PowerIcon } from "lucide-react";
 import { useVersion } from "@/hooks";
 import { useApp } from "@/contexts";
+import { invoke } from "@tauri-apps/api/core";
 
 export const Disclaimer = () => {
   const { version, isLoading: isVersionLoading } = useVersion();
@@ -49,6 +50,15 @@ export const Disclaimer = () => {
         >
           <GithubIcon className="w-5 h-5" />
         </a>
+        <div
+          onClick={async () => {
+            await invoke("exit_app");
+          }}
+          className="ml-2 text-muted-foreground hover:text-primary transition-colors"
+          title="Quit the application"
+        >
+          <PowerIcon className="w-5 h-5" />
+        </div>
       </div>
     </div>
   );
