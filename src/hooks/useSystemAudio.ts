@@ -85,6 +85,8 @@ export function useSystemAudio() {
   const [isContinuousMode, setIsContinuousMode] = useState<boolean>(false);
   const [isRecordingInContinuousMode, setIsRecordingInContinuousMode] =
     useState<boolean>(false);
+  const [stream, setStream] = useState<MediaStream | null>(null); // for audio visualizer
+  const streamRef = useRef<MediaStream | null>(null);
 
   const [conversation, setConversation] = useState<ChatConversation>({
     id: "",
@@ -602,7 +604,6 @@ export function useSystemAudio() {
       setLastAIResponse("");
       setError("");
       setIsPopoverOpen(false);
-      window.location.reload();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);
       setError(`Failed to stop capture: ${errorMessage}`);
@@ -684,10 +685,40 @@ export function useSystemAudio() {
     });
   }, [startCapture, stopCapture]);
 
+  // Manage microphone stream for audio visualizer
+  useEffect(() => {
+    const getStream = async () => {
+      if (capturing) {
+        try {
+          const mediaStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          streamRef.current = mediaStream;
+          setStream(mediaStream);
+        } catch (error) {
+          console.error("Failed to get microphone stream:", error);
+        }
+      } else {
+        // Stop all tracks when not capturing
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+        }
+        setStream(null);
+      }
+    };
+
+    getStream();
+  }, [capturing]);
+
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+      }
+      // Clean up stream on unmount
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
       invoke("stop_system_audio_capture").catch(() => {});
     };
@@ -900,5 +931,6 @@ export function useSystemAudio() {
     ignoreContinuousRecording,
     // Scroll area ref for keyboard navigation
     scrollAreaRef,
+    stream,
   };
 }
