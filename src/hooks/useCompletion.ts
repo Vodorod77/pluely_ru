@@ -79,6 +79,7 @@ export const useCompletion = () => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const isProcessingScreenshotRef = useRef(false);
   const screenshotConfigRef = useRef(screenshotConfiguration);
+  const hasCheckedPermissionRef = useRef(false);
 
   const { resizeWindow } = useWindowResize();
 
@@ -824,6 +825,38 @@ export const useCompletion = () => {
     setIsScreenshotLoading(true);
 
     try {
+      // Check screen recording permission on macOS
+      const platform = navigator.platform.toLowerCase();
+      if (platform.includes("mac") && !hasCheckedPermissionRef.current) {
+        const {
+          checkScreenRecordingPermission,
+          requestScreenRecordingPermission,
+        } = await import("tauri-plugin-macos-permissions-api");
+
+        const hasPermission = await checkScreenRecordingPermission();
+
+        if (!hasPermission) {
+          // Request permission
+          await requestScreenRecordingPermission();
+
+          // Wait a moment and check again
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+
+          const hasPermissionNow = await checkScreenRecordingPermission();
+
+          if (!hasPermissionNow) {
+            setState((prev) => ({
+              ...prev,
+              error:
+                "Screen Recording permission required. Please enable it by going to System Settings > Privacy & Security > Screen & System Audio Recording. If you don't see Pluely in the list, click the '+' button to add it. If it's already listed, make sure it's enabled. Then restart the app.",
+            }));
+            setIsScreenshotLoading(false);
+            return;
+          }
+        }
+        hasCheckedPermissionRef.current = true;
+      }
+
       if (config.enabled) {
         const base64 = await invoke("capture_to_base64");
 

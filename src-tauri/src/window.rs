@@ -18,10 +18,10 @@ pub fn setup_main_window(app: &mut App) -> Result<(), Box<dyn std::error::Error>
     position_window_top_center(&window, TOP_OFFSET)?;
     
     // Set window as non-focusable on Windows
-    #[cfg(target_os = "windows")]
-    {
-        let _ = window.set_focusable(false);
-    }
+    // #[cfg(target_os = "windows")]
+    // {
+    //     let _ = window.set_focusable(false);
+    // }
 
     Ok(())
 }
@@ -70,55 +70,13 @@ pub fn center_window_completely(window: &WebviewWindow) -> Result<(), Box<dyn st
 
 #[tauri::command]
 pub fn set_window_height(window: tauri::WebviewWindow, height: u32) -> Result<(), String> {
-    use tauri::{LogicalSize, PhysicalPosition, Size};
+    use tauri::{LogicalSize, Size};
 
-    // Get monitor size
-    let monitor = window
-        .current_monitor()
-        .map_err(|e| format!("Failed to get monitor: {}", e))?
-        .ok_or("No monitor found".to_string())?;
-    let screen_size = monitor.size();
-
-    // Get current position & size
-    let current_pos = window
-        .outer_position()
-        .map_err(|e| format!("Failed to get window position: {}", e))?;
-
-    let new_height = height as i32;
-    let new_width = 700; // dynamically use current width
-    let mut new_x = current_pos.x;
-    let mut new_y = current_pos.y;
-
-    // Ensure width fits inside screen
-    if new_x + new_width > screen_size.width as i32 {
-        new_x = screen_size.width as i32 - new_width;
-    }
-    if new_x < 0 {
-        new_x = 0;
-    }
-
-    // Check vertical fit
-    if new_y + new_height > screen_size.height as i32 {
-        // shift up so bottom fits
-        new_y = screen_size.height as i32 - new_height;
-        if new_y < 0 {
-            new_y = 0; // in case screen is smaller than requested height
-        }
-    }
-
-    // Resize (keep current width, only update height)
-    let new_size = LogicalSize::new(new_width as f64, new_height as f64);
+    // Simply set the window size with fixed width and new height
+    let new_size = LogicalSize::new(700.0, height as f64);
     window
         .set_size(Size::Logical(new_size))
         .map_err(|e| format!("Failed to resize window: {}", e))?;
-
-    // Reposition
-    window
-        .set_position(tauri::Position::Physical(PhysicalPosition {
-            x: new_x,
-            y: new_y,
-        }))
-        .map_err(|e| format!("Failed to reposition window: {}", e))?;
 
     Ok(())
 }
