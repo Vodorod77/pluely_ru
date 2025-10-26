@@ -1,5 +1,7 @@
 import { STORAGE_KEYS } from "@/config";
 
+export type CursorType = "invisible" | "default" | "auto";
+
 export interface CustomizableState {
   appIcon: {
     isVisible: boolean;
@@ -13,6 +15,9 @@ export interface CustomizableState {
   autostart: {
     isEnabled: boolean;
   };
+  cursor: {
+    type: CursorType;
+  };
 }
 
 export const DEFAULT_CUSTOMIZABLE_STATE: CustomizableState = {
@@ -20,6 +25,7 @@ export const DEFAULT_CUSTOMIZABLE_STATE: CustomizableState = {
   alwaysOnTop: { isEnabled: false },
   titles: { isEnabled: true },
   autostart: { isEnabled: true },
+  cursor: { type: "invisible" },
 };
 
 /**
@@ -40,6 +46,7 @@ export const getCustomizableState = (): CustomizableState => {
         parsedState.alwaysOnTop || DEFAULT_CUSTOMIZABLE_STATE.alwaysOnTop,
       titles: parsedState.titles || DEFAULT_CUSTOMIZABLE_STATE.titles,
       autostart: parsedState.autostart || DEFAULT_CUSTOMIZABLE_STATE.autostart,
+      cursor: parsedState.cursor || DEFAULT_CUSTOMIZABLE_STATE.cursor,
     };
   } catch (error) {
     console.error("Failed to get customizable state:", error);
@@ -88,6 +95,16 @@ export const updateTitlesVisibility = (
 ): CustomizableState => {
   const currentState = getCustomizableState();
   const newState = { ...currentState, titles: { isEnabled } };
+  setCustomizableState(newState);
+  return newState;
+};
+
+/**
+ * Update cursor type
+ */
+export const updateCursorType = (type: CursorType): CustomizableState => {
+  const currentState = getCustomizableState();
+  const newState = { ...currentState, cursor: { type } };
   setCustomizableState(newState);
   return newState;
 };

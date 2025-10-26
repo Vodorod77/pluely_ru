@@ -22,6 +22,7 @@ import { PluelyApiSetup } from "./PluelyApiSetup";
 import { ShortcutManager } from "./shortcuts";
 import Theme from "./Theme";
 import { SettingsNavigation } from "./SettingsNavigation";
+import { CursorSelection } from "./Cursor";
 
 export const Settings = () => {
   const settings = useSettings();
@@ -65,6 +66,9 @@ export const Settings = () => {
 
             {/* Screenshot Configs */}
             <ScreenshotConfigs {...settings} />
+
+            {/* Cursor Selection */}
+            <CursorSelection />
 
             {/* Keyboard Shortcuts */}
             <ShortcutManager />

@@ -43,6 +43,7 @@
 
 :root {
   --radius: 0.625rem;
+  --cursor-type: none;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -119,10 +120,6 @@
   }
 }
 
-* {
-  cursor: none !important;
-}
-
 /* Apply global transparency */
 [data-slot="card"] {
   background-color: rgb(from var(--card) r g b / var(--opacity, 1)) !important;
@@ -163,4 +160,8 @@
 
 *::-webkit-scrollbar-corner {
   background: transparent !important;
+}
+
+* {
+  cursor: var(--cursor-type) !important;
 }

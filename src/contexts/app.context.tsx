@@ -13,6 +13,9 @@ import {
   updateTitlesVisibility,
   updateAutostart,
   CustomizableState,
+  DEFAULT_CUSTOMIZABLE_STATE,
+  CursorType,
+  updateCursorType,
 } from "@/lib/storage";
 import { IContextType, ScreenshotConfig, TYPE_PROVIDER } from "@/types";
 import curl2Json from "@bany/curl-to-json";
@@ -113,12 +116,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
 
   // Unified Customizable State
-  const [customizable, setCustomizable] = useState<CustomizableState>({
-    appIcon: { isVisible: true },
-    alwaysOnTop: { isEnabled: true },
-    titles: { isEnabled: true },
-    autostart: { isEnabled: true },
-  });
+  const [customizable, setCustomizable] = useState<CustomizableState>(
+    DEFAULT_CUSTOMIZABLE_STATE
+  );
   const [hasActiveLicense, setHasActiveLicense] = useState<boolean>(false);
 
   // Pluely API State
@@ -213,6 +213,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const customizableState = getCustomizableState();
     setCustomizable(customizableState);
 
+    updateCursor(customizableState.cursor.type || "invisible");
+
     const stored = safeLocalStorage.getItem(STORAGE_KEYS.CUSTOMIZABLE);
     if (!stored) {
       // save the default state
@@ -224,6 +226,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (!parsed.autostart) {
           // save the merged state with new autostart property
           setCustomizableState(customizableState);
+          updateCursor(customizableState.cursor.type || "invisible");
         }
       } catch (error) {
         console.debug("Failed to check customizable state schema:", error);
@@ -236,6 +239,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     );
     if (savedPluelyApiEnabled !== null) {
       setPluelyApiEnabledState(savedPluelyApiEnabled === "true");
+    }
+  };
+
+  const updateCursor = (type: CursorType | undefined) => {
+    try {
+      const safeType = type || "invisible";
+      const cursorValue = type === "invisible" ? "none" : safeType;
+      document.documentElement.style.setProperty("--cursor-type", cursorValue);
+    } catch (error) {
+      document.documentElement.style.setProperty("--cursor-type", "none");
     }
   };
 
@@ -470,6 +483,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const setCursorType = (type: CursorType) => {
+    setCustomizable((prev) => ({ ...prev, cursor: { type } }));
+    updateCursor(type);
+    updateCursorType(type);
+    loadData();
+  };
+
   const setPluelyApiEnabled = (enabled: boolean) => {
     setPluelyApiEnabledState(enabled);
     safeLocalStorage.setItem(STORAGE_KEYS.PLUELY_API_ENABLED, String(enabled));
@@ -503,6 +523,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     getActiveLicenseStatus,
     selectedAudioDevices,
     setSelectedAudioDevices,
+    setCursorType,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

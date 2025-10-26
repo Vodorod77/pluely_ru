@@ -11,7 +11,7 @@ import {
   StatusIndicator,
 } from "@/components";
 import { useApp } from "@/hooks";
-
+import { useApp as useAppContext } from "@/contexts";
 const App = () => {
   const {
     isHidden,
@@ -19,6 +19,7 @@ const App = () => {
     handleSelectConversation,
     handleNewConversation,
   } = useApp();
+  const { customizable } = useAppContext();
   return (
     <div
       className={`w-screen h-screen flex overflow-hidden justify-center items-start ${
@@ -66,7 +67,7 @@ const App = () => {
         <Updater />
         <DragButton />
       </Card>
-      <CustomCursor />
+      {customizable.cursor.type === "invisible" ? <CustomCursor /> : null}
     </div>
   );
 };

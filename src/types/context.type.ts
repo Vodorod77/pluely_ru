@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import { ScreenshotConfig, TYPE_PROVIDER } from "@/types";
-import { CustomizableState } from "@/lib/storage";
+import { CursorType, CustomizableState } from "@/lib/storage";
 
 export type IContextType = {
   systemPrompt: string;
@@ -56,4 +56,5 @@ export type IContextType = {
       output: string;
     }>
   >;
+  setCursorType: (type: CursorType) => void;
 };
