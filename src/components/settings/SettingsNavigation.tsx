@@ -6,6 +6,7 @@ const SETTINGS_SECTIONS = [
   { id: "theme", label: "Theme" },
   { id: "screenshot", label: "Screenshot config" },
   { id: "shortcuts", label: "Shortcuts" },
+  { id: "cursor", label: "Cursor" },
   { id: "audio", label: "Audio devices" },
   { id: "autostart", label: "App startup" },
   { id: "app-icon", label: "App icon" },
@@ -38,7 +39,7 @@ export const SettingsNavigation = () => {
               size="sm"
               variant="outline"
               onClick={() => scrollToSection(section.id)}
-              className="h-fit px-2.5 py-1"
+              className="h-fit px-2 py-1"
               title={`Jump to ${section.label} section`}
             >
               <span className="text-[10px]">{section.label}</span>
