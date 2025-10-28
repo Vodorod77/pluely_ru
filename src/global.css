@@ -165,3 +165,14 @@
 * {
   cursor: var(--cursor-type) !important;
 }
+
+html {
+  overscroll-behavior: none;
+}
+
+body {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
