@@ -14,3 +14,7 @@ export * from "./CustomCursor";
 export * from "./history";
 export * from "./speech/audio-visualizer";
 export * from "./speech/StatusIndicator";
+export * from "./Sidebar";
+export * from "./ui/scroll-area";
+export * from "./ui/badge";
+export * from "./Empty";
