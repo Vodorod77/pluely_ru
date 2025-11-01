@@ -28,6 +28,20 @@
         "focus": false,
         "acceptFirstMouse": true,
         "shadow": false
+      },
+      {
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "visible": true,
+        "center": true,
+        "decorations": true,
+        "hiddenTitle": true,
+        "titleBarStyle": "Overlay",
+        "contentProtected": true,
+        "label": "dashboard",
+        "url": "/dashboard"
       }
     ],
     "security": { "csp": null }
