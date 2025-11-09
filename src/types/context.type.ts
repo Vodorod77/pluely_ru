@@ -38,7 +38,6 @@ export type IContextType = {
   customizable: CustomizableState;
   toggleAppIconVisibility: (isVisible: boolean) => Promise<void>;
   toggleAlwaysOnTop: (isEnabled: boolean) => Promise<void>;
-  toggleTitlesVisibility: (isEnabled: boolean) => void;
   toggleAutostart: (isEnabled: boolean) => Promise<void>;
   loadData: () => void;
   pluelyApiEnabled: boolean;

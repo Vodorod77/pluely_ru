@@ -1,12 +1,12 @@
 use base64::Engine;
 use image::codecs::png::PngEncoder;
-use image::{ColorType, ImageEncoder, GenericImageView};
-use xcap::Monitor;
-use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
-use std::sync::{Arc, Mutex};
+use image::{ColorType, GenericImageView, ImageEncoder};
 use serde::{Deserialize, Serialize};
-use tauri::Emitter;
+use std::sync::{Arc, Mutex};
 use std::{thread, time::Duration};
+use tauri::Emitter;
+use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+use xcap::Monitor;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SelectionCoords {
@@ -35,7 +35,7 @@ pub async fn start_screen_capture(app: tauri::AppHandle) -> Result<(), String> {
     let captured_image = primary_monitor
         .capture_image()
         .map_err(|e| format!("Failed to capture image: {}", e))?;
-    
+
     // Store the captured image in app state
     let state = app.state::<CaptureState>();
     *state.captured_image.lock().unwrap() = Some(captured_image);
@@ -50,7 +50,7 @@ pub async fn start_screen_capture(app: tauri::AppHandle) -> Result<(), String> {
     let overlay = WebviewWindowBuilder::new(
         &app,
         "capture-overlay",
-        WebviewUrl::App("index.html".into())
+        WebviewUrl::App("index.html".into()),
     )
     .title("Screen Capture")
     .inner_size(monitor_width, monitor_height)
@@ -76,7 +76,9 @@ pub async fn start_screen_capture(app: tauri::AppHandle) -> Result<(), String> {
     overlay.show().ok();
     overlay.set_focus().ok();
     overlay.set_always_on_top(true).ok();
-    overlay.request_user_attention(Some(tauri::UserAttentionType::Critical)).ok();
+    overlay
+        .request_user_attention(Some(tauri::UserAttentionType::Critical))
+        .ok();
 
     // Give it a moment to settle and try to focus again
     std::thread::sleep(std::time::Duration::from_millis(100));
@@ -151,16 +153,16 @@ pub async fn capture_selected_area(
         .map_err(|e| format!("Failed to encode to PNG: {}", e))?;
 
     let base64_str = base64::engine::general_purpose::STANDARD.encode(png_buffer);
-    
+
     // Close the overlay window
     if let Some(window) = app.get_webview_window("capture-overlay") {
         let _ = window.destroy();
     }
-    
+
     // Emit event with base64 data
     app.emit("captured-selection", &base64_str)
         .map_err(|e| format!("Failed to emit captured-selection event: {}", e))?;
-    
+
     Ok(base64_str)
 }
 
@@ -192,4 +194,3 @@ pub async fn capture_to_base64() -> Result<String, String> {
     .await
     .map_err(|e| format!("Task panicked: {}", e))?
 }
-

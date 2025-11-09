@@ -19,4 +19,3 @@ pub fn migrations() -> Vec<Migration> {
         },
     ]
 }
-

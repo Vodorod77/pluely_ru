@@ -16,7 +16,7 @@ pub fn setup_main_window(app: &mut App) -> Result<(), Box<dyn std::error::Error>
         .ok_or("No window found")?;
 
     position_window_top_center(&window, TOP_OFFSET)?;
-    
+
     // Set window as non-focusable on Windows
     // #[cfg(target_os = "windows")]
     // {
@@ -73,10 +73,43 @@ pub fn set_window_height(window: tauri::WebviewWindow, height: u32) -> Result<()
     use tauri::{LogicalSize, Size};
 
     // Simply set the window size with fixed width and new height
-    let new_size = LogicalSize::new(700.0, height as f64);
+    let new_size = LogicalSize::new(600.0, height as f64);
     window
         .set_size(Size::Logical(new_size))
         .map_err(|e| format!("Failed to resize window: {}", e))?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn open_dashboard(app: tauri::AppHandle) -> Result<(), String> {
+    use tauri::WebviewUrl;
+
+    // Check if dashboard window already exists
+    if let Some(dashboard_window) = app.get_webview_window("dashboard") {
+        // Window exists, just focus and show it
+        dashboard_window
+            .set_focus()
+            .map_err(|e| format!("Failed to focus dashboard window: {}", e))?;
+        dashboard_window
+            .show()
+            .map_err(|e| format!("Failed to show dashboard window: {}", e))?;
+    } else {
+        // Window doesn't exist, create it with config from tauri.conf.json
+        let _window =
+            tauri::WebviewWindowBuilder::new(&app, "dashboard", WebviewUrl::App("/chats".into()))
+                .title("Pluely - Dashboard")
+                .inner_size(1200.0, 800.0)
+                .min_inner_size(1200.0, 800.0)
+                .center()
+                .decorations(true)
+                .hidden_title(true)
+                .title_bar_style(tauri::TitleBarStyle::Overlay)
+                .content_protected(true)
+                .visible(true)
+                .build()
+                .map_err(|e| format!("Failed to create dashboard window: {}", e))?;
+    }
 
     Ok(())
 }

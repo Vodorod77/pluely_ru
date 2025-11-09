@@ -34,14 +34,27 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   );
-  const [transparency, setTransparency] = useState<number>(
-    () =>
-      (localStorage.getItem(STORAGE_KEYS.TRANSPARENCY) as unknown as number) ||
-      10
-  );
+  const [transparency, setTransparency] = useState<number>(() => {
+    const stored = localStorage.getItem(STORAGE_KEYS.TRANSPARENCY);
+    return stored ? parseInt(stored, 10) : 10;
+  });
 
   const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
   const isSystemThemeDark = mediaQuery.matches;
+
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.TRANSPARENCY && e.newValue) {
+        setTransparency(parseInt(e.newValue, 10));
+      }
+      if (e.key === storageKey && e.newValue) {
+        setTheme(e.newValue as Theme);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [storageKey]);
 
   useEffect(() => {
     const root = window.document.documentElement;

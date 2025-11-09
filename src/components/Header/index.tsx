@@ -1,14 +1,18 @@
-import { Label } from "@/components";
+import { Button, Label } from "@/components";
 import { cn } from "@/lib/utils";
+import { ArrowLeftIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
   title: string;
   description: string;
   isMainTitle?: boolean;
   titleClassName?: string;
+  descriptionClassName?: string;
   rightSlot?: React.ReactNode | null;
-  removeBorder?: boolean;
+  showBorder?: boolean;
   className?: string;
+  allowBackButton?: boolean;
 }
 
 export const Header = ({
@@ -16,39 +20,51 @@ export const Header = ({
   description,
   isMainTitle = false,
   titleClassName,
+  descriptionClassName,
   rightSlot = null,
-  removeBorder = false,
+  showBorder = false,
   className,
+  allowBackButton = false,
 }: HeaderProps) => {
+  const navigate = useNavigate();
   return (
     <div
       className={cn(
         `flex ${
           rightSlot ? "flex-row justify-between items-center" : "flex-col"
         } ${
-          isMainTitle && !rightSlot && !removeBorder
+          isMainTitle && (showBorder || !rightSlot)
             ? "border-b border-input/50 pb-2"
             : ""
         }`,
         className
       )}
     >
-      <div className="flex flex-col">
-        <Label
-          className={`${cn(
-            "font-semibold",
-            isMainTitle ? "text-lg" : "text-sm "
-          )} ${titleClassName}`}
-        >
-          {title}
-        </Label>
-        <p
-          className={`select-none text-muted-foreground leading-relaxed ${
-            isMainTitle ? "text-sm" : "text-xs"
-          }`}
-        >
-          {description}
-        </p>
+      <div className="flex items-center gap-2">
+        {allowBackButton && (
+          <Button size="icon" variant="outline" onClick={() => navigate(-1)}>
+            <ArrowLeftIcon className="h-4 w-4" />
+          </Button>
+        )}
+        <div className="flex flex-col">
+          <Label
+            className={`${cn(
+              "font-semibold",
+              isMainTitle ? "text-lg" : "text-sm "
+            )} ${titleClassName}`}
+          >
+            {title}
+          </Label>
+          <p
+            className={cn(
+              `select-none text-muted-foreground leading-relaxed ${
+                isMainTitle ? "text-sm" : "text-xs"
+              } ${descriptionClassName}`
+            )}
+          >
+            {description}
+          </p>
+        </div>
       </div>
       {rightSlot}
     </div>

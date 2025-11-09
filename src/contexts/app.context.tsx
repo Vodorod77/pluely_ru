@@ -10,7 +10,6 @@ import {
   setCustomizableState,
   updateAppIconVisibility,
   updateAlwaysOnTop,
-  updateTitlesVisibility,
   updateAutostart,
   CustomizableState,
   DEFAULT_CUSTOMIZABLE_STATE,
@@ -460,12 +459,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const toggleTitlesVisibility = (isEnabled: boolean) => {
-    const newState = updateTitlesVisibility(isEnabled);
-    setCustomizable(newState);
-    loadData();
-  };
-
   const toggleAutostart = async (isEnabled: boolean) => {
     const newState = updateAutostart(isEnabled);
     setCustomizable(newState);
@@ -513,7 +506,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     customizable,
     toggleAppIconVisibility,
     toggleAlwaysOnTop,
-    toggleTitlesVisibility,
     toggleAutostart,
     loadData,
     pluelyApiEnabled,

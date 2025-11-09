@@ -38,7 +38,6 @@ pub struct ShortcutsConfig {
     pub bindings: HashMap<String, ShortcutBinding>,
 }
 
-
 /// Initialize global shortcuts for the application
 pub fn setup_global_shortcuts<R: Runtime>(
     app: &AppHandle<R>,
@@ -53,7 +52,7 @@ pub fn setup_global_shortcuts<R: Runtime>(
         }
     };
     eprintln!("Global shortcuts state initialized, waiting for frontend config");
-    
+
     Ok(())
 }
 
@@ -67,7 +66,10 @@ pub fn handle_shortcut_action<R: Runtime>(app: &AppHandle<R>, action_id: &str) {
         custom_action => {
             // Emit custom action event for frontend to handle
             if let Some(window) = app.get_webview_window("main") {
-                if let Err(e) = window.emit("custom-shortcut-triggered", json!({ "action": custom_action })) {
+                if let Err(e) = window.emit(
+                    "custom-shortcut-triggered",
+                    json!({ "action": custom_action }),
+                ) {
                     eprintln!("Failed to emit custom shortcut event: {}", e);
                 }
             }
@@ -105,7 +107,7 @@ fn handle_toggle_window<R: Runtime>(app: &AppHandle<R>) {
             // Window is visible, hide it and handle app icon based on user settings
             if let Err(e) = window.hide() {
                 eprintln!("Failed to hide window: {}", e);
-            }  
+            }
         }
         Ok(false) => {
             // Window is hidden, show it and handle app icon based on user settings
@@ -184,7 +186,9 @@ fn handle_system_audio_shortcut<R: Runtime>(app: &AppHandle<R>) {
 
 /// Tauri command to get all registered shortcuts
 #[tauri::command]
-pub fn get_registered_shortcuts<R: Runtime>(app: AppHandle<R>) -> Result<HashMap<String, String>, String> {
+pub fn get_registered_shortcuts<R: Runtime>(
+    app: AppHandle<R>,
+) -> Result<HashMap<String, String>, String> {
     let state = app.state::<RegisteredShortcuts>();
     let registered = match state.shortcuts.lock() {
         Ok(guard) => guard,
@@ -203,9 +207,9 @@ pub fn update_shortcuts<R: Runtime>(
     config: ShortcutsConfig,
 ) -> Result<(), String> {
     eprintln!("Updating shortcuts with {} bindings", config.bindings.len());
-    
+
     let mut shortcuts_to_register = Vec::new();
-    
+
     for (action_id, binding) in &config.bindings {
         if binding.enabled && !binding.key.is_empty() {
             // Validate before adding
@@ -214,19 +218,25 @@ pub fn update_shortcuts<R: Runtime>(
                     shortcuts_to_register.push((action_id.clone(), binding.key.clone(), shortcut));
                 }
                 Err(e) => {
-                    eprintln!("Invalid shortcut '{}' for action '{}': {}", binding.key, action_id, e);
-                    return Err(format!("Invalid shortcut '{}' for action '{}': {}", binding.key, action_id, e));
+                    eprintln!(
+                        "Invalid shortcut '{}' for action '{}': {}",
+                        binding.key, action_id, e
+                    );
+                    return Err(format!(
+                        "Invalid shortcut '{}' for action '{}': {}",
+                        binding.key, action_id, e
+                    ));
                 }
             }
         }
     }
-    
+
     // First, unregister all existing shortcuts
     unregister_all_shortcuts(&app)?;
-    
+
     // Now register all new shortcuts
     let mut successfully_registered = HashMap::new();
-    
+
     for (action_id, shortcut_str, shortcut) in shortcuts_to_register {
         match app.global_shortcut().register(shortcut.clone()) {
             Ok(_) => {
@@ -238,7 +248,7 @@ pub fn update_shortcuts<R: Runtime>(
             }
         }
     }
-    
+
     // Update state with successfully registered shortcuts
     {
         let state = app.state::<RegisteredShortcuts>();
@@ -249,11 +259,11 @@ pub fn update_shortcuts<R: Runtime>(
                 poisoned.into_inner()
             }
         };
-        
+
         registered.clear();
         registered.extend(successfully_registered);
     }
-    
+
     Ok(())
 }
 
@@ -267,7 +277,7 @@ fn unregister_all_shortcuts<R: Runtime>(app: &AppHandle<R>) -> Result<(), String
             poisoned.into_inner()
         }
     };
-    
+
     for (action_id, shortcut_str) in registered.iter() {
         if let Ok(shortcut) = shortcut_str.parse::<Shortcut>() {
             match app.global_shortcut().unregister(shortcut) {
@@ -280,7 +290,7 @@ fn unregister_all_shortcuts<R: Runtime>(app: &AppHandle<R>) -> Result<(), String
             }
         }
     }
-    
+
     Ok(())
 }
 
@@ -313,7 +323,6 @@ pub fn validate_shortcut_key(key: String) -> Result<bool, String> {
 /// Tauri command to set app icon visibility in dock/taskbar
 #[tauri::command]
 pub fn set_app_icon_visibility<R: Runtime>(app: AppHandle<R>, visible: bool) -> Result<(), String> {
-
     #[cfg(target_os = "macos")]
     {
         // On macOS, use activation policy to control dock icon
@@ -333,9 +342,9 @@ pub fn set_app_icon_visibility<R: Runtime>(app: AppHandle<R>, visible: bool) -> 
     {
         // On Windows, control taskbar icon visibility
         if let Some(window) = app.get_webview_window("main") {
-            window.set_skip_taskbar(!visible).map_err(|e| {
-                format!("Failed to set taskbar visibility: {}", e)
-            })?;
+            window
+                .set_skip_taskbar(!visible)
+                .map_err(|e| format!("Failed to set taskbar visibility: {}", e))?;
         } else {
             eprintln!("Main window not found on Windows");
         }
@@ -345,9 +354,9 @@ pub fn set_app_icon_visibility<R: Runtime>(app: AppHandle<R>, visible: bool) -> 
     {
         // On Linux, control panel icon visibility
         if let Some(window) = app.get_webview_window("main") {
-            window.set_skip_taskbar(!visible).map_err(|e| {
-                format!("Failed to set panel visibility: {}", e)
-            })?;
+            window
+                .set_skip_taskbar(!visible)
+                .map_err(|e| format!("Failed to set panel visibility: {}", e))?;
         } else {
             eprintln!("Main window not found on Linux");
         }
@@ -360,10 +369,9 @@ pub fn set_app_icon_visibility<R: Runtime>(app: AppHandle<R>, visible: bool) -> 
 #[tauri::command]
 pub fn set_always_on_top<R: Runtime>(app: AppHandle<R>, enabled: bool) -> Result<(), String> {
     if let Some(window) = app.get_webview_window("main") {
-        window.set_always_on_top(enabled).map_err(|e| {
-            format!("Failed to set always on top: {}", e)
-        })?;
-
+        window
+            .set_always_on_top(enabled)
+            .map_err(|e| format!("Failed to set always on top: {}", e))?;
     } else {
         return Err("Main window not found".to_string());
     }
@@ -373,6 +381,6 @@ pub fn set_always_on_top<R: Runtime>(app: AppHandle<R>, enabled: bool) -> Result
 
 /// Tauri command to exit the application
 #[tauri::command]
- pub fn exit_app(app_handle: tauri::AppHandle) {
+pub fn exit_app(app_handle: tauri::AppHandle) {
     app_handle.exit(0);
 }

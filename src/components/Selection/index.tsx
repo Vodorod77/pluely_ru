@@ -26,7 +26,7 @@ export const Selection = ({
     <Select value={selected || ""} onValueChange={(value) => onChange(value)}>
       <SelectTrigger
         disabled={isLoading || disabled}
-        className="w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
+        className="shadow-none w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
       >
         {isLoading ? (
           <div className="flex items-center gap-2">

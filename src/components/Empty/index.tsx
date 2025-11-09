@@ -1,10 +1,10 @@
 import {
-  Empty as EmptyUI,
+  EmptyComponent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@/components/ui/empty";
+} from "@/components";
 import { Loader2 } from "lucide-react";
 
 export const Empty = ({
@@ -24,7 +24,7 @@ export const Empty = ({
       <Loader2 className="size-8 animate-spin" />
     </div>
   ) : (
-    <EmptyUI>
+    <EmptyComponent>
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <Icon icon={icon} />
@@ -32,6 +32,6 @@ export const Empty = ({
         <EmptyTitle>{title}</EmptyTitle>
         <EmptyDescription className="-mt-2">{description}</EmptyDescription>
       </EmptyHeader>
-    </EmptyUI>
+    </EmptyComponent>
   );
 };

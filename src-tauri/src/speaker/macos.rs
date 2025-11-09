@@ -1,13 +1,13 @@
 // Pluely macos speaker input and stream
-use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
-use std::sync::{Arc, Mutex};
-use std::task::{Poll, Waker};
 use anyhow::Result;
 use futures_util::Stream;
 use ringbuf::{
     traits::{Consumer, Producer, Split},
     HeapCons, HeapProd, HeapRb,
 };
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::{Arc, Mutex};
+use std::task::{Poll, Waker};
 
 use ca::aggregate_device_keys as agg_keys;
 use cidre::{arc, av, cat, cf, core_audio as ca, ns, os};
@@ -47,7 +47,7 @@ struct Ctx {
 
 impl SpeakerInput {
     pub fn new(_device_id: Option<String>) -> Result<Self> {
-         let output_device = ca::System::default_output_device()?;
+        let output_device = ca::System::default_output_device()?;
         let output_uid = output_device.uid()?;
 
         let sub_device = cf::DictionaryOf::with_keys_values(
@@ -181,11 +181,11 @@ impl SpeakerInput {
 fn process_audio_data(ctx: &mut Ctx, data: &[f32]) {
     let buffer_size = data.len();
     let pushed = ctx.producer.push_slice(data);
-    
+
     // Consistent buffer overflow handling
     if pushed < buffer_size {
         let consecutive = ctx.consecutive_drops.fetch_add(1, Ordering::AcqRel) + 1;
-        
+
         // Only terminate after many consecutive drops (prevents temporary spikes from killing stream)
         if consecutive == 25 {
             eprintln!("Warning: Audio buffer experiencing drops - system may be overloaded");

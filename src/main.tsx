@@ -1,10 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
 import Overlay from "./components/Overlay";
 import { AppProvider, ThemeProvider } from "./contexts";
 import "./global.css";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import AppRoutes from "./routes";
 
 const currentWindow = getCurrentWindow();
 const windowLabel = currentWindow.label;
@@ -22,7 +22,7 @@ if (windowLabel === "capture-overlay") {
     <React.StrictMode>
       <ThemeProvider>
         <AppProvider>
-          <App />
+          <AppRoutes />
         </AppProvider>
       </ThemeProvider>
     </React.StrictMode>

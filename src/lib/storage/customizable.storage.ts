@@ -9,9 +9,6 @@ export interface CustomizableState {
   alwaysOnTop: {
     isEnabled: boolean;
   };
-  titles: {
-    isEnabled: boolean;
-  };
   autostart: {
     isEnabled: boolean;
   };
@@ -23,7 +20,6 @@ export interface CustomizableState {
 export const DEFAULT_CUSTOMIZABLE_STATE: CustomizableState = {
   appIcon: { isVisible: true },
   alwaysOnTop: { isEnabled: false },
-  titles: { isEnabled: true },
   autostart: { isEnabled: true },
   cursor: { type: "invisible" },
 };
@@ -44,7 +40,6 @@ export const getCustomizableState = (): CustomizableState => {
       appIcon: parsedState.appIcon || DEFAULT_CUSTOMIZABLE_STATE.appIcon,
       alwaysOnTop:
         parsedState.alwaysOnTop || DEFAULT_CUSTOMIZABLE_STATE.alwaysOnTop,
-      titles: parsedState.titles || DEFAULT_CUSTOMIZABLE_STATE.titles,
       autostart: parsedState.autostart || DEFAULT_CUSTOMIZABLE_STATE.autostart,
       cursor: parsedState.cursor || DEFAULT_CUSTOMIZABLE_STATE.cursor,
     };
@@ -83,18 +78,6 @@ export const updateAppIconVisibility = (
 export const updateAlwaysOnTop = (isEnabled: boolean): CustomizableState => {
   const currentState = getCustomizableState();
   const newState = { ...currentState, alwaysOnTop: { isEnabled } };
-  setCustomizableState(newState);
-  return newState;
-};
-
-/**
- * Update titles visibility
- */
-export const updateTitlesVisibility = (
-  isEnabled: boolean
-): CustomizableState => {
-  const currentState = getCustomizableState();
-  const newState = { ...currentState, titles: { isEnabled } };
   setCustomizableState(newState);
   return newState;
 };

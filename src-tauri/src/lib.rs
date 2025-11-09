@@ -1,25 +1,23 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod activate;
 mod api;
+mod capture;
+mod db;
 mod shortcuts;
 mod window;
-mod db;
-mod capture;
-use tauri_plugin_posthog::{init as posthog_init, PostHogConfig, PostHogOptions};
-use tauri::{Manager, AppHandle, WebviewWindow};
 use std::sync::{Arc, Mutex};
+use tauri::{AppHandle, Manager, WebviewWindow};
+use tauri_plugin_posthog::{init as posthog_init, PostHogConfig, PostHogOptions};
 use tokio::task::JoinHandle;
 mod speaker;
-use speaker::VadConfig;
 use capture::CaptureState;
+use speaker::VadConfig;
 
 #[cfg(target_os = "macos")]
 #[allow(deprecated)]
-use tauri_nspanel::{
-    cocoa::appkit::NSWindowCollectionBehavior, panel_delegate, WebviewWindowExt,
-  };
+use tauri_nspanel::{cocoa::appkit::NSWindowCollectionBehavior, panel_delegate, WebviewWindowExt};
 
-  #[derive(Default)]
+#[derive(Default)]
 pub struct AudioState {
     stream_task: Arc<Mutex<Option<JoinHandle<()>>>>,
     vad_config: Arc<Mutex<VadConfig>>,
@@ -34,9 +32,7 @@ fn get_app_version() -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Get PostHog API key
-    let posthog_api_key = option_env!("POSTHOG_API_KEY")
-        .unwrap_or("")
-        .to_string();
+    let posthog_api_key = option_env!("POSTHOG_API_KEY").unwrap_or("").to_string();
     let mut builder = tauri::Builder::default()
         .plugin(
             tauri_plugin_sql::Builder::default()
@@ -68,13 +64,15 @@ pub fn run() {
             ..Default::default()
         }))
         .plugin(tauri_plugin_machine_uid::init());
-        #[cfg(target_os = "macos")]
-        {
-            builder = builder.plugin(tauri_nspanel::init());
-        }
-        let mut builder = builder.invoke_handler(tauri::generate_handler![
+    #[cfg(target_os = "macos")]
+    {
+        builder = builder.plugin(tauri_nspanel::init());
+    }
+    let mut builder = builder
+        .invoke_handler(tauri::generate_handler![
             get_app_version,
             window::set_window_height,
+            window::open_dashboard,
             capture::capture_to_base64,
             capture::start_screen_capture,
             capture::capture_selected_area,
@@ -95,10 +93,11 @@ pub fn run() {
             activate::secure_storage_get,
             activate::secure_storage_remove,
             api::transcribe_audio,
-            api::chat_stream,
+            api::chat_stream_response,
             api::fetch_models,
             api::create_system_prompt,
             api::check_license_status,
+            api::get_activity,
             speaker::start_system_audio_capture,
             speaker::stop_system_audio_capture,
             speaker::manual_stop_continuous,
@@ -129,40 +128,45 @@ pub fn run() {
             }
 
             // Initialize global shortcut plugin with centralized handler
-            app.handle().plugin(
-                tauri_plugin_global_shortcut::Builder::new()
-                    .with_handler(move |app, shortcut, event| {
-                        use tauri_plugin_global_shortcut::{Shortcut, ShortcutState};
-                        
-                        if event.state() == ShortcutState::Pressed {
-                            // Get registered shortcuts and find matching action
-                            let state = app.state::<shortcuts::RegisteredShortcuts>();
-                            let registered = match state.shortcuts.lock() {
-                                Ok(guard) => guard,
-                                Err(poisoned) => {
-                                    eprintln!("Mutex poisoned in handler, recovering...");
-                                    poisoned.into_inner()
-                                }
-                            };
-                            
-                            // Find which action this shortcut maps to
-                            for (action_id, shortcut_str) in registered.iter() {
-                                if let Ok(s) = shortcut_str.parse::<Shortcut>() {
-                                    if &s == shortcut {
-                                        eprintln!("Shortcut triggered: {} ({})", action_id, shortcut_str);
-                                        shortcuts::handle_shortcut_action(&app, action_id);
-                                        break;
+            app.handle()
+                .plugin(
+                    tauri_plugin_global_shortcut::Builder::new()
+                        .with_handler(move |app, shortcut, event| {
+                            use tauri_plugin_global_shortcut::{Shortcut, ShortcutState};
+
+                            if event.state() == ShortcutState::Pressed {
+                                // Get registered shortcuts and find matching action
+                                let state = app.state::<shortcuts::RegisteredShortcuts>();
+                                let registered = match state.shortcuts.lock() {
+                                    Ok(guard) => guard,
+                                    Err(poisoned) => {
+                                        eprintln!("Mutex poisoned in handler, recovering...");
+                                        poisoned.into_inner()
+                                    }
+                                };
+
+                                // Find which action this shortcut maps to
+                                for (action_id, shortcut_str) in registered.iter() {
+                                    if let Ok(s) = shortcut_str.parse::<Shortcut>() {
+                                        if &s == shortcut {
+                                            eprintln!(
+                                                "Shortcut triggered: {} ({})",
+                                                action_id, shortcut_str
+                                            );
+                                            shortcuts::handle_shortcut_action(&app, action_id);
+                                            break;
+                                        }
                                     }
                                 }
                             }
-                        }
-                    })
-                    .build(),
-            ).expect("Failed to initialize global shortcut plugin");
+                        })
+                        .build(),
+                )
+                .expect("Failed to initialize global shortcut plugin");
             if let Err(e) = shortcuts::setup_global_shortcuts(app.handle()) {
                 eprintln!("Failed to setup global shortcuts: {}", e);
             }
-           Ok(())
+            Ok(())
         });
 
     // Add macOS-specific permissions plugin
@@ -180,44 +184,44 @@ pub fn run() {
 #[allow(deprecated, unexpected_cfgs)]
 fn init(app_handle: &AppHandle) {
     let window: WebviewWindow = app_handle.get_webview_window("main").unwrap();
-  
+
     let panel = window.to_panel().unwrap();
-  
+
     let delegate = panel_delegate!(MyPanelDelegate {
-      window_did_become_key,
-      window_did_resign_key
+        window_did_become_key,
+        window_did_resign_key
     });
-  
+
     let handle = app_handle.to_owned();
-  
+
     delegate.set_listener(Box::new(move |delegate_name: String| {
-      match delegate_name.as_str() {
-        "window_did_become_key" => {
-          let app_name = handle.package_info().name.to_owned();
-  
-          println!("[info]: {:?} panel becomes key window!", app_name);
+        match delegate_name.as_str() {
+            "window_did_become_key" => {
+                let app_name = handle.package_info().name.to_owned();
+
+                println!("[info]: {:?} panel becomes key window!", app_name);
+            }
+            "window_did_resign_key" => {
+                println!("[info]: panel resigned from key window!");
+            }
+            _ => (),
         }
-        "window_did_resign_key" => {
-          println!("[info]: panel resigned from key window!");
-        }
-        _ => (),
-      }
     }));
-  
+
     // Set the window to float level
     #[allow(non_upper_case_globals)]
     const NSFloatWindowLevel: i32 = 4;
     panel.set_level(NSFloatWindowLevel);
-  
+
     #[allow(non_upper_case_globals)]
     const NSWindowStyleMaskNonActivatingPanel: i32 = 1 << 7;
     panel.set_style_mask(NSWindowStyleMaskNonActivatingPanel);
-  
+
     #[allow(deprecated)]
     panel.set_collection_behaviour(
-      NSWindowCollectionBehavior::NSWindowCollectionBehaviorFullScreenAuxiliary
-        | NSWindowCollectionBehavior::NSWindowCollectionBehaviorCanJoinAllSpaces,
+        NSWindowCollectionBehavior::NSWindowCollectionBehaviorFullScreenAuxiliary
+            | NSWindowCollectionBehavior::NSWindowCollectionBehaviorCanJoinAllSpaces,
     );
-  
+
     panel.set_delegate(delegate);
-  }
+}

@@ -1,4 +1,3 @@
-import { useApp } from "@/contexts";
 import { useEffect } from "react";
 
 /**
@@ -7,76 +6,66 @@ import { useEffect } from "react";
  * @returns The title text if enabled, empty string if disabled
  */
 export const useTitles = () => {
-  const { customizable } = useApp();
+  const getTitle = (): string => {
+    return "";
+  };
 
-  const getTitle = (titleText: string): string => {
-    return customizable?.titles?.isEnabled ? titleText : "";
+  const removeTitleFromElement = (element: Element) => {
+    const currentTitle = element.getAttribute("title");
+    if (currentTitle) {
+      element.setAttribute("data-original-title", currentTitle);
+      element.removeAttribute("title");
+    }
+  };
+
+  const disableTitles = () => {
+    const rootElement = document.documentElement;
+    const allElementsWithTitles = document.querySelectorAll("[title]");
+
+    rootElement?.setAttribute("data-titles-disabled", "true");
+    rootElement?.removeAttribute("data-titles-enabled");
+
+    allElementsWithTitles.forEach((element) => {
+      removeTitleFromElement(element);
+    });
   };
 
   // Handle title visibility globally
   useEffect(() => {
-    const manageTitles = () => {
-      const rootElement = document.documentElement;
-      const allElementsWithTitles = document.querySelectorAll("[title]");
-
-      if (customizable?.titles?.isEnabled) {
-        rootElement?.removeAttribute("data-titles-disabled");
-        rootElement?.setAttribute("data-titles-enabled", "true");
-
-        // Restore original titles from data-original-title attributes
-        allElementsWithTitles.forEach((element) => {
-          const originalTitle = element.getAttribute("data-original-title");
-          if (originalTitle) {
-            element.setAttribute("title", originalTitle);
-          }
-        });
-      } else {
-        rootElement?.setAttribute("data-titles-disabled", "true");
-        rootElement?.removeAttribute("data-titles-enabled");
-
-        // Store original titles and remove them
-        allElementsWithTitles.forEach((element) => {
-          const currentTitle = element.getAttribute("title");
-          if (currentTitle && !element.hasAttribute("data-original-title")) {
-            element.setAttribute("data-original-title", currentTitle);
-          }
-          element.removeAttribute("title");
-        });
-      }
-    };
-
     // Use setTimeout to ensure DOM is fully loaded
-    const timeoutId = setTimeout(manageTitles, 100);
+    const timeoutId = setTimeout(disableTitles, 100);
 
     // Set up mutation observer to handle dynamically added elements
     const observer = new MutationObserver((mutations) => {
-      let hasNewTitles = false;
+      let hasTitleChanges = false;
       mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as Element;
-            if (
-              element.hasAttribute("title") ||
-              element.querySelector("[title]")
-            ) {
-              hasNewTitles = true;
+        if (mutation.type === "childList") {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              const element = node as Element;
+              if (
+                element.hasAttribute("title") ||
+                element.querySelector("[title]")
+              ) {
+                hasTitleChanges = true;
+              }
             }
-          }
-        });
+          });
+        }
+        if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "title"
+        ) {
+          hasTitleChanges = true;
+        }
       });
 
-      if (hasNewTitles && !customizable?.titles?.isEnabled) {
-        // If titles are disabled and new elements with titles were added, remove them
+      if (hasTitleChanges) {
+        // Remove titles from any new or updated elements
         setTimeout(() => {
-          const newElementsWithTitles = document.querySelectorAll(
-            "[title]:not([data-original-title])"
-          );
-          newElementsWithTitles.forEach((element) => {
-            const currentTitle = element.getAttribute("title");
-            if (currentTitle) {
-              element.setAttribute("data-original-title", currentTitle);
-              element.removeAttribute("title");
-            }
+          const elementsWithTitles = document.querySelectorAll("[title]");
+          elementsWithTitles.forEach((element) => {
+            removeTitleFromElement(element);
           });
         }, 0);
       }
@@ -93,10 +82,10 @@ export const useTitles = () => {
       clearTimeout(timeoutId);
       observer.disconnect();
     };
-  }, [customizable?.titles?.isEnabled]);
+  }, []);
 
   return {
     getTitle,
-    isTitlesEnabled: customizable?.titles?.isEnabled,
+    isTitlesEnabled: false,
   };
 };

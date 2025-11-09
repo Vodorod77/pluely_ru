@@ -4,8 +4,8 @@ use std::env;
 use std::fs;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
-use uuid::Uuid;
 use tauri_plugin_machine_uid::MachineUidExt;
+use uuid::Uuid;
 
 fn get_payment_endpoint() -> Result<String, String> {
     if let Ok(endpoint) = env::var("PAYMENT_ENDPOINT") {
@@ -187,7 +187,10 @@ pub struct CheckoutResponse {
 }
 
 #[tauri::command]
-pub async fn activate_license_api(app: AppHandle, license_key: String) -> Result<ActivationResponse, String> {
+pub async fn activate_license_api(
+    app: AppHandle,
+    license_key: String,
+) -> Result<ActivationResponse, String> {
     // Get payment endpoint and API access key from environment
     let payment_endpoint = get_payment_endpoint()?;
     let api_access_key = get_api_access_key()?;
