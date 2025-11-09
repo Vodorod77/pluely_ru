@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::HashMap;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicBool, Ordering};
+use tokio::time::{sleep, Duration};
 use tauri::{AppHandle, Emitter, Manager, Runtime};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
 
@@ -22,6 +24,42 @@ impl Default for RegisteredShortcuts {
     fn default() -> Self {
         RegisteredShortcuts {
             shortcuts: Mutex::new(HashMap::new()),
+        }
+    }
+}
+
+pub struct LicenseState {
+    has_active_license: AtomicBool,
+}
+
+impl Default for LicenseState {
+    fn default() -> Self {
+        LicenseState {
+            has_active_license: AtomicBool::new(false),
+        }
+    }
+}
+
+impl LicenseState {
+    pub fn is_active(&self) -> bool {
+        self.has_active_license.load(Ordering::Relaxed)
+    }
+
+    pub fn set_active(&self, active: bool) {
+        self.has_active_license.store(active, Ordering::Relaxed);
+    }
+}
+
+pub(crate) type MoveWindowTask = Arc<AtomicBool>;
+
+pub(crate) struct MoveWindowState {
+    tasks: Mutex<HashMap<String, MoveWindowTask>>,
+}
+
+impl Default for MoveWindowState {
+    fn default() -> Self {
+        MoveWindowState {
+            tasks: Mutex::new(HashMap::new()),
         }
     }
 }
@@ -59,7 +97,13 @@ pub fn setup_global_shortcuts<R: Runtime>(
 /// Handle shortcut action based on action_id
 pub fn handle_shortcut_action<R: Runtime>(app: &AppHandle<R>, action_id: &str) {
     match action_id {
+        "toggle_dashboard" => handle_toggle_dashboard(app),
         "toggle_window" => handle_toggle_window(app),
+        "focus_input" => handle_focus_input(app),
+        "move_window_up" => handle_move_window(app, "up"),
+        "move_window_down" => handle_move_window(app, "down"),
+        "move_window_left" => handle_move_window(app, "left"),
+        "move_window_right" => handle_move_window(app, "right"),
         "audio_recording" => handle_audio_shortcut(app),
         "screenshot" => handle_screenshot_shortcut(app),
         "system_audio" => handle_system_audio_shortcut(app),
@@ -74,6 +118,68 @@ pub fn handle_shortcut_action<R: Runtime>(app: &AppHandle<R>, action_id: &str) {
                 }
             }
         }
+    }
+}
+
+pub fn start_move_window<R: Runtime>(app: &AppHandle<R>, direction: &str) {
+    {
+        let license_state = app.state::<LicenseState>();
+        if !license_state.is_active() {
+            eprintln!(
+                "Ignoring move_window start for direction '{}' - license inactive",
+                direction
+            );
+            return;
+        }
+    }
+
+    let state = app.state::<MoveWindowState>();
+    let mut tasks = match state.tasks.lock() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+
+    if tasks.contains_key(direction) {
+        return;
+    }
+
+    let stop_flag: MoveWindowTask = Arc::new(AtomicBool::new(false));
+    let flag_clone = stop_flag.clone();
+    let dir = direction.to_string();
+    let app_handle = app.clone();
+
+    tauri::async_runtime::spawn(async move {
+        let interval = Duration::from_millis(16);
+        while !flag_clone.load(Ordering::Relaxed) {
+            handle_move_window(&app_handle, &dir);
+            sleep(interval).await;
+        }
+    });
+
+    tasks.insert(direction.to_string(), stop_flag);
+}
+
+pub fn stop_move_window<R: Runtime>(app: &AppHandle<R>, direction: &str) {
+    let state = app.state::<MoveWindowState>();
+    let mut tasks = match state.tasks.lock() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+
+    if let Some(flag) = tasks.remove(direction) {
+        flag.store(true, Ordering::Relaxed);
+    }
+}
+
+pub fn stop_all_move_windows<R: Runtime>(app: &AppHandle<R>) {
+    let state = app.state::<MoveWindowState>();
+    let mut tasks = match state.tasks.lock() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+
+    for (_direction, flag) in tasks.drain() {
+        flag.store(true, Ordering::Relaxed);
     }
 }
 
@@ -210,9 +316,48 @@ pub fn update_shortcuts<R: Runtime>(
 
     let mut shortcuts_to_register = Vec::new();
 
+    let has_license = {
+        let license_state = app.state::<LicenseState>();
+        license_state.is_active()
+    };
+
     for (action_id, binding) in &config.bindings {
         if binding.enabled && !binding.key.is_empty() {
-            // Validate before adding
+            if action_id == "move_window" {
+                if !has_license {
+                    eprintln!("Skipping move_window registration - license inactive");
+                    continue;
+                }
+
+                let modifiers = binding.key.trim();
+                if modifiers.is_empty() {
+                    continue;
+                }
+
+                let arrow_keys = vec!["up", "down", "left", "right"];
+                for arrow in arrow_keys {
+                    let full_key = format!("{}+{}", modifiers, arrow);
+                    match full_key.parse::<Shortcut>() {
+                        Ok(shortcut) => {
+                            let direction_action_id = format!("move_window_{}", arrow);
+                            shortcuts_to_register.push((direction_action_id, full_key, shortcut));
+                        }
+                        Err(e) => {
+                            eprintln!(
+                                "Invalid shortcut '{}' for move_window: {}",
+                                full_key, e
+                            );
+                            return Err(format!(
+                                "Invalid shortcut '{}' for move_window: {}",
+                                full_key, e
+                            ));
+                        }
+                    }
+                }
+
+                continue;
+            }
+
             match binding.key.parse::<Shortcut>() {
                 Ok(shortcut) => {
                     shortcuts_to_register.push((action_id.clone(), binding.key.clone(), shortcut));
@@ -231,7 +376,10 @@ pub fn update_shortcuts<R: Runtime>(
         }
     }
 
-    // First, unregister all existing shortcuts
+    // First, stop any ongoing window movement
+    stop_all_move_windows(&app);
+
+    // Then, unregister all existing shortcuts
     unregister_all_shortcuts(&app)?;
 
     // Now register all new shortcuts
@@ -320,6 +468,23 @@ pub fn validate_shortcut_key(key: String) -> Result<bool, String> {
     }
 }
 
+#[tauri::command]
+pub fn set_license_status<R: Runtime>(
+    app: AppHandle<R>,
+    has_license: bool,
+) -> Result<(), String> {
+    {
+        let state = app.state::<LicenseState>();
+        state.set_active(has_license);
+    }
+
+    if !has_license {
+        stop_all_move_windows(&app);
+    }
+
+    Ok(())
+}
+
 /// Tauri command to set app icon visibility in dock/taskbar
 #[tauri::command]
 pub fn set_app_icon_visibility<R: Runtime>(app: AppHandle<R>, visible: bool) -> Result<(), String> {
@@ -377,6 +542,104 @@ pub fn set_always_on_top<R: Runtime>(app: AppHandle<R>, enabled: bool) -> Result
     }
 
     Ok(())
+}
+
+/// Handle toggle dashboard shortcut
+fn handle_toggle_dashboard<R: Runtime>(app: &AppHandle<R>) {
+    use tauri::Manager;
+    use tauri::WebviewUrl;
+
+    if let Some(dashboard_window) = app.get_webview_window("dashboard") {
+        match dashboard_window.is_visible() {
+            Ok(true) => {
+                // Window is visible, hide it
+                if let Err(e) = dashboard_window.hide() {
+                    eprintln!("Failed to hide dashboard window: {}", e);
+                }
+            }
+            Ok(false) => {
+                // Window is hidden, show and focus it
+                if let Err(e) = dashboard_window.show() {
+                    eprintln!("Failed to show dashboard window: {}", e);
+                }
+                if let Err(e) = dashboard_window.set_focus() {
+                    eprintln!("Failed to focus dashboard window: {}", e);
+                }
+            }
+            Err(e) => {
+                eprintln!("Failed to check dashboard visibility: {}", e);
+            }
+        }
+    } else {
+        // Window doesn't exist, create it
+        match tauri::WebviewWindowBuilder::new(app, "dashboard", WebviewUrl::App("/chats".into()))
+            .title("Pluely - Dashboard")
+            .inner_size(1200.0, 800.0)
+            .min_inner_size(1200.0, 800.0)
+            .center()
+            .decorations(true)
+            .hidden_title(true)
+            .title_bar_style(tauri::TitleBarStyle::Overlay)
+            .content_protected(true)
+            .visible(true)
+            .build()
+        {
+            Ok(_) => eprintln!("Dashboard window created successfully"),
+            Err(e) => eprintln!("Failed to create dashboard window: {}", e),
+        }
+    }
+}
+
+/// Handle focus input shortcut
+fn handle_focus_input<R: Runtime>(app: &AppHandle<R>) {
+    if let Some(window) = app.get_webview_window("main") {
+        // Ensure window is visible
+        if let Ok(false) = window.is_visible() {
+            if let Err(e) = window.show() {
+                eprintln!("Failed to show window: {}", e);
+                return;
+            }
+            if let Err(e) = window.set_focus() {
+                eprintln!("Failed to focus window: {}", e);
+            }
+        }
+
+        // Emit event to focus text input
+        if let Err(e) = window.emit("focus-text-input", json!({})) {
+            eprintln!("Failed to emit focus-text-input event: {}", e);
+        }
+    }
+}
+
+fn handle_move_window<R: Runtime>(app: &AppHandle<R>, direction: &str) {
+    if let Some(window) = app.get_webview_window("main") {
+        match window.outer_position() {
+            Ok(current_pos) => {
+                let step = 12;
+                let (new_x, new_y) = match direction {
+                    "up" => (current_pos.x, current_pos.y - step),
+                    "down" => (current_pos.x, current_pos.y + step),
+                    "left" => (current_pos.x - step, current_pos.y),
+                    "right" => (current_pos.x + step, current_pos.y),
+                    _ => {
+                        eprintln!("Invalid direction: {}", direction);
+                        return;
+                    }
+                };
+
+                if let Err(e) = window.set_position(tauri::Position::Physical(
+                    tauri::PhysicalPosition { x: new_x, y: new_y },
+                )) {
+                    eprintln!("Failed to set window position: {}", e);
+                }
+            }
+            Err(e) => {
+                eprintln!("Failed to get window position: {}", e);
+            }
+        }
+    } else {
+        eprintln!("Main window not found");
+    }
 }
 
 /// Tauri command to exit the application

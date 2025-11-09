@@ -12,16 +12,20 @@ interface ShortcutRecorderProps {
   onSave: (key: string) => void;
   onCancel: () => void;
   disabled?: boolean;
+  actionId?: string;
 }
 
 export const ShortcutRecorder = ({
   onSave,
   onCancel,
   disabled = false,
+  actionId,
 }: ShortcutRecorderProps) => {
   const [recordedKeys, setRecordedKeys] = useState<string[]>([]);
   const [error, setError] = useState<string>("");
   const isRecording = true; // Always recording
+  const isMoveWindow = actionId === "move_window";
+  const minKeys = isMoveWindow ? 1 : 2;
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -72,21 +76,35 @@ export const ShortcutRecorder = ({
         mainKey = specialKeyMap[mainKey];
       }
 
-      // Add the main key (if not a modifier)
-      if (!["control", "alt", "shift", "meta"].includes(mainKey)) {
-        keys.push(mainKey);
-      }
-
-      if (keys.length >= 2) {
-        setRecordedKeys(keys);
-        setError("");
+      if (isMoveWindow) {
+        if (["up", "down", "left", "right"].includes(mainKey)) {
+          setError(
+            "Arrow keys are automatic for Move Window. Only set modifiers."
+          );
+          return;
+        }
+        if (keys.length >= 1) {
+          setRecordedKeys(keys);
+          setError("");
+        } else {
+          setError("Must include at least one modifier (Cmd/Ctrl/Alt/Shift)");
+        }
       } else {
-        setError(
-          "Must include at least one modifier (Cmd/Ctrl/Alt/Shift) and one key"
-        );
+        if (!["control", "alt", "shift", "meta"].includes(mainKey)) {
+          keys.push(mainKey);
+        }
+
+        if (keys.length >= 2) {
+          setRecordedKeys(keys);
+          setError("");
+        } else {
+          setError(
+            "Must include at least one modifier (Cmd/Ctrl/Alt/Shift) and one key"
+          );
+        }
       }
     },
-    [isRecording]
+    [isRecording, isMoveWindow]
   );
 
   const handleKeyUp = useCallback(
@@ -114,32 +132,39 @@ export const ShortcutRecorder = ({
   }, [isRecording, handleKeyDown, handleKeyUp]);
 
   const handleSave = async () => {
-    if (recordedKeys.length < 2) {
-      setError("Shortcut must have at least one modifier and one key");
+    if (recordedKeys.length < minKeys) {
+      setError(
+        isMoveWindow
+          ? "Move Window needs at least one modifier"
+          : "Shortcut must have at least one modifier and one key"
+      );
       return;
     }
 
     const shortcutKey = recordedKeys.join("+");
 
-    // Validate with frontend
-    if (!validateShortcutKey(shortcutKey)) {
-      setError("Invalid shortcut combination");
-      return;
-    }
-
-    // Validate with backend
-    try {
-      const isValid = await invoke<boolean>("validate_shortcut_key", {
-        key: shortcutKey,
-      });
-
-      if (!isValid) {
-        setError("This shortcut combination is not supported");
+    // For move_window, skip validation as we'll add arrow keys in the backend
+    if (!isMoveWindow) {
+      // Validate with frontend
+      if (!validateShortcutKey(shortcutKey)) {
+        setError("Invalid shortcut combination");
         return;
       }
-    } catch (e) {
-      setError("Failed to validate shortcut");
-      return;
+
+      // Validate with backend
+      try {
+        const isValid = await invoke<boolean>("validate_shortcut_key", {
+          key: shortcutKey,
+        });
+
+        if (!isValid) {
+          setError("This shortcut combination is not supported");
+          return;
+        }
+      } catch (e) {
+        setError("Failed to validate shortcut");
+        return;
+      }
     }
 
     onSave(shortcutKey);
@@ -175,7 +200,7 @@ export const ShortcutRecorder = ({
           size="sm"
           variant="default"
           onClick={handleSave}
-          disabled={disabled || recordedKeys.length < 2}
+          disabled={disabled || recordedKeys.length < minKeys}
           title="Save shortcut"
         >
           <Check className="h-4 w-4" />
@@ -197,11 +222,13 @@ export const ShortcutRecorder = ({
 
       {isRecording && !error && (
         <p className="text-xs text-muted-foreground">
-          Press a key combination now (e.g., Cmd+Shift+K)
+          {isMoveWindow
+            ? "Press modifier keys (e.g., Cmd+Shift). Arrow keys work automatically."
+            : "Press a key combination now (e.g., Cmd+Shift+K)"}
         </p>
       )}
 
-      {recordedKeys.length >= 2 && !error && (
+      {recordedKeys.length >= minKeys && !error && (
         <p className="text-xs text-green-600">
           ✓ Shortcut captured! Click "Save" to apply.
         </p>

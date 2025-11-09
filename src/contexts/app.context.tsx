@@ -5,6 +5,7 @@ import {
   STORAGE_KEYS,
 } from "@/config";
 import { safeLocalStorage, trackAppStart } from "@/lib";
+import { getShortcutsConfig } from "@/lib/storage";
 import {
   getCustomizableState,
   setCustomizableState,
@@ -142,6 +143,23 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("auto-configs-enabled", "true");
     }
   };
+
+  useEffect(() => {
+    const syncLicenseState = async () => {
+      try {
+        await invoke("set_license_status", {
+          hasLicense: hasActiveLicense,
+        });
+
+        const config = getShortcutsConfig();
+        await invoke("update_shortcuts", { config });
+      } catch (error) {
+        console.error("Failed to synchronize license state:", error);
+      }
+    };
+
+    syncLicenseState();
+  }, [hasActiveLicense]);
 
   // Function to load AI, STT, system prompt and screenshot config data from storage
   const loadData = () => {

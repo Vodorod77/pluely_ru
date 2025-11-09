@@ -45,6 +45,8 @@ pub fn run() {
             is_hidden: Mutex::new(false),
         })
         .manage(shortcuts::RegisteredShortcuts::default())
+        .manage(shortcuts::LicenseState::default())
+        .manage(shortcuts::MoveWindowState::default())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_http::init())
@@ -73,6 +75,8 @@ pub fn run() {
             get_app_version,
             window::set_window_height,
             window::open_dashboard,
+            window::toggle_dashboard,
+            window::move_window,
             capture::capture_to_base64,
             capture::start_screen_capture,
             capture::capture_selected_area,
@@ -81,6 +85,7 @@ pub fn run() {
             shortcuts::get_registered_shortcuts,
             shortcuts::update_shortcuts,
             shortcuts::validate_shortcut_key,
+            shortcuts::set_license_status,
             shortcuts::set_app_icon_visibility,
             shortcuts::set_always_on_top,
             shortcuts::exit_app,
@@ -134,8 +139,7 @@ pub fn run() {
                         .with_handler(move |app, shortcut, event| {
                             use tauri_plugin_global_shortcut::{Shortcut, ShortcutState};
 
-                            if event.state() == ShortcutState::Pressed {
-                                // Get registered shortcuts and find matching action
+                            let action_id = {
                                 let state = app.state::<shortcuts::RegisteredShortcuts>();
                                 let registered = match state.shortcuts.lock() {
                                     Ok(guard) => guard,
@@ -145,16 +149,33 @@ pub fn run() {
                                     }
                                 };
 
-                                // Find which action this shortcut maps to
-                                for (action_id, shortcut_str) in registered.iter() {
+                                registered.iter().find_map(|(action_id, shortcut_str)| {
                                     if let Ok(s) = shortcut_str.parse::<Shortcut>() {
                                         if &s == shortcut {
-                                            eprintln!(
-                                                "Shortcut triggered: {} ({})",
-                                                action_id, shortcut_str
-                                            );
-                                            shortcuts::handle_shortcut_action(&app, action_id);
-                                            break;
+                                            return Some(action_id.clone());
+                                        }
+                                    }
+                                    None
+                                })
+                            };
+
+                            if let Some(action_id) = action_id {
+                                match event.state() {
+                                    ShortcutState::Pressed => {
+                                        if let Some(direction) =
+                                            action_id.strip_prefix("move_window_")
+                                        {
+                                            shortcuts::start_move_window(&app, direction);
+                                        } else {
+                                            eprintln!("Shortcut triggered: {}", action_id);
+                                            shortcuts::handle_shortcut_action(&app, &action_id);
+                                        }
+                                    }
+                                    ShortcutState::Released => {
+                                        if let Some(direction) =
+                                            action_id.strip_prefix("move_window_")
+                                        {
+                                            shortcuts::stop_move_window(&app, direction);
                                         }
                                     }
                                 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Card, Switch, GetLicense } from "@/components";
+import { Button, Card, GetLicense, Switch } from "@/components";
 import { RotateCcw, AlertCircle, Keyboard, Lock } from "lucide-react";
 import {
   getAllShortcutActions,
@@ -102,16 +102,24 @@ export const ShortcutManager = () => {
       return;
     }
 
-    const defaultConfig = resetShortcutsToDefaults();
-    setBindings(defaultConfig.bindings);
-    setConflicts([]);
-    setEditingAction(null);
+    setIsApplying(true);
+    try {
+      const defaultConfig = resetShortcutsToDefaults();
 
-    // Reload to ensure fresh state
-    loadShortcuts();
+      await applyShortcuts(defaultConfig.bindings);
 
-    // Apply to backend
-    await applyShortcuts(defaultConfig.bindings);
+      setBindings(defaultConfig.bindings);
+      setConflicts([]);
+      setEditingAction(null);
+
+      // Reload to ensure fresh state
+      loadShortcuts();
+    } catch (error) {
+      console.error("Failed to reset shortcuts:", error);
+      setConflicts(["Failed to reset shortcuts. Please try again."]);
+    } finally {
+      setIsApplying(false);
+    }
   };
 
   return (
@@ -222,6 +230,7 @@ export const ShortcutManager = () => {
                     </p>
                   </div>
                   <ShortcutRecorder
+                    actionId={action.id}
                     onSave={(key) => handleSaveShortcut(action.id, key)}
                     onCancel={() => {
                       setEditingAction(null);
@@ -257,7 +266,11 @@ export const ShortcutManager = () => {
 
                   <div className="flex items-center gap-2">
                     <code className="px-3 py-1.5 bg-muted rounded text-sm font-mono">
-                      {formatShortcutKeyForDisplay(binding.key)}
+                      {action.id === "move_window"
+                        ? `${formatShortcutKeyForDisplay(
+                            binding.key
+                          )} + (← ↑ ↓ →)`
+                        : formatShortcutKeyForDisplay(binding.key)}
                     </code>
                     <Button
                       size="sm"
