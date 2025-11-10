@@ -9,22 +9,26 @@ import {
   SparklesIcon,
   UserIcon,
   SendIcon,
-  PaperclipIcon,
-  MicIcon,
   Check,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import moment from "moment";
 import { useParams, useNavigate } from "react-router-dom";
 import { PageLayout } from "@/layouts";
-import { DeleteConfirmationDialog } from "./DeleteConfirmation";
-import { useHistory } from "@/hooks";
+import { useHistory, useChatCompletion } from "@/hooks";
+import {
+  DeleteConfirmationDialog,
+  ChatAudio,
+  ChatScreenshot,
+  ChatFiles,
+  AudioRecorder,
+} from ".";
 
 const View = () => {
   const { conversationId } = useParams();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatConversation | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const {
     handleDeleteConfirm,
     confirmDelete,
@@ -36,9 +40,11 @@ const View = () => {
     isAttached,
   } = useHistory();
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const completion = useChatCompletion(
+    conversationId as string,
+    messages,
+    setMessages
+  );
 
   useEffect(() => {
     const getMessages = async () => {
@@ -51,9 +57,13 @@ const View = () => {
   useEffect(() => {
     // Scroll to bottom when messages load
     if (messages?.messages.length) {
-      setTimeout(() => scrollToBottom(), 100);
+      setTimeout(() => {
+        completion.messagesEndRef.current?.scrollIntoView({
+          behavior: "smooth",
+        });
+      }, 100);
     }
-  }, [messages]);
+  }, [messages?.messages.length]);
 
   const handleDelete = async () => {
     await confirmDelete();
@@ -195,46 +205,78 @@ const View = () => {
               </div>
             );
           })}
-          <div ref={messagesEndRef} />
+          <div ref={completion.messagesEndRef} />
         </div>
       )}
 
       {/* Sticky Footer Input */}
       <div className="absolute bottom-0 left-0 right-0 bg-background/10 backdrop-blur">
-        <div className="flex items-center gap-2 p-4 justify-center">
-          {/* Input field */}
-          <div className="flex-1 relative">
-            <div className="absolute bottom-2 left-2 flex items-center gap-1">
-              <Button
-                size="icon"
-                variant="outline"
-                className="h-9 w-9"
-                title="Attach image"
-              >
-                <PaperclipIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
-                variant="outline"
-                className="h-9 w-9"
-                title="Voice input"
-              >
-                <MicIcon className="h-4 w-4" />
-              </Button>
+        {completion.error && (
+          <div className="px-4 pt-3 pb-0">
+            <div className="p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
+              <strong>Error:</strong> {completion.error}
             </div>
-            <Textarea
-              placeholder="Type a message..."
-              className="pr-10 resize-none pb-12"
-              rows={2}
-            />
-            {/* Send button */}
-            <Button
-              size="icon"
-              className="h-9 w-9 absolute right-2 bottom-2 justify-center items-center"
-              title="Send message"
-            >
-              <SendIcon className="h-4 w-4" />
-            </Button>
+          </div>
+        )}
+
+        <div className="flex items-start gap-2 p-4">
+          <div className="flex-1 relative">
+            {completion.isRecording ? (
+              <AudioRecorder
+                onTranscriptionComplete={(text) => {
+                  completion.setIsRecording(false);
+                  completion.submit(text);
+                }}
+                onCancel={() => completion.setIsRecording(false)}
+              />
+            ) : (
+              <>
+                <div className="absolute bottom-2 left-2 flex items-center gap-1 z-10">
+                  <ChatFiles
+                    attachedFiles={completion.attachedFiles}
+                    handleFileSelect={completion.handleFileSelect}
+                    removeFile={completion.removeFile}
+                    onRemoveAllFiles={completion.onRemoveAllFiles}
+                    isLoading={completion.isLoading}
+                    isFilesPopoverOpen={completion.isFilesPopoverOpen}
+                    setIsFilesPopoverOpen={completion.setIsFilesPopoverOpen}
+                  />
+                  <ChatAudio
+                    micOpen={completion.micOpen}
+                    setMicOpen={completion.setMicOpen}
+                    isRecording={completion.isRecording}
+                    setIsRecording={completion.setIsRecording}
+                  />
+                  <ChatScreenshot
+                    screenshotConfiguration={completion.screenshotConfiguration}
+                    attachedFiles={completion.attachedFiles}
+                    isLoading={completion.isLoading}
+                    captureScreenshot={completion.captureScreenshot}
+                    isScreenshotLoading={completion.isScreenshotLoading}
+                  />
+                </div>
+                <Textarea
+                  ref={completion.inputRef}
+                  placeholder="Type a message..."
+                  className="pr-12 pl-2 resize-none pb-12 pt-3"
+                  rows={2}
+                  value={completion.input}
+                  onChange={(e) => completion.setInput(e.target.value)}
+                  onKeyDown={completion.handleKeyPress}
+                  onPaste={completion.handlePaste}
+                  disabled={completion.isLoading}
+                />
+                <Button
+                  size="icon"
+                  className="h-9 w-9 absolute right-2 bottom-2"
+                  title="Send message"
+                  onClick={() => completion.submit()}
+                  disabled={completion.isLoading || !completion.input.trim()}
+                >
+                  <SendIcon className="h-4 w-4" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
