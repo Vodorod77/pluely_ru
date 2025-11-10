@@ -9,7 +9,11 @@ interface SelectionCoords {
   height: number;
 }
 
-const Overlay: React.FC = () => {
+interface OverlayProps {
+  monitorIndex: number;
+}
+
+const Overlay: React.FC<OverlayProps> = ({ monitorIndex }) => {
   const [isSelecting, setIsSelecting] = useState(false);
   const [startCoords, setStartCoords] = useState({ x: 0, y: 0 });
   const [selectionStyle, setSelectionStyle] = useState({
@@ -29,8 +33,8 @@ const Overlay: React.FC = () => {
     setIsSelecting(false);
     try {
       await invoke("close_overlay_window", { reason: "User cancelled" });
-    } catch (err) {
-      console.error("Failed to emit cancel event:", err);
+    } catch {
+      // Error ignored
     }
   };
 
@@ -50,10 +54,13 @@ const Overlay: React.FC = () => {
         height: Math.round(height * scaleFactor),
       };
 
-      // Backend will handle closing the overlay and emitting the event
-      await invoke("capture_selected_area", { coords });
-    } catch (err) {
-      console.error("Failed to capture selected area:", err);
+      await invoke("capture_selected_area", {
+        coords,
+        monitorIndex,
+      });
+    } catch {
+      // Error ignored
+      console.error("Error capturing selected area");
     }
   };
 
@@ -157,12 +164,15 @@ const Overlay: React.FC = () => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
       >
-        {/* Instructions */}
-        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 bg-black/50 bg-opacity-10 text-white px-6 py-3 rounded-lg font-sans text-xs pointer-events-none z-[5000]">
-          Click and drag to select area, press ESC to cancel
+        {/* Instructions - Show on all monitors so users always see them */}
+        <div className="fixed top-5 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-6 py-3 rounded-lg font-sans text-sm pointer-events-none z-[5000] shadow-2xl backdrop-blur-sm">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">Screen Capture:</span>
+            <span>Click and drag to select area · Press ESC to cancel</span>
+          </div>
         </div>
 
-        {/* Cancel Button */}
+        {/* Cancel Button - Show on all monitors for easy access */}
         <button
           onClick={handleCancel}
           onMouseDown={(e) => {
@@ -171,7 +181,7 @@ const Overlay: React.FC = () => {
             handleCancel();
           }}
           style={{ cursor: "none" }}
-          className="fixed top-5 right-5 bg-red-500 hover:bg-red-600 hover:bg-opacity-95 text-white border-none px-4 py-2 rounded-md font-sans text-sm z-[5000] transition-colors duration-200"
+          className="fixed top-5 right-5 bg-red-500 hover:bg-red-600 text-white border-none px-5 py-2.5 rounded-lg font-sans text-sm z-[5000] transition-colors duration-200 shadow-2xl backdrop-blur-sm font-semibold"
         >
           Cancel (ESC)
         </button>
