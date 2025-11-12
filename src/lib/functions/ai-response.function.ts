@@ -25,14 +25,14 @@ function buildEnhancedSystemPrompt(baseSystemPrompt?: string): string {
   const lengthOption = RESPONSE_LENGTHS.find(
     (l) => l.id === responseSettings.responseLength
   );
-  if (lengthOption) {
+  if (lengthOption?.prompt?.trim()) {
     prompts.push(lengthOption.prompt);
   }
 
   const languageOption = LANGUAGES.find(
     (l) => l.id === responseSettings.language
   );
-  if (languageOption) {
+  if (languageOption?.prompt?.trim()) {
     prompts.push(languageOption.prompt);
   }
 
