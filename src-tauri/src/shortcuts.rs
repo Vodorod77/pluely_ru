@@ -11,8 +11,6 @@ use tokio::time::{sleep, Duration};
 use tauri_nspanel::ManagerExt;
 
 use crate::window::create_dashboard_window;
-#[cfg(target_os = "windows")]
-use crate::window::{hide_window_without_activation, show_window_without_activation};
 // State for window visibility
 pub struct WindowVisibility {
     #[allow(dead_code)]
@@ -200,14 +198,20 @@ fn handle_toggle_window<R: Runtime>(app: &AppHandle<R>) {
         let mut is_hidden = state.is_hidden.lock().unwrap();
         *is_hidden = !*is_hidden;
 
-        if *is_hidden {
-            hide_window_without_activation(&window);
-        } else {
-            show_window_without_activation(&window);
-        }
-
         if let Err(e) = window.emit("toggle-window-visibility", *is_hidden) {
             eprintln!("Failed to emit toggle-window-visibility event: {}", e);
+        }
+
+        if !*is_hidden {
+            if let Err(e) = window.show() {
+                eprintln!("Failed to show window: {}", e);
+            }
+            if let Err(e) = window.set_focus() {
+                eprintln!("Failed to focus window: {}", e);
+            }
+            if let Err(e) = window.emit("focus-text-input", json!({})) {
+                eprintln!("Failed to emit focus-text-input event: {}", e);
+            }
         }
         return;
     }

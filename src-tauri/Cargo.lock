@@ -4159,7 +4159,6 @@ dependencies = [
  "tracing",
  "uuid",
  "wasapi",
- "windows 0.52.0",
  "xcap",
 ]
 
