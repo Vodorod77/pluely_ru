@@ -7,6 +7,7 @@ interface ChatAudioProps {
   setMicOpen: (open: boolean) => void;
   isRecording: boolean;
   setIsRecording: (recording: boolean) => void;
+  disabled: boolean;
 }
 
 export const ChatAudio = ({
@@ -14,6 +15,7 @@ export const ChatAudio = ({
   setMicOpen,
   isRecording,
   setIsRecording,
+  disabled,
 }: ChatAudioProps) => {
   const { selectedSttProvider, pluelyApiEnabled } = useApp();
   const isProviderConfigured = pluelyApiEnabled || selectedSttProvider.provider;
@@ -36,6 +38,7 @@ export const ChatAudio = ({
           onClick={handleMicClick}
           className="h-9 w-9"
           title={isRecording ? "Recording..." : "Voice input"}
+          disabled={disabled}
         >
           <MicIcon
             className={`h-4 w-4 ${

@@ -17,6 +17,7 @@ interface ChatFilesProps {
   isLoading: boolean;
   isFilesPopoverOpen: boolean;
   setIsFilesPopoverOpen: (open: boolean) => void;
+  disabled: boolean;
 }
 
 export const ChatFiles = ({
@@ -27,6 +28,7 @@ export const ChatFiles = ({
   isLoading,
   isFilesPopoverOpen,
   setIsFilesPopoverOpen,
+  disabled,
 }: ChatFilesProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,7 +54,7 @@ export const ChatFiles = ({
                 setIsFilesPopoverOpen(true);
               }
             }}
-            disabled={isLoading}
+            disabled={isLoading || disabled}
             className="h-9 w-9"
             title="Attach images"
           >

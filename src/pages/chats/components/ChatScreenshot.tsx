@@ -8,6 +8,7 @@ interface ChatScreenshotProps {
   isLoading: boolean;
   captureScreenshot: () => Promise<void>;
   isScreenshotLoading: boolean;
+  disabled: boolean;
 }
 
 export const ChatScreenshot = ({
@@ -16,6 +17,7 @@ export const ChatScreenshot = ({
   isLoading,
   captureScreenshot,
   isScreenshotLoading,
+  disabled,
 }: ChatScreenshotProps) => {
   const captureMode = screenshotConfiguration.enabled
     ? "Screenshot"
@@ -30,7 +32,10 @@ export const ChatScreenshot = ({
       title={`${captureMode} mode (${processingMode}) - ${attachedFiles.length}/${MAX_FILES} files`}
       onClick={captureScreenshot}
       disabled={
-        attachedFiles.length >= MAX_FILES || isLoading || isScreenshotLoading
+        attachedFiles.length >= MAX_FILES ||
+        isLoading ||
+        isScreenshotLoading ||
+        disabled
       }
     >
       {isScreenshotLoading ? (
@@ -43,4 +48,3 @@ export const ChatScreenshot = ({
     </Button>
   );
 };
-
