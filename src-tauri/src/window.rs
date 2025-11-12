@@ -1,4 +1,16 @@
-use tauri::{App, Manager, WebviewWindow};
+#[cfg(target_os = "windows")]
+use tauri::platform::windows::WindowExtWindows;
+#[cfg(target_os = "macos")]
+use tauri::LogicalPosition;
+use tauri::{App, AppHandle, Manager, Runtime, WebviewWindow, WebviewWindowBuilder};
+
+#[cfg(target_os = "windows")]
+use windows::Win32::Foundation::{GetLastError, SetLastError};
+#[cfg(target_os = "windows")]
+use windows::Win32::UI::WindowsAndMessaging::{
+    GetWindowLongPtrW, SetWindowLongPtrW, ShowWindow, GWL_EXSTYLE, SW_HIDE, SW_SHOWNOACTIVATE,
+    WS_EX_APPWINDOW, WS_EX_TOOLWINDOW,
+};
 
 // The offset from the top of the screen to the window
 const TOP_OFFSET: i32 = 54;
@@ -17,11 +29,10 @@ pub fn setup_main_window(app: &mut App) -> Result<(), Box<dyn std::error::Error>
 
     position_window_top_center(&window, TOP_OFFSET)?;
 
-    // Set window as non-focusable on Windows
-    // #[cfg(target_os = "windows")]
-    // {
-    //     let _ = window.set_focusable(false);
-    // }
+    #[cfg(target_os = "windows")]
+    if let Err(e) = apply_windows_panel_style(&window) {
+        eprintln!("Failed to configure Windows window style: {}", e);
+    }
 
     Ok(())
 }
@@ -83,8 +94,6 @@ pub fn set_window_height(window: tauri::WebviewWindow, height: u32) -> Result<()
 
 #[tauri::command]
 pub fn open_dashboard(app: tauri::AppHandle) -> Result<(), String> {
-    use tauri::WebviewUrl;
-
     // Check if dashboard window already exists
     if let Some(dashboard_window) = app.get_webview_window("dashboard") {
         // Window exists, just focus and show it
@@ -95,20 +104,9 @@ pub fn open_dashboard(app: tauri::AppHandle) -> Result<(), String> {
             .show()
             .map_err(|e| format!("Failed to show dashboard window: {}", e))?;
     } else {
-        // Window doesn't exist, create it with config from tauri.conf.json
-        let _window =
-            tauri::WebviewWindowBuilder::new(&app, "dashboard", WebviewUrl::App("/chats".into()))
-                .title("Pluely - Dashboard")
-                .inner_size(1200.0, 800.0)
-                .min_inner_size(1200.0, 800.0)
-                .center()
-                .decorations(true)
-                .hidden_title(true)
-                .title_bar_style(tauri::TitleBarStyle::Overlay)
-                .content_protected(true)
-                .visible(true)
-                .build()
-                .map_err(|e| format!("Failed to create dashboard window: {}", e))?;
+        // Window doesn't exist, create it with platform-aware defaults
+        create_dashboard_window(&app)
+            .map_err(|e| format!("Failed to create dashboard window: {}", e))?;
     }
 
     Ok(())
@@ -116,8 +114,6 @@ pub fn open_dashboard(app: tauri::AppHandle) -> Result<(), String> {
 
 #[tauri::command]
 pub fn toggle_dashboard(app: tauri::AppHandle) -> Result<(), String> {
-    use tauri::WebviewUrl;
-
     if let Some(dashboard_window) = app.get_webview_window("dashboard") {
         match dashboard_window.is_visible() {
             Ok(true) => {
@@ -141,19 +137,8 @@ pub fn toggle_dashboard(app: tauri::AppHandle) -> Result<(), String> {
         }
     } else {
         // Window doesn't exist, create it
-        let _window =
-            tauri::WebviewWindowBuilder::new(&app, "dashboard", WebviewUrl::App("/chats".into()))
-                .title("Pluely - Dashboard")
-                .inner_size(1200.0, 800.0)
-                .min_inner_size(1200.0, 800.0)
-                .center()
-                .decorations(true)
-                .hidden_title(true)
-                .title_bar_style(tauri::TitleBarStyle::Overlay)
-                .content_protected(true)
-                .visible(true)
-                .build()
-                .map_err(|e| format!("Failed to create dashboard window: {}", e))?;
+        create_dashboard_window(&app)
+            .map_err(|e| format!("Failed to create dashboard window: {}", e))?;
     }
 
     Ok(())
@@ -185,4 +170,100 @@ pub fn move_window(app: tauri::AppHandle, direction: String, step: i32) -> Resul
     }
 
     Ok(())
+}
+
+#[cfg(target_os = "windows")]
+fn apply_windows_panel_style(window: &WebviewWindow) -> Result<(), String> {
+    let hwnd = window
+        .hwnd()
+        .map_err(|e| format!("Failed to obtain native window handle: {}", e))?;
+
+    unsafe {
+        SetLastError(0);
+        let current = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+        let last_error = GetLastError();
+        if current == 0 && last_error.0 != 0 {
+            return Err(format!("GetWindowLongPtrW failed: {}", last_error.0));
+        }
+
+        let mut new_style = current | (WS_EX_TOOLWINDOW.0 as isize);
+        new_style &= !(WS_EX_APPWINDOW.0 as isize);
+
+        SetLastError(0);
+        let previous = SetWindowLongPtrW(hwnd, GWL_EXSTYLE, new_style);
+        let last_error = GetLastError();
+        if previous == 0 && last_error.0 != 0 {
+            return Err(format!("SetWindowLongPtrW failed: {}", last_error.0));
+        }
+    }
+
+    Ok(())
+}
+
+#[cfg(target_os = "windows")]
+pub fn show_window_without_activation(window: &WebviewWindow) {
+    apply_windows_panel_style(window).ok();
+    if let Err(e) = window.set_focusable(false) {
+        eprintln!(
+            "Failed to temporarily disable focus for Windows window: {}",
+            e
+        );
+    }
+
+    let _ = window.show();
+
+    if let Ok(hwnd) = window.hwnd() {
+        unsafe {
+            ShowWindow(hwnd, SW_SHOWNOACTIVATE);
+        }
+    }
+
+    if let Err(e) = window.set_focusable(true) {
+        eprintln!(
+            "Failed to restore focusable state for Windows window: {}",
+            e
+        );
+    }
+}
+
+#[cfg(target_os = "windows")]
+pub fn hide_window_without_activation(window: &WebviewWindow) {
+    if let Ok(hwnd) = window.hwnd() {
+        unsafe {
+            ShowWindow(hwnd, SW_HIDE);
+        }
+    }
+    let _ = window.hide();
+}
+
+pub fn create_dashboard_window<R: Runtime>(
+    app: &AppHandle<R>,
+) -> Result<WebviewWindow<R>, tauri::Error> {
+    let base_builder =
+        WebviewWindowBuilder::new(app, "dashboard", tauri::WebviewUrl::App("/chats".into()));
+
+    #[cfg(target_os = "macos")]
+    let base_builder = base_builder
+        .title("Pluely - Dashboard")
+        .center()
+        .decorations(true)
+        .inner_size(1200.0, 800.0)
+        .min_inner_size(800.0, 600.0)
+        .hidden_title(true)
+        .title_bar_style(tauri::TitleBarStyle::Overlay)
+        .content_protected(true)
+        .visible(true)
+        .traffic_light_position(LogicalPosition::new(14.0, 18.0));
+
+    #[cfg(not(target_os = "macos"))]
+    let base_builder = base_builder
+        .title("Pluely - Dashboard")
+        .center()
+        .decorations(true)
+        .inner_size(800.0, 600.0)
+        .min_inner_size(800.0, 600.0)
+        .content_protected(true)
+        .visible(true);
+
+    base_builder.build()
 }

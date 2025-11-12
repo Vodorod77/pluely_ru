@@ -158,8 +158,12 @@ const Overlay: React.FC<OverlayProps> = ({ monitorIndex }) => {
   return (
     <>
       <div
-        className="fixed inset-0 w-screen h-screen bg-black/0.5 bg-opacity-10 overflow-hidden"
-        style={{ cursor: "none" }}
+        className="fixed inset-0 w-screen h-screen overflow-hidden"
+        style={{
+          cursor: "none",
+          backgroundColor: "rgba(15, 23, 42, 0.35)",
+          backdropFilter: "blur(2px)",
+        }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

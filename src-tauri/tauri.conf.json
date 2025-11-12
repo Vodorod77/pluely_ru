@@ -28,29 +28,6 @@
         "focus": false,
         "acceptFirstMouse": true,
         "shadow": false
-      },
-      {
-        "width": 1200,
-        "height": 800,
-        "minWidth": 1200,
-        "minHeight": 800,
-        "visible": true,
-        "center": true,
-        "decorations": true,
-        "hiddenTitle": true,
-        "titleBarStyle": "Overlay",
-        "contentProtected": true,
-        "label": "dashboard",
-        "url": "/chats",
-        "trafficLightPosition": {
-          "x": 14,
-          "y": 18
-        },
-        "windowEffects": {
-          "effects": [],
-          "state": "active",
-          "radius": 18
-        }
       }
     ],
     "security": { "csp": null }

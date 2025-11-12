@@ -105,6 +105,48 @@ export const useApp = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleShortcutRegistrationError = (
+      event: Event | CustomEvent<Array<[string, string, string]>>
+    ) => {
+      const detail =
+        (event as CustomEvent<Array<[string, string, string]>>)?.detail ?? [];
+
+      if (!detail.length) {
+        return;
+      }
+
+      const formatted = detail
+        .map(([action, key, error]) => ({ action, key, error }))
+        .filter(({ action, key }) => action && key);
+
+      if (!formatted.length) {
+        return;
+      }
+
+      console.warn(
+        "Some shortcuts could not be registered:",
+        formatted.map(({ action, key, error }) => ({
+          action,
+          key,
+          error,
+        }))
+      );
+    };
+
+    window.addEventListener(
+      "shortcutRegistrationError",
+      handleShortcutRegistrationError as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        "shortcutRegistrationError",
+        handleShortcutRegistrationError as EventListener
+      );
+    };
+  }, []);
+
   return {
     isHidden,
     setIsHidden,

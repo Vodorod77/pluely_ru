@@ -1,14 +1,18 @@
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
-use tokio::time::{sleep, Duration};
+use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager, Runtime};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut};
+use tokio::time::{sleep, Duration};
 
 #[cfg(target_os = "macos")]
 use tauri_nspanel::ManagerExt;
+
+use crate::window::create_dashboard_window;
+#[cfg(target_os = "windows")]
+use crate::window::{hide_window_without_activation, show_window_without_activation};
 // State for window visibility
 pub struct WindowVisibility {
     #[allow(dead_code)]
@@ -196,6 +200,12 @@ fn handle_toggle_window<R: Runtime>(app: &AppHandle<R>) {
         let mut is_hidden = state.is_hidden.lock().unwrap();
         *is_hidden = !*is_hidden;
 
+        if *is_hidden {
+            hide_window_without_activation(&window);
+        } else {
+            show_window_without_activation(&window);
+        }
+
         if let Err(e) = window.emit("toggle-window-visibility", *is_hidden) {
             eprintln!("Failed to emit toggle-window-visibility event: {}", e);
         }
@@ -343,10 +353,7 @@ pub fn update_shortcuts<R: Runtime>(
                             shortcuts_to_register.push((direction_action_id, full_key, shortcut));
                         }
                         Err(e) => {
-                            eprintln!(
-                                "Invalid shortcut '{}' for move_window: {}",
-                                full_key, e
-                            );
+                            eprintln!("Invalid shortcut '{}' for move_window: {}", full_key, e);
                             return Err(format!(
                                 "Invalid shortcut '{}' for move_window: {}",
                                 full_key, e
@@ -385,14 +392,17 @@ pub fn update_shortcuts<R: Runtime>(
     // Now register all new shortcuts
     let mut successfully_registered = HashMap::new();
 
+    let mut registration_failures: Vec<(String, String, String)> = Vec::new();
+
     for (action_id, shortcut_str, shortcut) in shortcuts_to_register {
-        match app.global_shortcut().register(shortcut.clone()) {
+        match app.global_shortcut().register(shortcut) {
             Ok(_) => {
                 eprintln!("Registered shortcut: {} -> {}", action_id, shortcut_str);
                 successfully_registered.insert(action_id, shortcut_str);
             }
             Err(e) => {
                 eprintln!("Failed to register {} shortcut: {}", action_id, e);
+                registration_failures.push((action_id, shortcut_str, e.to_string()));
             }
         }
     }
@@ -410,6 +420,24 @@ pub fn update_shortcuts<R: Runtime>(
 
         registered.clear();
         registered.extend(successfully_registered);
+    }
+
+    if !registration_failures.is_empty() {
+        if let Some(window) = app.get_webview_window("main") {
+            if let Err(e) = window.emit("shortcut-registration-error", &registration_failures) {
+                eprintln!("Failed to emit shortcut registration error event: {}", e);
+            }
+        }
+
+        let error_messages: Vec<String> = registration_failures
+            .into_iter()
+            .map(|(action, key, error)| format!("{} ({}) - {}", action, key, error))
+            .collect();
+
+        return Err(format!(
+            "Some shortcuts could not be registered: {}",
+            error_messages.join("; ")
+        ));
     }
 
     Ok(())
@@ -469,10 +497,7 @@ pub fn validate_shortcut_key(key: String) -> Result<bool, String> {
 }
 
 #[tauri::command]
-pub fn set_license_status<R: Runtime>(
-    app: AppHandle<R>,
-    has_license: bool,
-) -> Result<(), String> {
+pub fn set_license_status<R: Runtime>(app: AppHandle<R>, has_license: bool) -> Result<(), String> {
     {
         let state = app.state::<LicenseState>();
         state.set_active(has_license);
@@ -547,8 +572,6 @@ pub fn set_always_on_top<R: Runtime>(app: AppHandle<R>, enabled: bool) -> Result
 /// Handle toggle dashboard shortcut
 fn handle_toggle_dashboard<R: Runtime>(app: &AppHandle<R>) {
     use tauri::Manager;
-    use tauri::WebviewUrl;
-
     if let Some(dashboard_window) = app.get_webview_window("dashboard") {
         match dashboard_window.is_visible() {
             Ok(true) => {
@@ -572,18 +595,7 @@ fn handle_toggle_dashboard<R: Runtime>(app: &AppHandle<R>) {
         }
     } else {
         // Window doesn't exist, create it
-        match tauri::WebviewWindowBuilder::new(app, "dashboard", WebviewUrl::App("/chats".into()))
-            .title("Pluely - Dashboard")
-            .inner_size(1200.0, 800.0)
-            .min_inner_size(1200.0, 800.0)
-            .center()
-            .decorations(true)
-            .hidden_title(true)
-            .title_bar_style(tauri::TitleBarStyle::Overlay)
-            .content_protected(true)
-            .visible(true)
-            .build()
-        {
+        match create_dashboard_window(app) {
             Ok(_) => eprintln!("Dashboard window created successfully"),
             Err(e) => eprintln!("Failed to create dashboard window: {}", e),
         }
@@ -595,19 +607,11 @@ fn handle_focus_input<R: Runtime>(app: &AppHandle<R>) {
     if let Some(window) = app.get_webview_window("main") {
         // Ensure window is visible
         if let Ok(false) = window.is_visible() {
-            if let Err(e) = window.show() {
-                eprintln!("Failed to show window: {}", e);
-                return;
-            }
-            if let Err(e) = window.set_focus() {
-                eprintln!("Failed to focus window: {}", e);
-            }
+            let _ = window.show();
         }
 
-        // Emit event to focus text input
-        if let Err(e) = window.emit("focus-text-input", json!({})) {
-            eprintln!("Failed to emit focus-text-input event: {}", e);
-        }
+        let _ = window.set_focus();
+        let _ = window.emit("focus-text-input", json!({}));
     }
 }
 
@@ -627,9 +631,12 @@ fn handle_move_window<R: Runtime>(app: &AppHandle<R>, direction: &str) {
                     }
                 };
 
-                if let Err(e) = window.set_position(tauri::Position::Physical(
-                    tauri::PhysicalPosition { x: new_x, y: new_y },
-                )) {
+                if let Err(e) =
+                    window.set_position(tauri::Position::Physical(tauri::PhysicalPosition {
+                        x: new_x,
+                        y: new_y,
+                    }))
+                {
                     eprintln!("Failed to set window position: {}", e);
                 }
             }

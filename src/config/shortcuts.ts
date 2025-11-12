@@ -23,8 +23,8 @@ export const DEFAULT_SHORTCUT_ACTIONS: ShortcutAction[] = [
   },
   {
     id: "focus_input",
-    name: "Focus Input",
-    description: "Focus on the text input field",
+    name: "Refocus Input Box",
+    description: "Bring Pluely forward and place the cursor in the input area",
     defaultKey: {
       macos: "cmd+shift+i",
       windows: "ctrl+shift+i",

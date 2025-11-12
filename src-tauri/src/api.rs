@@ -613,7 +613,8 @@ pub async fn chat_stream_response(
 
                         if !json_str.is_empty() {
                             // Try to parse the JSON and extract content
-                            if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(json_str) {
+                            if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(json_str)
+                            {
                                 if usage.is_none() {
                                     if let Some(collected) = parsed.get("usage") {
                                         if !collected.is_null() {
