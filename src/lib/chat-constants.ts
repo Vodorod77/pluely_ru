@@ -51,15 +51,6 @@ export const CHUNK_POLL_INTERVAL_MS = 50;
 export const DOWNLOAD_SUCCESS_DISPLAY_MS = 1000;
 
 /**
- * CONVERSATION_TITLE_WORD_LIMIT
- *
- * Maximum number of words to include in auto-generated conversation titles.
- *
- * 6 words is enough to give context without making titles too long.
- */
-export const CONVERSATION_TITLE_WORD_LIMIT = 6;
-
-/**
  * CONVERSATION_ID_RANDOM_LENGTH
  *
  * Length of the random suffix in conversation IDs.

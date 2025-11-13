@@ -49,7 +49,7 @@ export const Header = ({
         <div className="flex flex-col">
           <Label
             className={`${cn(
-              "font-semibold",
+              "font-semibold line-clamp-1",
               isMainTitle
                 ? "text-md lg:text-lg"
                 : "text-xs lg:text-sm transition-all duration-300"

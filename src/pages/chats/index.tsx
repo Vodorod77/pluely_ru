@@ -74,7 +74,9 @@ const Dashboard = () => {
                         onClick={() => navigate(`/chats/view/${doc.id}`)}
                       >
                         <div className="flex items-center justify-between">
-                          <p className="line-clamp-1 text-sm">{doc.title}</p>
+                          <p className="line-clamp-1 text-sm mr-8">
+                            {doc.title}
+                          </p>
                           <div className="flex items-center gap-1">
                             <Badge variant="outline" className="text-xs">
                               {doc.messages.length} messages

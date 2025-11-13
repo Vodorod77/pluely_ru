@@ -18,6 +18,7 @@ import {
   UserIcon,
   SendIcon,
   Check,
+  Loader2,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import moment from "moment";
@@ -310,7 +311,11 @@ const View = () => {
                     !hasActiveLicense
                   }
                 >
-                  <SendIcon className="size-3 lg:size-4" />
+                  {completion.isLoading ? (
+                    <Loader2 className="size-3 lg:size-4 animate-spin" />
+                  ) : (
+                    <SendIcon className="size-3 lg:size-4" />
+                  )}
                 </Button>
               </>
             )}
