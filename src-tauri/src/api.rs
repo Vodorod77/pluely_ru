@@ -182,7 +182,7 @@ pub async fn transcribe_audio(
     let provider = selected_model.as_ref().map(|model| model.provider.clone());
     let model = selected_model.as_ref().map(|model| model.model.clone());
 
-    let api_config = fetch_api_response_config(&app, provider, model).await?;
+    let api_config = fetch_api_response_config(&app, provider.clone(), model.clone()).await?;
     let user_audio_config = api_config.user_audio.as_ref().ok_or_else(|| {
         "Audio transcription is not configured for this workspace. Please contact support."
             .to_string()
@@ -190,6 +190,8 @@ pub async fn transcribe_audio(
 
     let audio_bytes = decode_audio_base64(&audio_base64)?;
     let client = reqwest::Client::new();
+    let error_provider = provider.clone();
+    let error_model = model.clone();
     match perform_user_audio_transcription(
         &client,
         &user_audio_config.url,
@@ -245,6 +247,17 @@ pub async fn transcribe_audio(
                     .unwrap_or("not attempted"),
                 "Audio transcription failed for all configured endpoints"
             );
+            tauri::async_runtime::spawn({
+                let app = app.clone();
+                let error_msg = if let Some(fallback_err) = fallback_error_message {
+                    format!("Primary: {} | Fallback: {}", primary_error, fallback_err)
+                } else {
+                    primary_error.clone()
+                };
+                async move {
+                    report_api_error(app, error_msg, "/api/transcribe".to_string(), error_model, error_provider).await;
+                }
+            });
             Err("Transcription failed. Please try again.".to_string())
         }
     }
@@ -556,6 +569,15 @@ pub async fn chat_stream_response(
                 sources.push(url.to_string());
             }
             let final_message = map_api_error_message(&error_rules, &sources);
+            tauri::async_runtime::spawn({
+                let app = app.clone();
+                let provider = provider.clone();
+                let model = model.clone();
+                let error_msg = e.to_string();
+                async move {
+                    report_api_error(app, error_msg, "/api/chat".to_string(), model, provider).await;
+                }
+            });
             return Err(final_message);
         }
     };
@@ -581,6 +603,15 @@ pub async fn chat_stream_response(
         }
 
         let final_message = map_api_error_message(&error_rules, &sources);
+        tauri::async_runtime::spawn({
+            let app = app.clone();
+            let provider = provider.clone();
+            let model = model.clone();
+            let error_msg = format!("{}: {}", status, error_text);
+            async move {
+                report_api_error(app, error_msg, "/api/chat".to_string(), model, provider).await;
+            }
+        });
         return Err(final_message);
     }
 
@@ -589,6 +620,10 @@ pub async fn chat_stream_response(
     let mut full_response = String::new();
     let mut buffer = String::new();
     let mut usage: Option<serde_json::Value> = None;
+    let mut activity_reported = false;
+    let activity_app = app.clone();
+    let activity_model = api_config.model.clone();
+    let activity_app_version = app.package_info().version.to_string();
 
     while let Some(chunk) = stream.next().await {
         match chunk {
@@ -633,6 +668,24 @@ pub async fn chat_stream_response(
                                                 full_response.push_str(content);
                                                 // Emit just the content to frontend
                                                 let _ = app.emit("chat_stream_chunk", content);
+                                                if !activity_reported {
+                                                    activity_reported = true;
+                                                    tauri::async_runtime::spawn({
+                                                        let activity_app = activity_app.clone();
+                                                        let activity_model = activity_model.clone();
+                                                        let activity_app_version = activity_app_version.clone();
+                                                        let captured_metrics = usage.clone();
+                                                        async move {
+                                                            let _ = user_activity(
+                                                                activity_app,
+                                                                captured_metrics,
+                                                                activity_model,
+                                                                activity_app_version,
+                                                            )
+                                                            .await;
+                                                        }
+                                                    });
+                                                }
                                             }
                                         }
                                     }
@@ -648,27 +701,22 @@ pub async fn chat_stream_response(
             Err(e) => {
                 let sources = vec![e.to_string()];
                 let final_message = map_api_error_message(&error_rules, &sources);
+                tauri::async_runtime::spawn({
+                    let app = app.clone();
+                    let provider = provider.clone();
+                    let model = model.clone();
+                    let error_msg = e.to_string();
+                    async move {
+                        report_api_error(app, error_msg, "/api/chat".to_string(), model, provider).await;
+                    }
+                });
                 return Err(final_message);
             }
         }
     }
 
-    let activity_app = app.clone();
-    let activity_model = api_config.model.clone();
-    let activity_app_version = app.package_info().version.to_string();
-    let captured_metrics = usage.take();
     // Emit completion event
     let _ = app.emit("chat_stream_complete", &full_response);
-
-    tauri::async_runtime::spawn(async move {
-        let _ = user_activity(
-            activity_app,
-            captured_metrics,
-            activity_model,
-            activity_app_version,
-        )
-        .await;
-    });
 
     Ok(full_response)
 }
@@ -737,6 +785,75 @@ async fn user_activity(
         .await;
 
     Ok(())
+}
+
+async fn report_api_error(
+    app: AppHandle,
+    error_message: String,
+    endpoint: String,
+    model: Option<String>,
+    provider: Option<String>,
+) {
+    let app_endpoint = match get_app_endpoint() {
+        Ok(value) => value,
+        Err(_) => return,
+    };
+
+    let api_access_key = match get_api_access_key() {
+        Ok(value) => value,
+        Err(_) => return,
+    };
+
+    let (license_key, instance_id, stored_model) = match get_stored_credentials(&app).await {
+        Ok(values) => values,
+        Err(_) => return,
+    };
+
+    let machine_id = match app.machine_uid().get_machine_uid() {
+        Ok(id) => id.id.unwrap_or_default(),
+        Err(_) => return,
+    };
+
+    if machine_id.is_empty() {
+        return;
+    }
+
+    let app_version = app.package_info().version.to_string();
+
+    let final_model = model
+        .or_else(|| stored_model.as_ref().map(|m| m.model.clone()))
+        .unwrap_or_default();
+
+    let final_provider = provider
+        .or_else(|| stored_model.as_ref().map(|m| m.provider.clone()))
+        .unwrap_or_default();
+
+    let payload = serde_json::json!({
+        "machine_id": machine_id,
+        "error_message": error_message,
+        "app_version": app_version,
+        "instance": instance_id,
+        "license_key": license_key,
+        "endpoint": endpoint,
+        "model": final_model,
+        "provider": final_provider
+    });
+
+    let error_url = format!("{}/api/error", app_endpoint.trim_end_matches('/'));
+    let client = reqwest::Client::new();
+
+    tracing::debug!("Reporting API error: {:?}", payload);
+
+    if let Err(e) = client
+        .post(&error_url)
+        .header("Authorization", format!("Bearer {}", api_access_key))
+        .header("Content-Type", "application/json")
+        .json(&payload)
+        .send()
+        .await
+    {
+        tracing::warn!("Failed to report API error: {}", e);
+    }
 }
 
 // Models API Command
@@ -810,6 +927,7 @@ pub async fn create_system_prompt(
     let api_access_key = get_api_access_key()?;
     let (license_key, instance_id, _) = get_stored_credentials(&app).await?;
     let machine_id: String = app.machine_uid().get_machine_uid().unwrap().id.unwrap();
+    let app_version: String = app.package_info().version.to_string();
     // Make HTTP request to models endpoint
     let client = reqwest::Client::new();
     let url = format!("{}/api/prompt", app_endpoint);
@@ -821,6 +939,7 @@ pub async fn create_system_prompt(
         .header("license_key", &license_key)
         .header("instance", &instance_id)
         .header("machine_id", &machine_id)
+        .header("app_version", &app_version)
         .json(&serde_json::json!({
             "user_prompt": user_prompt
         }))
