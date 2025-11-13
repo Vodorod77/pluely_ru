@@ -82,6 +82,7 @@ const View = () => {
 
   return (
     <PageLayout
+      isMainTitle={false}
       allowBackButton={true}
       title={messages?.title || ""}
       description={`${messages?.messages.length} messages in this conversation`}
