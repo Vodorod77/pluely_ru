@@ -11,10 +11,12 @@ import { SparklesIcon } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { ErrorBoundary } from "react-error-boundary";
 import { ErrorLayout } from "@/layouts";
+import { getPlatform } from "@/lib";
 
 const App = () => {
   const { isHidden, systemAudio } = useApp();
   const { customizable } = useAppContext();
+  const platform = getPlatform();
 
   const openDashboard = async () => {
     try {
@@ -82,7 +84,9 @@ const App = () => {
           <Updater />
           <DragButton />
         </Card>
-        {customizable.cursor.type === "invisible" ? <CustomCursor /> : null}
+        {customizable.cursor.type === "invisible" && platform !== "linux" ? (
+          <CustomCursor />
+        ) : null}
       </div>
     </ErrorBoundary>
   );
