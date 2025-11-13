@@ -127,8 +127,8 @@ export const ShortcutManager = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            <Keyboard className="h-5 w-5" />
+          <h3 className="text-md lg:text-lg font-semibold flex items-center gap-2">
+            <Keyboard className="size-5 lg:size-5" />
             Keyboard Shortcuts
           </h3>
           <p className="text-sm text-muted-foreground">
@@ -158,7 +158,7 @@ export const ShortcutManager = () => {
             disabled={isApplying}
             title="Reset all shortcuts to platform defaults"
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="size-3 lg:size-4" />
             Reset
           </Button>
         </div>
@@ -168,7 +168,7 @@ export const ShortcutManager = () => {
       {conflicts.length > 0 && (
         <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
           <div className="flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
+            <AlertCircle className="size-3 lg:size-4 text-destructive mt-0.5" />
             <div className="flex-1">
               {conflicts.map((conflict, i) => (
                 <p key={i} className="text-sm text-destructive">
@@ -184,12 +184,12 @@ export const ShortcutManager = () => {
       {!hasActiveLicense && (
         <Card className="p-4 bg-primary/5 border-primary/20">
           <div className="flex items-start gap-3">
-            <Lock className="h-5 w-5 text-primary mt-0.5" />
+            <Lock className="size-4 lg:size-5 text-primary mt-0.5" />
             <div className="flex-1 space-y-2">
-              <p className="text-sm font-medium">
+              <p className="text-xs lg:text-sm font-medium">
                 Unlock Shortcut Customization
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[10px] lg:text-xs text-muted-foreground">
                 Get a license to customize keyboard shortcuts to your
                 preference.
               </p>
@@ -224,8 +224,10 @@ export const ShortcutManager = () => {
                 // EDITING MODE - Show recorder immediately
                 <div className="space-y-3">
                   <div>
-                    <p className="font-medium text-sm">{action.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="font-medium text-xs lg:text-sm">
+                      {action.name}
+                    </p>
+                    <p className="text-[10px] lg:text-xs text-muted-foreground">
                       {action.description}
                     </p>
                   </div>
@@ -254,18 +256,20 @@ export const ShortcutManager = () => {
 
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-sm">{action.name}</p>
+                      <p className="font-medium text-xs lg:text-sm">
+                        {action.name}
+                      </p>
                       {isLocked && (
-                        <Lock className="h-3 w-3 text-muted-foreground" />
+                        <Lock className="size-3 lg:size-4 text-muted-foreground" />
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-[10px] lg:text-xs text-muted-foreground">
                       {action.description}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <code className="px-3 py-1.5 bg-muted rounded text-sm font-mono">
+                    <code className="px-3 py-1.5 bg-muted rounded text-xs lg:text-sm font-mono">
                       {action.id === "move_window"
                         ? `${formatShortcutKeyForDisplay(
                             binding.key

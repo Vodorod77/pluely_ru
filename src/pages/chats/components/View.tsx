@@ -91,6 +91,7 @@ const View = () => {
           <Button
             variant="outline"
             title="Open this conversation in overlay"
+            className="text-[10px] lg:text-sm h-6 lg:h-8"
             onClick={() =>
               conversationId && handleAttachToOverlay(conversationId)
             }
@@ -98,29 +99,31 @@ const View = () => {
           >
             {isAttached ? (
               <>
-                <Check className="h-3 w-3 text-green-600" />
+                <Check className="size-3 lg:size-4 text-green-600" />
                 Attached
               </>
             ) : (
               <>
-                Open in Overlay <MessageCircleReplyIcon className="h-3 w-3" />
+                Open in Overlay{" "}
+                <MessageCircleReplyIcon className="size-3 lg:size-4" />
               </>
             )}
           </Button>
           <Button
             variant={"outline"}
             title="Download conversation as markdown"
+            className="text-[10px] lg:text-sm h-6 lg:h-8"
             onClick={(e) => handleDownload(messages, e)}
             disabled={isDownloaded}
           >
             {isDownloaded ? (
               <>
-                <Check className="h-3 w-3 text-green-600" />
+                <Check className="size-3 lg:size-4 text-green-600" />
                 Downloaded
               </>
             ) : (
               <>
-                Download <Download className="h-3 w-3" />
+                Download <Download className="size-3 lg:size-4" />
               </>
             )}
           </Button>
@@ -130,8 +133,9 @@ const View = () => {
             onClick={() =>
               conversationId && handleDeleteConfirm(conversationId)
             }
+            className="text-[10px] lg:text-sm h-6 lg:h-8"
           >
-            Delete <Trash2 className="h-3 w-3" />
+            Delete <Trash2 className="size-3 lg:size-4" />
           </Button>
         </div>
       }
@@ -173,8 +177,8 @@ const View = () => {
                   {/* Avatar - Left side for bot */}
                   {!isUser && (
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <SparklesIcon className="w-4 h-4 text-primary" />
+                      <div className="size-7 lg:size-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <SparklesIcon className="size-3 lg:size-4 text-primary" />
                       </div>
                     </div>
                   )}
@@ -186,7 +190,7 @@ const View = () => {
                     }`}
                   >
                     <Card
-                      className={`px-4 py-0 transition-all select-none shadow-none ${
+                      className={`px-4 text-xs lg:text-sm py-0 transition-all select-none shadow-none ${
                         isUser
                           ? "!bg-primary text-primary-foreground !border-primary rounded-tr-sm"
                           : "!bg-muted/50 dark:!bg-muted/30 rounded-tl-sm"
@@ -196,7 +200,7 @@ const View = () => {
                     </Card>
                     <Badge
                       variant="outline"
-                      className={`text-xs bg-transparent border-none ${
+                      className={`text-[10px] lg:text-xs bg-transparent border-none ${
                         isUser ? "-mr-1" : "-ml-1"
                       }`}
                     >
@@ -207,8 +211,8 @@ const View = () => {
                   {/* Avatar - Right side for user */}
                   {isUser && (
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-                        <UserIcon className="w-4 h-4 text-primary-foreground" />
+                      <div className="size-7 lg:size-8 rounded-full bg-primary flex items-center justify-center">
+                        <UserIcon className="size-3 lg:size-4 text-primary-foreground" />
                       </div>
                     </div>
                   )}
@@ -297,7 +301,7 @@ const View = () => {
                 />
                 <Button
                   size="icon"
-                  className="h-9 w-9 absolute right-2 bottom-2"
+                  className="size-7 lg:size-9 rounded-lg lg:rounded-xl absolute right-2 bottom-2"
                   title="Send message"
                   onClick={() => completion.submit()}
                   disabled={
@@ -306,7 +310,7 @@ const View = () => {
                     !hasActiveLicense
                   }
                 >
-                  <SendIcon className="h-4 w-4" />
+                  <SendIcon className="size-3 lg:size-4" />
                 </Button>
               </>
             )}

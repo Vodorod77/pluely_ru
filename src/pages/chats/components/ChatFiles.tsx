@@ -55,10 +55,10 @@ export const ChatFiles = ({
               }
             }}
             disabled={isLoading || disabled}
-            className="h-9 w-9"
+            className="size-7 lg:size-9 rounded-lg lg:rounded-xl"
             title="Attach images"
           >
-            <PaperclipIcon className="h-4 w-4" />
+            <PaperclipIcon className="size-3 lg:size-4" />
           </Button>
         </PopoverTrigger>
 

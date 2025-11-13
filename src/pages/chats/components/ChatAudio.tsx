@@ -36,12 +36,12 @@ export const ChatAudio = ({
           size="icon"
           variant="outline"
           onClick={handleMicClick}
-          className="h-9 w-9"
+          className="size-7 lg:size-9 rounded-lg lg:rounded-xl"
           title={isRecording ? "Recording..." : "Voice input"}
           disabled={disabled}
         >
           <MicIcon
-            className={`h-4 w-4 ${
+            className={`size-3 lg:size-4 ${
               isRecording ? "text-red-500 animate-pulse" : ""
             }`}
           />

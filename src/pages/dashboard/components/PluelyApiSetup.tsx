@@ -426,7 +426,9 @@ export const PluelyApiSetup = () => {
             </>
           ) : (
             <>
-              <label className="text-sm font-medium">Current License</label>
+              <label className="text-xs lg:text-sm font-medium">
+                Current License
+              </label>
               <div className="flex gap-2">
                 <Input
                   type="text"

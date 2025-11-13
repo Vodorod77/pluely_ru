@@ -35,7 +35,7 @@ export const ResponseLength = () => {
         {RESPONSE_LENGTHS.map((length) => (
           <Card
             key={length.id}
-            className={`relative p-4 border-2 shadow-none cursor-pointer transition-all ${
+            className={`relative p-4 border lg:border-2 shadow-none cursor-pointer transition-all ${
               selectedLength === length.id
                 ? "border-primary"
                 : "border-border hover:border-primary/50"
@@ -43,8 +43,10 @@ export const ResponseLength = () => {
             onClick={() => handleLengthChange(length.id)}
           >
             <div className="space-y-1">
-              <h3 className="text-md font-semibold">{length.title}</h3>
-              <p className="text-xs text-muted-foreground">
+              <h3 className="text-sm lg:text-md font-semibold">
+                {length.title}
+              </h3>
+              <p className="text-[10px] lg:text-xs text-muted-foreground">
                 {length.description}
               </p>
             </div>

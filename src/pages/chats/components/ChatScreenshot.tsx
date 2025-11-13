@@ -28,7 +28,7 @@ export const ChatScreenshot = ({
     <Button
       size="icon"
       variant="outline"
-      className="h-9 w-9"
+      className="size-7 lg:size-9 rounded-lg lg:rounded-xl"
       title={`${captureMode} mode (${processingMode}) - ${attachedFiles.length}/${MAX_FILES} files`}
       onClick={captureScreenshot}
       disabled={
@@ -39,11 +39,11 @@ export const ChatScreenshot = ({
       }
     >
       {isScreenshotLoading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <Loader2 className="size-3 lg:size-4 animate-spin" />
       ) : screenshotConfiguration.enabled ? (
-        <LaptopMinimalIcon className="h-4 w-4" />
+        <LaptopMinimalIcon className="size-3 lg:size-4" />
       ) : (
-        <MousePointer2Icon className="h-4 w-4" />
+        <MousePointer2Icon className="size-3 lg:size-4" />
       )}
     </Button>
   );

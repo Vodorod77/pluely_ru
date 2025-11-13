@@ -18,12 +18,14 @@ export const Sidebar = () => {
         onClick={() => navigate("/dashboard")}
         className="flex h-16 items-center px-4 pt-10 gap-1.5"
       >
-        <div className="flex size-7 items-center justify-center rounded-lg bg-primary">
-          <SparklesIcon className="size-5 text-primary-foreground" />
+        <div className="flex size-6 lg:size-7 items-center justify-center rounded-lg bg-primary">
+          <SparklesIcon className="size-4 lg:size-5 text-primary-foreground transition-all duration-300" />
         </div>
         <div className="flex flex-col">
-          <h1 className="text-md font-semibold text-foreground">Pluely</h1>
-          <span className="text-xs text-muted-foreground -mt-1 block">
+          <h1 className="text-xs lg:text-md font-semibold text-foreground transition-all duration-300">
+            Pluely
+          </h1>
+          <span className="text-[10px] lg:text-xs text-muted-foreground -mt-1 block">
             {isLoading ? "Loading..." : `(v${version})`}
           </span>
         </div>
@@ -36,14 +38,14 @@ export const Sidebar = () => {
             onClick={() => navigate(item.href)}
             key={`${item.label}-${index}`}
             className={cn(
-              "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm text-sidebar-foreground/70 transition-all duration-300 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-xs lg:text-sm text-sidebar-foreground/70 transition-all duration-300 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
               activeRoute.includes(item.href)
                 ? "font-medium bg-sidebar-accent text-sidebar-accent-foreground"
                 : ""
             )}
           >
             <div className="flex items-center gap-3">
-              <item.icon className="size-4" />
+              <item.icon className="size-3 lg:size-4 transition-all duration-300" />
               {item.label}
             </div>
             {item.count ? (
@@ -65,7 +67,7 @@ export const Sidebar = () => {
               variant="outline"
               onClick={() => openUrl(item.link)}
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className="size-3 lg:size-4 transition-all duration-300" />
             </Button>
           ))}
         </div>
@@ -78,11 +80,11 @@ export const Sidebar = () => {
             rel="noopener noreferrer"
             key={`${item.label}-${index}`}
             className={cn(
-              "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm text-sidebar-foreground/70 transition-all duration-300 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              "flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-xs lg:text-sm text-sidebar-foreground/70 transition-all duration-300 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
             )}
           >
             <div className="flex items-center gap-3">
-              <item.icon className="size-4" />
+              <item.icon className="size-3 lg:size-4 transition-all duration-300" />
               {item.label}
             </div>
           </a>

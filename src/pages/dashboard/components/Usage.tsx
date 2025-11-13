@@ -57,8 +57,8 @@ export function Usage({
       <CardHeader className="flex flex-row items-stretch border-b !p-0 ">
         <div className="flex flex-row justify-between items-center">
           <div className="flex flex-1 flex-col justify-center gap-1 px-6 pb-0">
-            <CardTitle>Pluely Usage</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-md lg:text-lg">Pluely Usage</CardTitle>
+            <CardDescription className="text-xs lg:text-sm">
               Your current monthly usage of Pluely's API
             </CardDescription>
           </div>
@@ -88,10 +88,10 @@ export function Usage({
                 key={index}
                 className="flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l sm:border-t-0 sm:border-l sm:px-8 sm:py-6"
               >
-                <span className="text-muted-foreground text-xs">
+                <span className="text-muted-foreground text-[10px] lg:text-xs">
                   {key.label}
                 </span>
-                <span className="text-lg leading-none font-bold sm:text-3xl">
+                <span className="text-lg lg:text-3xl leading-none font-bold">
                   {formatNumber(key.value)}
                 </span>
               </button>

@@ -204,7 +204,7 @@ const SystemPrompts = () => {
             return (
               <Card
                 key={prompt.id}
-                className={`relative border-2 shadow-none p-4 pb-10 gap-0 group cursor-pointer transition-all hover:shadow-sm ${
+                className={`relative border  lg:border-2 shadow-none p-4 pb-10 gap-0 group cursor-pointer transition-all hover:shadow-sm ${
                   isSelected
                     ? "!bg-primary/5 dark:!bg-primary/10 border-primary"
                     : "!bg-black/5 dark:!bg-white/5 border-transparent"
@@ -218,7 +218,7 @@ const SystemPrompts = () => {
                   <div className="flex items-start justify-between gap-2 relative">
                     <div className="flex-1 space-y-1.5">
                       <div className="flex items-center gap-2">
-                        <CardTitle className="text-base line-clamp-1 flex-1 pr-3">
+                        <CardTitle className="text-[10px] text-base line-clamp-1 flex-1 pr-3">
                           {prompt.name}
                         </CardTitle>
                       </div>
@@ -229,7 +229,7 @@ const SystemPrompts = () => {
                   </div>
                 </CardHeader>
                 <div className="absolute bottom-2 left-4 w-full flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground select-none">
+                  <span className="text-[10px] lg:text-xs text-muted-foreground select-none">
                     {prompt.created_at}
                   </span>
                   <DropdownMenu>

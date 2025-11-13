@@ -43,14 +43,16 @@ export const Header = ({
       <div className="flex items-center gap-2">
         {allowBackButton && (
           <Button size="icon" variant="outline" onClick={() => navigate(-1)}>
-            <ArrowLeftIcon className="h-4 w-4" />
+            <ArrowLeftIcon className="size-3 lg:size-4 transition-all duration-300" />
           </Button>
         )}
         <div className="flex flex-col">
           <Label
             className={`${cn(
               "font-semibold",
-              isMainTitle ? "text-lg" : "text-sm "
+              isMainTitle
+                ? "text-md lg:text-lg"
+                : "text-xs lg:text-sm transition-all duration-300"
             )} ${titleClassName}`}
           >
             {title}
@@ -58,7 +60,9 @@ export const Header = ({
           <p
             className={cn(
               `select-none text-muted-foreground leading-relaxed ${
-                isMainTitle ? "text-sm" : "text-xs"
+                isMainTitle
+                  ? "text-xs lg:text-sm"
+                  : "text-[10px] lg:text-xs transition-all duration-300"
               } ${descriptionClassName}`
             )}
           >
