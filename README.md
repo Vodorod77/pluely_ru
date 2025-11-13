@@ -766,21 +766,21 @@ npm run lint
 
 ## Contributing
 
-We welcome contributions! Here's how to get started:
+We keep contributions focused so Pluely stays lean and reliable.
 
-### **Contribution Guidelines**
+- ✅ We currently accept bug-fix pull requests and improvements to existing functionality.
+- ❌ We are not accepting feature requests, new AI/STT providers, or large UI overhauls via PR.
 
-**🚀 Only fixes and feature PRs are welcome.**
+### Earn a Lifetime Dev Pro License
 
-**❌ Please do NOT submit pull requests that:**
+Want lifetime access to Pluely Dev Pro (a $120 value)? Head to our contribution hub at [pluely.com/contribute](https://pluely.com/contribute) and tackle one of the critical issues listed there. When your pull request closes an eligible GitHub issue, email the PR link to [support@pluely.com](mailto:support@pluely.com) to claim your reward. Only the issues on that page qualify, and the best-quality submission wins when multiple PRs target the same issue.
 
-- Adding new AI providers
-- Adding new speech-to-text providers
+### How to Contribute
 
-**✅ What we DO welcome:**
-
-- Bug fixes and performance improvements
-- Feature improvements to existing functionality
+1. Pick an eligible bug from [pluely.com/contribute](https://pluely.com/contribute) or another open issue that fits the guidelines above.
+2. Fork the repository and create a feature branch.
+3. Fix the bug, add tests where applicable, and submit a clear PR description.
+4. Email your PR link to [support@pluely.com](mailto:support@pluely.com) if it resolves a bounty issue.
 
 > 💡 **Like this project?** Consider [buying me a coffee ☕](https://www.buymeacoffee.com/srikanthnani) or [hiring me](mailto:srikanthnani1202@gmail.com?subject=Hiring%20Inquiry%20-%20Pluely%20Developer) for your next project!
 
