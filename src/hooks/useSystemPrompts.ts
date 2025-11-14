@@ -10,28 +10,23 @@ import type {
   SystemPromptInput,
   UpdateSystemPromptInput,
 } from "@/types";
+import { DEFAULT_SYSTEM_PROMPT, STORAGE_KEYS } from "@/config";
+import { safeLocalStorage } from "@/lib";
+import { useApp } from "@/contexts";
 
-export interface UseSystemPromptsReturn {
-  prompts: SystemPrompt[];
-  isLoading: boolean;
-  error: string | null;
-  createPrompt: (input: SystemPromptInput) => Promise<SystemPrompt>;
-  updatePrompt: (
-    id: number,
-    input: UpdateSystemPromptInput
-  ) => Promise<SystemPrompt>;
-  deletePrompt: (id: number) => Promise<void>;
-  refreshPrompts: () => Promise<void>;
-  clearError: () => void;
-}
-
-/**
- * Hook for managing system prompts with full CRUD operations
- */
-export const useSystemPrompts = (): UseSystemPromptsReturn => {
+export const useSystemPrompts = () => {
+  const { setSystemPrompt } = useApp();
   const [prompts, setPrompts] = useState<SystemPrompt[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPromptId, setSelectedPromptId] = useState<number | null>(
+    () => {
+      const stored = safeLocalStorage.getItem(
+        STORAGE_KEYS.SELECTED_SYSTEM_PROMPT_ID
+      );
+      return stored ? Number(stored) : null;
+    }
+  );
 
   /**
    * Fetch all system prompts from database
@@ -136,14 +131,64 @@ export const useSystemPrompts = (): UseSystemPromptsReturn => {
     fetchPrompts();
   }, [fetchPrompts]);
 
+  /**
+   * Load selected prompt on mount and when prompts change
+   */
+  useEffect(() => {
+    if (selectedPromptId && prompts.length > 0) {
+      const selectedPrompt = prompts.find((p) => p.id === selectedPromptId);
+      if (selectedPrompt) {
+        setSystemPrompt(selectedPrompt.prompt);
+      } else {
+        // Selected prompt was deleted, reset to default
+        setSelectedPromptId(null);
+        safeLocalStorage.removeItem(STORAGE_KEYS.SELECTED_SYSTEM_PROMPT_ID);
+        const currentPrompt = safeLocalStorage.getItem(
+          STORAGE_KEYS.SYSTEM_PROMPT
+        );
+        if (!currentPrompt) {
+          setSystemPrompt(DEFAULT_SYSTEM_PROMPT);
+          safeLocalStorage.setItem(
+            STORAGE_KEYS.SYSTEM_PROMPT,
+            DEFAULT_SYSTEM_PROMPT
+          );
+        }
+      }
+    }
+  }, [prompts, selectedPromptId, setSystemPrompt]);
+
+  /**
+   * Handle selecting a prompt
+   */
+  const handleSelectPrompt = useCallback(
+    (promptId: number) => {
+      const selectedPrompt = prompts.find((p) => p.id === promptId);
+      if (selectedPrompt) {
+        setSystemPrompt(selectedPrompt.prompt);
+        setSelectedPromptId(promptId);
+        safeLocalStorage.setItem(
+          STORAGE_KEYS.SYSTEM_PROMPT,
+          selectedPrompt.prompt
+        );
+        safeLocalStorage.setItem(
+          STORAGE_KEYS.SELECTED_SYSTEM_PROMPT_ID,
+          promptId.toString()
+        );
+      }
+    },
+    [prompts, setSystemPrompt]
+  );
+
   return {
     prompts,
     isLoading,
     error,
+    selectedPromptId,
     createPrompt,
     updatePrompt,
     deletePrompt,
     refreshPrompts,
     clearError,
+    handleSelectPrompt,
   };
 };

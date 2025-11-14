@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useWindowResize } from "@/hooks";
 import { useApp } from "@/contexts";
 import {
   extractVariables,
@@ -10,8 +9,6 @@ import { STORAGE_KEYS } from "@/config";
 
 export const useSettings = () => {
   const {
-    systemPrompt,
-    setSystemPrompt,
     screenshotConfiguration,
     setScreenshotConfiguration,
     allAiProviders,
@@ -22,8 +19,6 @@ export const useSettings = () => {
     onSetSelectedSttProvider,
     hasActiveLicense,
   } = useApp();
-  const { resizeWindow } = useWindowResize();
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [variables, setVariables] = useState<{ key: string; value: string }[]>(
     []
   );
@@ -35,10 +30,6 @@ export const useSettings = () => {
   >([]);
 
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
-
-  useEffect(() => {
-    resizeWindow(isPopoverOpen);
-  }, [isPopoverOpen, resizeWindow]);
 
   const handleScreenshotModeChange = (value: "auto" | "manual") => {
     const newConfig = { ...screenshotConfiguration, mode: value };
@@ -104,10 +95,6 @@ export const useSettings = () => {
   };
 
   return {
-    isPopoverOpen,
-    setIsPopoverOpen,
-    systemPrompt,
-    setSystemPrompt,
     screenshotConfiguration,
     setScreenshotConfiguration,
     handleScreenshotModeChange,

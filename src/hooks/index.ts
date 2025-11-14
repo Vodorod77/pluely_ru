@@ -1,5 +1,6 @@
 export * from "./useVersion";
 export * from "./useCompletion";
+export * from "./useChatCompletion";
 export * from "./useWindow";
 export * from "./useCustomProvider";
 export * from "./useCustomSttProviders";
@@ -12,3 +13,4 @@ export * from "./useCopyToClipboard";
 export * from "./useTitles";
 export * from "./useSystemPrompts";
 export * from "./useApp";
+export * from "./useMenuItems";

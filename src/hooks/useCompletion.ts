@@ -13,6 +13,7 @@ import {
   generateConversationId,
   generateMessageId,
   generateRequestId,
+  getResponseSettings,
 } from "@/lib";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -80,6 +81,7 @@ export const useCompletion = () => {
   const isProcessingScreenshotRef = useRef(false);
   const screenshotConfigRef = useRef(screenshotConfiguration);
   const hasCheckedPermissionRef = useRef(false);
+  const screenshotInitiatedByThisContext = useRef(false);
 
   const { resizeWindow } = useWindowResize();
 
@@ -438,9 +440,10 @@ export const useCompletion = () => {
   // Listen for conversation events from the main ChatHistory component
   useEffect(() => {
     const handleConversationSelected = async (event: any) => {
+      console.log(event, "event");
       // Only the conversation ID is passed through the event
       const { id } = event.detail;
-
+      console.log(id, "id");
       if (!id || typeof id !== "string") {
         console.error("No conversation ID provided");
         setState((prev) => ({
@@ -449,7 +452,7 @@ export const useCompletion = () => {
         }));
         return;
       }
-
+      console.log(id, "id");
       try {
         // Fetch the full conversation from SQLite
         const conversation = await getConversationById(id);
@@ -484,9 +487,27 @@ export const useCompletion = () => {
       }
     };
 
+    const handleStorageChange = async (e: StorageEvent) => {
+      if (e.key === "pluely-conversation-selected" && e.newValue) {
+        try {
+          const data = JSON.parse(e.newValue);
+          const { id } = data;
+          if (id && typeof id === "string") {
+            const conversation = await getConversationById(id);
+            if (conversation) {
+              loadConversation(conversation);
+            }
+          }
+        } catch (error) {
+          console.error("Failed to parse conversation selection:", error);
+        }
+      }
+    };
+
     window.addEventListener("conversationSelected", handleConversationSelected);
     window.addEventListener("newConversation", handleNewConversation);
     window.addEventListener("conversationDeleted", handleConversationDeleted);
+    window.addEventListener("storage", handleStorageChange);
 
     return () => {
       window.removeEventListener(
@@ -498,6 +519,7 @@ export const useCompletion = () => {
         "conversationDeleted",
         handleConversationDeleted
       );
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, [loadConversation, startNewConversation, state.currentConversationId]);
 
@@ -756,7 +778,13 @@ export const useCompletion = () => {
 
   // Auto scroll to bottom when response updates
   useEffect(() => {
-    if (!keepEngaged && state.response && scrollAreaRef.current) {
+    const responseSettings = getResponseSettings();
+    if (
+      !keepEngaged &&
+      state.response &&
+      scrollAreaRef.current &&
+      responseSettings.autoScroll
+    ) {
       const scrollElement = scrollAreaRef.current.querySelector(
         "[data-radix-scroll-area-viewport]"
       );
@@ -821,7 +849,7 @@ export const useCompletion = () => {
     if (!handleScreenshotSubmit) return;
 
     const config = screenshotConfigRef.current;
-
+    screenshotInitiatedByThisContext.current = true;
     setIsScreenshotLoading(true);
 
     try {
@@ -851,6 +879,7 @@ export const useCompletion = () => {
                 "Screen Recording permission required. Please enable it by going to System Settings > Privacy & Security > Screen & System Audio Recording. If you don't see Pluely in the list, click the '+' button to add it. If it's already listed, make sure it's enabled. Then restart the app.",
             }));
             setIsScreenshotLoading(false);
+            screenshotInitiatedByThisContext.current = false;
             return;
           }
         }
@@ -867,6 +896,7 @@ export const useCompletion = () => {
           // Manual mode: Add to attached files without prompt
           await handleScreenshotSubmit(base64 as string);
         }
+        screenshotInitiatedByThisContext.current = false;
       } else {
         // Selection Mode: Open overlay to select an area
         isProcessingScreenshotRef.current = false;
@@ -878,6 +908,7 @@ export const useCompletion = () => {
         error: "Failed to capture screenshot. Please try again.",
       }));
       isProcessingScreenshotRef.current = false;
+      screenshotInitiatedByThisContext.current = false;
     } finally {
       if (config.enabled) {
         setIsScreenshotLoading(false);
@@ -890,6 +921,10 @@ export const useCompletion = () => {
 
     const setupListener = async () => {
       unlisten = await listen("captured-selection", async (event: any) => {
+        if (!screenshotInitiatedByThisContext.current) {
+          return;
+        }
+
         if (isProcessingScreenshotRef.current) {
           return;
         }
@@ -910,6 +945,7 @@ export const useCompletion = () => {
           console.error("Error processing selection:", error);
         } finally {
           setIsScreenshotLoading(false);
+          screenshotInitiatedByThisContext.current = false;
           setTimeout(() => {
             isProcessingScreenshotRef.current = false;
           }, 100);
@@ -930,6 +966,7 @@ export const useCompletion = () => {
     const unlisten = listen("capture-closed", () => {
       setIsScreenshotLoading(false);
       isProcessingScreenshotRef.current = false;
+      screenshotInitiatedByThisContext.current = false;
     });
 
     return () => {

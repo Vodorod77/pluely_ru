@@ -4,13 +4,13 @@ import {
   SPEECH_TO_TEXT_PROVIDERS,
   STORAGE_KEYS,
 } from "@/config";
-import { safeLocalStorage, trackAppStart } from "@/lib";
+import { getPlatform, safeLocalStorage, trackAppStart } from "@/lib";
+import { getShortcutsConfig } from "@/lib/storage";
 import {
   getCustomizableState,
   setCustomizableState,
   updateAppIconVisibility,
   updateAlwaysOnTop,
-  updateTitlesVisibility,
   updateAutostart,
   CustomizableState,
   DEFAULT_CUSTOMIZABLE_STATE,
@@ -21,6 +21,7 @@ import { IContextType, ScreenshotConfig, TYPE_PROVIDER } from "@/types";
 import curl2Json from "@bany/curl-to-json";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { enable, disable } from "@tauri-apps/plugin-autostart";
 import {
   ReactNode,
@@ -144,6 +145,23 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  useEffect(() => {
+    const syncLicenseState = async () => {
+      try {
+        await invoke("set_license_status", {
+          hasLicense: hasActiveLicense,
+        });
+
+        const config = getShortcutsConfig();
+        await invoke("update_shortcuts", { config });
+      } catch (error) {
+        console.error("Failed to synchronize license state:", error);
+      }
+    };
+
+    syncLicenseState();
+  }, [hasActiveLicense]);
+
   // Function to load AI, STT, system prompt and screenshot config data from storage
   const loadData = () => {
     // Load system prompt
@@ -244,11 +262,27 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const updateCursor = (type: CursorType | undefined) => {
     try {
+      const currentWindow = getCurrentWindow();
+      const platform = getPlatform();
+      // For Linux, always use default cursor
+      if (platform === "linux") {
+        document.documentElement.style.setProperty("--cursor-type", "default");
+        return;
+      }
+      const windowLabel = currentWindow.label;
+
+      if (windowLabel === "dashboard") {
+        // For dashboard, always use default cursor
+        document.documentElement.style.setProperty("--cursor-type", "default");
+        return;
+      }
+
+      // For overlay windows (main, capture-overlay-*)
       const safeType = type || "invisible";
       const cursorValue = type === "invisible" ? "none" : safeType;
       document.documentElement.style.setProperty("--cursor-type", cursorValue);
     } catch (error) {
-      document.documentElement.style.setProperty("--cursor-type", "none");
+      document.documentElement.style.setProperty("--cursor-type", "default");
     }
   };
 
@@ -460,12 +494,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const toggleTitlesVisibility = (isEnabled: boolean) => {
-    const newState = updateTitlesVisibility(isEnabled);
-    setCustomizable(newState);
-    loadData();
-  };
-
   const toggleAutostart = async (isEnabled: boolean) => {
     const newState = updateAutostart(isEnabled);
     setCustomizable(newState);
@@ -513,7 +541,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     customizable,
     toggleAppIconVisibility,
     toggleAlwaysOnTop,
-    toggleTitlesVisibility,
     toggleAutostart,
     loadData,
     pluelyApiEnabled,

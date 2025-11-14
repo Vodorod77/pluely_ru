@@ -13,6 +13,8 @@ use psimple::Simple;
 use pulse::sample::{Format, Spec};
 use pulse::stream::Direction;
 
+const DEFAULT_SAMPLE_RATE: u32 = 44_100;
+
 pub struct SpeakerInput {
     source_name: Option<String>,
 }
@@ -20,7 +22,9 @@ pub struct SpeakerInput {
 impl SpeakerInput {
     pub fn new(device_id: Option<String>) -> Result<Self> {
         // For Linux, device_id is the PulseAudio source name
-        Ok(Self { source_name: device_id })
+        Ok(Self {
+            source_name: device_id,
+        })
     }
 
     pub fn stream(self) -> SpeakerStream {
@@ -36,7 +40,7 @@ impl SpeakerInput {
         let waker_clone = waker_state.clone();
         let source_name = self.source_name;
 
-        let capture_thread = thread::spawn(move || {
+        let mut capture_thread = Some(thread::spawn(move || {
             if let Err(e) = SpeakerStream::capture_audio_loop(
                 queue_clone,
                 waker_clone,
@@ -45,24 +49,39 @@ impl SpeakerInput {
             ) {
                 eprintln!("Audio capture loop failed: {}", e);
             }
-        });
+        }));
 
-        let sample_rate = match init_rx.recv() {
-            Ok(Ok(sr)) => sr,
+        let (sample_rate, init_success) = match init_rx.recv() {
+            Ok(Ok(sr)) => (sr, true),
             Ok(Err(e)) => {
                 eprintln!("Audio initialization failed: {}", e);
-                0
+                (DEFAULT_SAMPLE_RATE, false)
             }
             Err(e) => {
                 eprintln!("Failed to receive audio init signal: {}", e);
-                0
+                (DEFAULT_SAMPLE_RATE, false)
             }
         };
+
+        if !init_success {
+            {
+                let mut state = waker_state.lock().unwrap();
+                state.shutdown = true;
+                if let Some(waker) = state.waker.take() {
+                    drop(state);
+                    waker.wake();
+                }
+            }
+
+            if let Some(handle) = capture_thread.take() {
+                let _ = handle.join();
+            }
+        }
 
         SpeakerStream {
             sample_queue,
             waker_state,
-            capture_thread: Some(capture_thread),
+            capture_thread,
             sample_rate,
         }
     }
@@ -102,7 +121,9 @@ impl SpeakerStream {
             return Err(anyhow!("Invalid audio specification"));
         }
 
-        let source_name = source_name.map(|s| s.to_string()).or_else(get_default_monitor_source);
+        let source_name = source_name
+            .map(|s| s.to_string())
+            .or_else(get_default_monitor_source);
 
         let init_result: Result<(Simple, u32)> = (|| {
             let simple = Simple::new(
@@ -147,9 +168,9 @@ impl SpeakerStream {
                                 let dropped = {
                                     let mut queue = sample_queue.lock().unwrap();
                                     let max_buffer_size = 131072; // 128KB buffer (matching macOS/Windows)
-                                    
+
                                     queue.extend(samples.iter());
-                                    
+
                                     // If buffer exceeds maximum, drop oldest samples
                                     let dropped_count = if queue.len() > max_buffer_size {
                                         let to_drop = queue.len() - max_buffer_size;
@@ -158,14 +179,17 @@ impl SpeakerStream {
                                     } else {
                                         0
                                     };
-                                    
+
                                     dropped_count
                                 };
-                                
+
                                 if dropped > 0 {
-                                    eprintln!("Linux buffer overflow - dropped {} samples", dropped);
+                                    eprintln!(
+                                        "Linux buffer overflow - dropped {} samples",
+                                        dropped
+                                    );
                                 }
-                                
+
                                 // Wake up consumer
                                 {
                                     let mut state = waker_state.lock().unwrap();

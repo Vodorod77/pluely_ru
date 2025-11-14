@@ -12,6 +12,32 @@ import { listen } from "@tauri-apps/api/event";
 import curl2Json from "@bany/curl-to-json";
 import { shouldUsePluelyAPI } from "./pluely.api";
 import { CHUNK_POLL_INTERVAL_MS } from "../chat-constants";
+import { getResponseSettings, RESPONSE_LENGTHS, LANGUAGES } from "@/lib";
+
+function buildEnhancedSystemPrompt(baseSystemPrompt?: string): string {
+  const responseSettings = getResponseSettings();
+  const prompts: string[] = [];
+
+  if (baseSystemPrompt) {
+    prompts.push(baseSystemPrompt);
+  }
+
+  const lengthOption = RESPONSE_LENGTHS.find(
+    (l) => l.id === responseSettings.responseLength
+  );
+  if (lengthOption?.prompt?.trim()) {
+    prompts.push(lengthOption.prompt);
+  }
+
+  const languageOption = LANGUAGES.find(
+    (l) => l.id === responseSettings.language
+  );
+  if (languageOption?.prompt?.trim()) {
+    prompts.push(languageOption.prompt);
+  }
+
+  return prompts.join(" ");
+}
 
 // Pluely AI streaming function
 async function* fetchPluelyAIResponse(params: {
@@ -73,8 +99,8 @@ async function* fetchPluelyAIResponse(params: {
         return;
       }
 
-      // Start the streaming request
-      await invoke("chat_stream", {
+      // Start the streaming request using the new API response endpoint
+      await invoke("chat_stream_response", {
         userMessage,
         systemPrompt,
         imageBase64,
@@ -159,11 +185,13 @@ export async function* fetchAIResponse(params: {
       return;
     }
 
+    const enhancedSystemPrompt = buildEnhancedSystemPrompt(systemPrompt);
+
     // Check if we should use Pluely API instead
     const usePluelyAPI = await shouldUsePluelyAPI();
     if (usePluelyAPI) {
       yield* fetchPluelyAIResponse({
-        systemPrompt,
+        systemPrompt: enhancedSystemPrompt,
         userMessage,
         imagesBase64,
         history,
@@ -237,7 +265,7 @@ export async function* fetchAIResponse(params: {
           value,
         ])
       ),
-      SYSTEM_PROMPT: systemPrompt || "",
+      SYSTEM_PROMPT: enhancedSystemPrompt || "",
     };
 
     bodyObj = deepVariableReplacer(bodyObj, allVariables);

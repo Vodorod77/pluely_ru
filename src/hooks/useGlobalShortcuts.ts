@@ -10,6 +10,7 @@ let globalEventListeners: {
   screenshot?: UnlistenFn;
   systemAudio?: UnlistenFn;
   customShortcut?: UnlistenFn;
+  registrationError?: UnlistenFn;
 } = {};
 
 // Global debounce for screenshot events to prevent duplicates
@@ -69,9 +70,12 @@ export const useGlobalShortcuts = () => {
   }, []);
 
   // Register screenshot callback
-  const registerScreenshotCallback = useCallback((callback: () => void) => {
-    screenshotCallbackRef.current = callback;
-  }, []);
+  const registerScreenshotCallback = useCallback(
+    (callback: () => void | Promise<void>) => {
+      screenshotCallbackRef.current = callback;
+    },
+    []
+  );
 
   // Register system audio callback
   const registerSystemAudioCallback = useCallback((callback: () => void) => {
@@ -131,6 +135,16 @@ export const useGlobalShortcuts = () => {
             console.warn("Error cleaning up custom shortcut listener:", error);
           }
         }
+        if (globalEventListeners.registrationError) {
+          try {
+            globalEventListeners.registrationError();
+          } catch (error) {
+            console.warn(
+              "Error cleaning up shortcut registration error listener:",
+              error
+            );
+          }
+        }
 
         // Listen for focus text input event
         const unlistenFocus = await listen("focus-text-input", () => {
@@ -163,7 +177,24 @@ export const useGlobalShortcuts = () => {
           lastScreenshotEventTime = now;
 
           if (screenshotCallbackRef.current) {
-            screenshotCallbackRef.current();
+            try {
+              Promise.resolve(screenshotCallbackRef.current())
+                .catch((error) => {
+                  console.error("Screenshot shortcut callback failed:", error);
+                })
+                .then(() => {
+                  // no-op
+                });
+            } catch (error) {
+              console.error(
+                "Failed to run screenshot shortcut callback:",
+                error
+              );
+            }
+          } else {
+            console.warn(
+              "Screenshot shortcut triggered but no callback registered."
+            );
           }
         });
         globalEventListeners.screenshot = unlistenScreenshot;
@@ -192,6 +223,17 @@ export const useGlobalShortcuts = () => {
           }
         );
         globalEventListeners.customShortcut = unlistenCustomShortcut;
+
+        const unlistenRegistrationError = await listen<
+          Array<[string, string, string]>
+        >("shortcut-registration-error", (event) => {
+          window.dispatchEvent(
+            new CustomEvent("shortcutRegistrationError", {
+              detail: event.payload,
+            })
+          );
+        });
+        globalEventListeners.registrationError = unlistenRegistrationError;
       } catch (error) {
         console.error("Failed to setup event listeners:", error);
       }

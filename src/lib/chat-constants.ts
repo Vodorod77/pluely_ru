@@ -45,19 +45,10 @@ export const CHUNK_POLL_INTERVAL_MS = 50;
  * How long to show the "Downloaded successfully" checkmark/indicator
  * before hiding it.
  *
- * 2000ms (2 seconds) gives users enough time to see the feedback
+ * 1000ms (1 seconds) gives users enough time to see the feedback
  * without it feeling too slow.
  */
-export const DOWNLOAD_SUCCESS_DISPLAY_MS = 2000;
-
-/**
- * CONVERSATION_TITLE_WORD_LIMIT
- *
- * Maximum number of words to include in auto-generated conversation titles.
- *
- * 6 words is enough to give context without making titles too long.
- */
-export const CONVERSATION_TITLE_WORD_LIMIT = 6;
+export const DOWNLOAD_SUCCESS_DISPLAY_MS = 1000;
 
 /**
  * CONVERSATION_ID_RANDOM_LENGTH

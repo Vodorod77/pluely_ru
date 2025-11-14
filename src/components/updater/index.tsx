@@ -13,11 +13,11 @@ import {
   PopoverContent,
   PopoverTrigger,
   ScrollArea,
-} from "@/components/ui";
+  Markdown,
+} from "@/components";
 import { check, Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
-import { useWindowResize } from "@/hooks/useWindow";
-import { Markdown } from "../Markdown";
+import { useWindowResize } from "@/hooks";
 
 type UpdateState =
   | "checking"

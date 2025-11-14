@@ -5,21 +5,20 @@ import {
   DOWNLOAD_SUCCESS_DISPLAY_MS,
 } from "@/lib";
 import { ChatConversation } from "@/types/completion";
-import { useWindowResize } from "@/hooks";
 
 export type UseHistoryType = ReturnType<typeof useHistory>;
 
 export interface UseHistoryReturn {
   // State
   conversations: ChatConversation[];
-  isOpen: boolean;
   selectedConversationId: string | null;
   viewingConversation: ChatConversation | null;
   downloadedConversations: Set<string>;
   deleteConfirm: string | null;
+  isDownloaded: boolean;
+  isAttached: boolean;
 
   // Actions
-  setIsOpen: (open: boolean) => void;
   handleViewConversation: (conversation: ChatConversation) => void;
   handleDownloadConversation: (
     conversation: ChatConversation,
@@ -28,15 +27,22 @@ export interface UseHistoryReturn {
   handleDeleteConfirm: (conversationId: string) => void;
   confirmDelete: () => void;
   cancelDelete: () => void;
-  formatDate: (timestamp: number) => string;
-
+  handleAttachToOverlay: (conversationId: string) => void;
+  handleDownload: (
+    conversation: ChatConversation | null,
+    e: React.MouseEvent
+  ) => void;
+  search: string;
+  setSearch: React.Dispatch<React.SetStateAction<string>>;
   // Utilities
   refreshConversations: () => void;
+  isLoading: boolean;
 }
 
 export function useHistory(): UseHistoryReturn {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
+  const [search, setSearch] = useState("");
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
   >(null);
@@ -48,33 +54,27 @@ export function useHistory(): UseHistoryReturn {
   >(new Set());
 
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-
-  const { resizeWindow } = useWindowResize();
+  const [isDownloaded, setIsDownloaded] = useState(false);
+  const [isAttached, setIsAttached] = useState(false);
 
   // Function to refresh conversations
   const refreshConversations = useCallback(async () => {
     try {
+      setIsLoading(true);
       const loadedConversations = await getAllConversations();
       setConversations(loadedConversations);
     } catch (error) {
       console.error("Failed to load conversations:", error);
       setConversations([]);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
   // Load conversations when component mounts or popover opens
   useEffect(() => {
-    if (isOpen) {
-      refreshConversations();
-    } else {
-      // Reset viewing state when popover closes
-      setViewingConversation(null);
-    }
-  }, [isOpen, refreshConversations]);
-
-  useEffect(() => {
-    resizeWindow(isOpen);
-  }, [isOpen, resizeWindow]);
+    refreshConversations();
+  }, [refreshConversations]);
 
   const handleViewConversation = (conversation: ChatConversation) => {
     setViewingConversation(conversation);
@@ -154,24 +154,28 @@ export function useHistory(): UseHistoryReturn {
     setDeleteConfirm(null);
   };
 
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+  const handleAttachToOverlay = (conversationId: string) => {
+    // Use localStorage to communicate between windows
+    localStorage.setItem(
+      "pluely-conversation-selected",
+      JSON.stringify({ id: conversationId, timestamp: Date.now() })
+    );
+    setIsAttached(true);
+    setTimeout(() => {
+      setIsAttached(false);
+    }, DOWNLOAD_SUCCESS_DISPLAY_MS);
+  };
 
-    if (diffInHours < 24) {
-      return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } else if (diffInHours < 24 * 7) {
-      return date.toLocaleDateString([], {
-        weekday: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } else {
-      return date.toLocaleDateString([], { month: "short", day: "numeric" });
+  const handleDownload = (
+    conversation: ChatConversation | null,
+    e: React.MouseEvent
+  ) => {
+    if (conversation) {
+      handleDownloadConversation(conversation, e);
+      setIsDownloaded(true);
+      setTimeout(() => {
+        setIsDownloaded(false);
+      }, DOWNLOAD_SUCCESS_DISPLAY_MS);
     }
   };
 
@@ -208,22 +212,25 @@ export function useHistory(): UseHistoryReturn {
   return {
     // State
     conversations,
-    isOpen,
     selectedConversationId,
     viewingConversation,
     downloadedConversations,
     deleteConfirm,
+    isDownloaded,
+    isAttached,
 
     // Actions
-    setIsOpen,
     handleViewConversation,
     handleDownloadConversation,
     handleDeleteConfirm,
     confirmDelete,
     cancelDelete,
-    formatDate,
-
+    handleAttachToOverlay,
+    handleDownload,
     // Utilities
     refreshConversations,
+    search,
+    setSearch,
+    isLoading,
   };
 }

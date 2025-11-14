@@ -19,7 +19,7 @@ impl SpeakerInput {
             id.strip_prefix("windows_output_")
                 .and_then(|s| s.parse::<usize>().ok())
         });
-        
+
         Ok(Self { device_index })
     }
 
@@ -38,7 +38,9 @@ impl SpeakerInput {
         let device_index = self.device_index;
 
         let capture_thread = thread::spawn(move || {
-            if let Err(e) = SpeakerStream::capture_audio_loop(queue_clone, waker_clone, init_tx, device_index) {
+            if let Err(e) =
+                SpeakerStream::capture_audio_loop(queue_clone, waker_clone, init_tx, device_index)
+            {
                 error!("Pluely Audio capture loop failed: {}", e);
             }
         });
@@ -102,7 +104,8 @@ impl SpeakerStream {
             let device_format = audio_client.get_mixformat()?;
             let actual_rate = device_format.get_samplespersec();
 
-            let desired_format = WaveFormat::new(32, 32, &SampleType::Float, actual_rate as usize, 1, None);
+            let desired_format =
+                WaveFormat::new(32, 32, &SampleType::Float, actual_rate as usize, 1, None);
 
             let (_def_time, min_time) = audio_client.get_device_period()?;
 
@@ -165,9 +168,9 @@ impl SpeakerStream {
                         let dropped = {
                             let mut queue = sample_queue.lock().unwrap();
                             let max_buffer_size = 131072; // 128KB buffer (matching macOS)
-                            
+
                             queue.extend(samples.iter());
-                            
+
                             // If buffer exceeds maximum, drop oldest samples
                             let dropped_count = if queue.len() > max_buffer_size {
                                 let to_drop = queue.len() - max_buffer_size;
@@ -176,10 +179,10 @@ impl SpeakerStream {
                             } else {
                                 0
                             };
-                            
+
                             dropped_count
                         };
-                        
+
                         if dropped > 0 {
                             error!("Windows buffer overflow - dropped {} samples", dropped);
                         }
