@@ -73,6 +73,4 @@ jobs:
           releaseBody: "📦 Скачайте установщик для вашей ОС:\n- Windows: .msi или .exe\n- macOS (Intel): x86_64\n- macOS/iOS (Apple Silicon): aarch64\n\n⚠️ macOS: При блокировке откройте System Settings > Privacy & Security > Security, найдите 'pluely was blocked' и нажмите 'Allow Anyway'."
           releaseDraft: true
           prerelease: false
-          includeUpdaterJson: true
-          updaterJsonPreferNsis: true
           args: ${{ matrix.args }}
