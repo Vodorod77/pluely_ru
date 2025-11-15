@@ -61,15 +61,16 @@
 ### 🚀 **Русская версия (Russian Build)**
 
 **⬇️ Прямое скачивание:**
-- 💻 [Windows (MSI)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_x64_en-US.msi) • [Windows (EXE)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_x64-setup.exe)
-- 🍎 [macOS Intel (x64)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_x64.dmg) • [macOS ARM (M1/M2)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_aarch64.dmg)
-- 🐧 [Linux (DEB)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_amd64.deb) • [Linux (RPM)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely-0.1.8-1.x86_64.rpm) • [Linux (AppImage)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_amd64.AppImage)
+- 💻 [Windows (EXE)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_x64-setup.exe) - экспериментальная версия
+- 🐧 [Linux (AppImage)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_amd64.AppImage) - полная версия с моделями
 
-[![Скачать для macOS](https://img.shields.io/badge/Скачать%20для-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![Скачать для Linux](https://img.shields.io/badge/Скачать%20для-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![Скачать для Windows](https://img.shields.io/badge/Скачать%20для-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Vodorod77/pluely_ru/releases)
+[![Скачать для Linux](https://img.shields.io/badge/Скачать%20для-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![Скачать для Windows](https://img.shields.io/badge/Скачать%20для-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Vodorod77/pluely_ru/releases)
 
 [![GitHub Release](https://img.shields.io/github/v/release/Vodorod77/pluely_ru?style=for-the-badge&logo=github&label=Последняя%20версия)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![GitHub Downloads](https://img.shields.io/github/downloads/Vodorod77/pluely_ru/total?style=for-the-badge&logo=github&label=Всего%20загрузок)](https://github.com/Vodorod77/pluely_ru/releases)
 
-**Доступные форматы:** `.dmg` (macOS) • `.msi` (Windows) • `.exe` (Windows) • `.deb` (Linux) • `.rpm` (Linux) • `.AppImage` (Linux)
+> ⚠️ **Примечание:** Windows версия - экспериментальная, может работать нестабильно. Рекомендуется Linux AppImage.
+> 
+> 🍎 **macOS:** К сожалению, у нас нет возможности собрать версию для macOS из-за отсутствия техники. Используйте оригинальную версию ниже.
 
 ---
 

@@ -75,11 +75,19 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 ### 🚀 **Russian Version (Русская сборка)**
 
-[![Скачать для macOS](https://img.shields.io/badge/Скачать%20для-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![Скачать для Linux](https://img.shields.io/badge/Скачать%20для-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![Скачать для Windows](https://img.shields.io/badge/Скачать%20для-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Vodorod77/pluely_ru/releases)
+**⬇️ Direct Download:**
+- 💻 [Windows (EXE)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_x64-setup.exe) - experimental version
+- 🐧 [Linux (AppImage)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_amd64.AppImage) - full version with models
+
+[![Скачать для Linux](https://img.shields.io/badge/Скачать%20для-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![Скачать для Windows](https://img.shields.io/badge/Скачать%20для-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Vodorod77/pluely_ru/releases)
+
+[![GitHub Release](https://img.shields.io/github/v/release/Vodorod77/pluely_ru?style=for-the-badge&logo=github&label=Latest%20Version)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![GitHub Downloads](https://img.shields.io/github/downloads/Vodorod77/pluely_ru/total?style=for-the-badge&logo=github&label=Total%20Downloads)](https://github.com/Vodorod77/pluely_ru/releases)
+
+> ⚠️ **Note:** Windows version is experimental and may be unstable. Linux AppImage is recommended.
+> 
+> 🍎 **macOS:** Unfortunately, we cannot build a macOS version due to lack of hardware. Please use the original version above.
 
 **Репозиторий с русским переводом:** [Vodorod77/pluely_ru](https://github.com/Vodorod77/pluely_ru)
-
-**Available formats:** `.dmg` (macOS) • `.msi` (Windows) • `.exe` (Windows) • `.deb` (Linux) • `.rpm` (Linux) • `.AppImage` (Linux)
 
 </div>
 
