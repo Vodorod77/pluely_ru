@@ -25,9 +25,6 @@
 
 **Криптовалюты:**
 
-<details>
-<summary>📋 Показать адреса кошельков</summary>
-
 | Криптовалюта | Адрес |
 |--------------|-------|
 | **Bitcoin (BTC)** | `bc1qv9f7py7vquzppy639ukq82q0fzaxax26j92aj8` |
@@ -36,8 +33,6 @@
 | **TRX (Tron)** | `TWzMD2KV51VbZY1GFZWCa83GEawqjaEXu7` |
 | **TON** | `UQCHisahwOLO3xnIBX0Kxr0-IEYgVJtsZHCrzJsR_IgGLE-6` |
 
-</details>
-
 > 💡 **Спасибо за поддержку!** Ваши пожертвования помогают поддерживать и развивать русский перевод проекта.
 
 **Контакт:**
@@ -45,12 +40,15 @@
 
 ---
 
-### 💝 **Поддержать оригинального автора**
+<details>
+<summary>💝 <strong>Поддержать оригинального автора</strong></summary>
 
 [![Купить кофе](https://img.shields.io/badge/☕%20Купить%20кофе-Поддержать%20проект-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://www.buymeacoffee.com/srikanthnani) &nbsp; [![Нанять меня](https://img.shields.io/badge/💼%20Нанять%20меня-Давайте%20работать-6366f1?style=for-the-badge&logo=gmail&logoColor=white)](mailto:srikanthnani1202@gmail.com) &nbsp; [![Присоединиться к Pluely](https://img.shields.io/badge/🤝%20Присоединиться-Давайте%20работать-1e88e5?style=for-the-badge)](mailto:support@pluely.com)
 
 **Социальные сети:**
 [![Original Author](https://img.shields.io/badge/Original-iamsrikanthnani-black?style=flat&logo=github)](https://github.com/iamsrikanthnani)
+
+</details>
 
 > **Open Source альтернатива Cluely** — молниеносный, конфиденциальный AI-ассистент, который работает незаметно во время встреч, собеседований и разговоров.
 
@@ -61,6 +59,11 @@
 <div align="center">
 
 ### 🚀 **Русская версия (Russian Build)**
+
+**⬇️ Прямое скачивание:**
+- 💻 [Windows (MSI)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_x64_en-US.msi) • [Windows (EXE)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_x64-setup.exe)
+- 🍎 [macOS Intel (x64)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_x64.dmg) • [macOS ARM (M1/M2)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_aarch64.dmg)
+- 🐧 [Linux (DEB)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_amd64.deb) • [Linux (RPM)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely-0.1.8-1.x86_64.rpm) • [Linux (AppImage)](https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely_0.1.8_amd64.AppImage)
 
 [![Скачать для macOS](https://img.shields.io/badge/Скачать%20для-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![Скачать для Linux](https://img.shields.io/badge/Скачать%20для-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![Скачать для Windows](https://img.shields.io/badge/Скачать%20для-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Vodorod77/pluely_ru/releases)
 
