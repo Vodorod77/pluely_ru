@@ -1,5 +1,11 @@
 # Pluely 🚀
 
+<div align="right">
+
+**Language / Язык:** [🇬🇧 English](README.md) | [🇷🇺 Русский](README.ru.md)
+
+</div>
+
 <a href="https://pluely.com/">
   <img src="/images/app-image.png" alt="pluely banner" width="100%" />
 </a>
