@@ -23,14 +23,24 @@
 
 ### 💝 **Поддержать русский перевод**
 
-**Криптовалюты (Россия 🇷🇺):**
-- **Bitcoin (BTC):** `bc1qv9f7py7vquzppy639ukq82q0fzaxax26j92aj8`
-- **Ethereum (ETH):** `0xd2b22C9Dabde7Fa3812120f951a3D290180DD8e3`
-- **USDT (TRC20):** `TWzMD2KV51VbZY1GFZWCa83GEawqjaEXu7`
-- **TRX (Tron):** `TWzMD2KV51VbZY1GFZWCa83GEawqjaEXu7`
-- **TON:** `UQCHisahwOLO3xnIBX0Kxr0-IEYgVJtsZHCrzJsR_IgGLE-6`
+**Криптовалюты:**
 
-**Социальные сети:**
+<details>
+<summary>📋 Показать адреса кошельков</summary>
+
+| Криптовалюта | Адрес |
+|--------------|-------|
+| **Bitcoin (BTC)** | `bc1qv9f7py7vquzppy639ukq82q0fzaxax26j92aj8` |
+| **Ethereum (ETH)** | `0xd2b22C9Dabde7Fa3812120f951a3D290180DD8e3` |
+| **USDT (TRC20)** | `TWzMD2KV51VbZY1GFZWCa83GEawqjaEXu7` |
+| **TRX (Tron)** | `TWzMD2KV51VbZY1GFZWCa83GEawqjaEXu7` |
+| **TON** | `UQCHisahwOLO3xnIBX0Kxr0-IEYgVJtsZHCrzJsR_IgGLE-6` |
+
+</details>
+
+> 💡 **Спасибо за поддержку!** Ваши пожертвования помогают поддерживать и развивать русский перевод проекта.
+
+**Контакт:**
 [![GitHub](https://img.shields.io/badge/GitHub-Vodorod77-black?style=flat&logo=github)](https://github.com/Vodorod77)
 
 ---
