@@ -9,7 +9,7 @@ import {
 } from "@/components";
 import { PlusIcon, SaveIcon } from "lucide-react";
 import { useCustomAiProviders } from "@/hooks";
-import { useApp } from "@/contexts";
+import { useApp, useTranslation } from "@/contexts";
 import { cn } from "@/lib/utils";
 
 interface CreateEditProviderProps {
@@ -19,6 +19,7 @@ interface CreateEditProviderProps {
 export const CreateEditProvider = ({
   customProviderHook,
 }: CreateEditProviderProps) => {
+  const { t } = useTranslation();
   const { allAiProviders } = useApp();
   // Use the provided hook instance or create a new one
   const hookInstance = customProviderHook || useCustomAiProviders();
@@ -47,14 +48,14 @@ export const CreateEditProvider = ({
           className="w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
         >
           <PlusIcon className="h-4 w-4 mr-2" />
-          Add Custom Provider
+          {t("dev_space.ai_providers.add_custom")}
         </Button>
       ) : (
         <Card className="p-4 border !bg-transparent border-input/50 ">
           <div className="flex justify-between items-center">
             <Header
-              title={editingProvider ? `Edit Provider` : "Add Custom Provider"}
-              description="Create a custom AI provider to use with your AI-powered applications."
+              title={editingProvider ? t("dev_space.ai_providers.edit_title") : t("dev_space.ai_providers.add_title")}
+              description={t("dev_space.ai_providers.add_description")}
             />
 
             <div className="w-[120px]">
@@ -67,7 +68,7 @@ export const CreateEditProvider = ({
                       value: provider?.id || "AI Provider",
                     };
                   })}
-                placeholder={"Auto-fill"}
+                placeholder={t("dev_space.ai_providers.auto_fill")}
                 onChange={(value) => {
                   handleAutoFill(value);
                 }}
@@ -79,8 +80,8 @@ export const CreateEditProvider = ({
             {/* Basic Configuration */}
             <div className="space-y-1">
               <Header
-                title="Curl Command *"
-                description="The curl command to use with the AI provider."
+                title={t("dev_space.ai_providers.curl_command")}
+                description={t("dev_space.ai_providers.curl_description")}
               />
               <Textarea
                 className={cn(
@@ -127,22 +128,19 @@ export const CreateEditProvider = ({
               <div className="bg-muted/50 p-4 rounded-lg space-y-4">
                 <div className="bg-card border p-3 rounded-lg">
                   <p className="text-sm font-medium text-primary mb-2">
-                    💡 Important: You can add custom variables or directly
-                    include your API keys/values
+                    {t("dev_space.ai_providers.important_note")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    No need to enter variables separately when selecting the
-                    provider - you can embed them directly in the curl command
-                    (e.g., replace YOUR_API_KEY with your actual key or use{" "}
+                    {t("dev_space.ai_providers.important_description")}{" "}
                     <code className="bg-muted px-1 rounded text-xs">
                       {"{{MODEL}}"}
                     </code>{" "}
-                    for model name).
+                    {t("dev_space.ai_providers.important_description_2")}
                   </p>
                 </div>
 
                 <h4 className="text-sm font-semibold text-foreground">
-                  ⚠️ Required Variables for AI Providers:
+                  {t("dev_space.ai_providers.required_variables")}
                 </h4>
                 <div className="grid grid-cols-1 gap-3 text-sm">
                   <div className="flex items-center gap-3 p-3 bg-card border rounded-lg">
@@ -150,7 +148,7 @@ export const CreateEditProvider = ({
                       {"{{TEXT}}"}
                     </code>
                     <span className="text-foreground font-medium">
-                      → REQUIRED: User's text input
+                      {t("dev_space.ai_providers.text_variable")}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-card border rounded-lg">
@@ -158,8 +156,7 @@ export const CreateEditProvider = ({
                       {"{{IMAGE}}"}
                     </code>
                     <span className="text-muted-foreground">
-                      → Base64 image data (without data:image/jpeg;base64
-                      prefix)
+                      {t("dev_space.ai_providers.image_variable")}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-card border rounded-lg">
@@ -167,45 +164,44 @@ export const CreateEditProvider = ({
                       {"{{SYSTEM_PROMPT}}"}
                     </code>
                     <span className="text-muted-foreground">
-                      → System prompt/instructions(optional)
+                      {t("dev_space.ai_providers.system_prompt_variable")}
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    <strong className="text-foreground">Quick Setup:</strong>{" "}
-                    Replace{" "}
+                    <strong className="text-foreground">{t("dev_space.ai_providers.quick_setup")}</strong>{" "}
+                    {t("dev_space.ai_providers.quick_setup_description")}{" "}
                     <code className="bg-muted px-1 rounded text-xs">
                       YOUR_API_KEY
                     </code>{" "}
-                    with your actual API key directly in the curl command.
+                    {t("dev_space.ai_providers.quick_setup_description_2")}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     <strong className="text-foreground">
-                      Custom Variables:
+                      {t("dev_space.ai_providers.custom_variables")}
                     </strong>{" "}
-                    You can add your own variables using the same{" "}
+                    {t("dev_space.ai_providers.custom_variables_description")}{" "}
                     <code className="bg-muted px-1 rounded text-xs">
                       {"{{VARIABLE_NAME}}"}
                     </code>{" "}
-                    format and they'll be available for configuration when you
-                    select this provider.
+                    {t("dev_space.ai_providers.custom_variables_description_2")}
                   </p>
                   <p className="text-xs text-muted-foreground italic">
-                    💡 Tip: Use the required variables (
+                    {t("dev_space.ai_providers.tip_message")}
                     <code className="bg-muted px-1 rounded text-xs">
                       {"{{TEXT}}"}
                     </code>
-                    ,{" "}
+                    , {t("dev_space.ai_providers.tip_message_2")}
                     <code className="bg-muted px-1 rounded text-xs">
                       {"{{SYSTEM_PROMPT}}"}
                     </code>
-                    ) for basic functionality. Add{" "}
+                    ){" "}{t("dev_space.ai_providers.tip_message_2")}{" "}
                     <code className="bg-muted px-1 rounded text-xs">
                       {"{{IMAGE}}"}
                     </code>{" "}
-                    only if your provider supports image input.
+                    {t("dev_space.ai_providers.tip_message_3")}
                   </p>
                 </div>
               </div>
@@ -214,8 +210,8 @@ export const CreateEditProvider = ({
 
           <div className="flex justify-between items-center space-x-2">
             <Header
-              title="Streaming"
-              description="streaming is used to stream the response from the AI provider."
+              title={t("dev_space.ai_providers.streaming")}
+              description={t("dev_space.ai_providers.streaming_description")}
             />
             <Switch
               checked={formData.streaming}
@@ -230,12 +226,12 @@ export const CreateEditProvider = ({
           {/* Response Configuration */}
           <div className="space-y-2">
             <Header
-              title="Response Content Path *"
-              description="The path to extract content from the API response."
+              title={t("dev_space.ai_providers.response_path")}
+              description={t("dev_space.ai_providers.response_path_description")}
             />
 
             <TextInput
-              placeholder="choices[0].message.content"
+              placeholder={t("dev_space.ai_providers.response_path_placeholder")}
               value={formData.responseContentPath || ""}
               onChange={(value) =>
                 setFormData((prev) => ({
@@ -244,7 +240,7 @@ export const CreateEditProvider = ({
                 }))
               }
               error={errors.responseContentPath}
-              notes="The path to extract content from the API response. Examples: choices[0].message.content, text, candidates[0].content.parts[0].text"
+              notes={t("dev_space.ai_providers.response_path_notes")}
             />
           </div>
 
@@ -254,7 +250,7 @@ export const CreateEditProvider = ({
               onClick={() => setShowForm(!showForm)}
               className="h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={handleSave}
@@ -265,11 +261,11 @@ export const CreateEditProvider = ({
               )}
             >
               {errors.curl ? (
-                "Invalid cURL, try again"
+                t("dev_space.ai_providers.invalid_curl")
               ) : (
                 <>
                   <SaveIcon className="h-4 w-4 mr-2" />
-                  {editingProvider ? "Update" : "Save"} Provider
+                  {editingProvider ? t("common.update") : t("common.save")} {t("dev_space.ai_providers.stt_provider").replace("STT ", "")}
                 </>
               )}
             </Button>

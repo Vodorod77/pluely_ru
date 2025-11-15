@@ -1,12 +1,13 @@
 import { Card, Header } from "@/components";
 import { RESPONSE_LENGTHS } from "@/lib";
-import { useApp } from "@/contexts";
+import { useApp, useTranslation } from "@/contexts";
 import { updateResponseLength } from "@/lib/storage/response-settings.storage";
 import { useState, useEffect } from "react";
 import { getResponseSettings } from "@/lib";
 import { CheckCircle2 } from "lucide-react";
 
 export const ResponseLength = () => {
+  const { t } = useTranslation();
   const { hasActiveLicense } = useApp();
   const [selectedLength, setSelectedLength] = useState<string>("auto");
 
@@ -26,8 +27,8 @@ export const ResponseLength = () => {
   return (
     <div className="space-y-4">
       <Header
-        title="Response Length"
-        description="Control how detailed the AI responses should be. Changes apply to all new conversations and will influence how the AI structures responses"
+        title={t("responses.response_length.title")}
+        description={t("responses.response_length.description")}
         isMainTitle
       />
 

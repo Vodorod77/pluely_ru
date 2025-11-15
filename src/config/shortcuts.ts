@@ -3,8 +3,8 @@ import { ShortcutAction } from "@/types";
 export const DEFAULT_SHORTCUT_ACTIONS: ShortcutAction[] = [
   {
     id: "toggle_dashboard",
-    name: "Toggle Dashboard",
-    description: "Open/Close the dashboard window",
+    name: "shortcuts.toggle_dashboard",
+    description: "shortcuts.toggle_dashboard_description",
     defaultKey: {
       macos: "cmd+shift+d",
       windows: "ctrl+shift+d",
@@ -13,8 +13,8 @@ export const DEFAULT_SHORTCUT_ACTIONS: ShortcutAction[] = [
   },
   {
     id: "toggle_window",
-    name: "Toggle Window",
-    description: "Show/Hide the main window",
+    name: "shortcuts.toggle_window",
+    description: "shortcuts.toggle_window_description",
     defaultKey: {
       macos: "cmd+backslash",
       windows: "ctrl+backslash",
@@ -23,8 +23,8 @@ export const DEFAULT_SHORTCUT_ACTIONS: ShortcutAction[] = [
   },
   {
     id: "focus_input",
-    name: "Refocus Input Box",
-    description: "Bring Pluely forward and place the cursor in the input area",
+    name: "shortcuts.refocus_input",
+    description: "shortcuts.refocus_input_description",
     defaultKey: {
       macos: "cmd+shift+i",
       windows: "ctrl+shift+i",
@@ -33,8 +33,8 @@ export const DEFAULT_SHORTCUT_ACTIONS: ShortcutAction[] = [
   },
   {
     id: "move_window",
-    name: "Move Window",
-    description: "Move overlay with arrow keys (hold to move continuously)",
+    name: "shortcuts.move_window",
+    description: "shortcuts.move_window_description",
     defaultKey: {
       macos: "cmd",
       windows: "ctrl",
@@ -43,8 +43,8 @@ export const DEFAULT_SHORTCUT_ACTIONS: ShortcutAction[] = [
   },
   {
     id: "system_audio",
-    name: "System Audio",
-    description: "Toggle system audio capture",
+    name: "shortcuts.system_audio",
+    description: "shortcuts.system_audio_description",
     defaultKey: {
       macos: "cmd+shift+m",
       windows: "ctrl+shift+m",
@@ -53,8 +53,8 @@ export const DEFAULT_SHORTCUT_ACTIONS: ShortcutAction[] = [
   },
   {
     id: "audio_recording",
-    name: "Voice Input",
-    description: "Start voice recording",
+    name: "shortcuts.voice_input",
+    description: "shortcuts.voice_input_description",
     defaultKey: {
       macos: "cmd+shift+a",
       windows: "ctrl+shift+a",
@@ -63,8 +63,8 @@ export const DEFAULT_SHORTCUT_ACTIONS: ShortcutAction[] = [
   },
   {
     id: "screenshot",
-    name: "Screenshot",
-    description: "Capture screenshot",
+    name: "shortcuts.screenshot",
+    description: "shortcuts.screenshot_description",
     defaultKey: {
       macos: "cmd+shift+s",
       windows: "ctrl+shift+s",

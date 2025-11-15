@@ -9,6 +9,7 @@ import {
 } from "@/components";
 import { UseSettingsReturn } from "@/types";
 import { LaptopMinimalIcon, MousePointer2Icon } from "lucide-react";
+import { useTranslation } from "@/contexts";
 
 export const ScreenshotConfigs = ({
   screenshotConfiguration,
@@ -17,6 +18,8 @@ export const ScreenshotConfigs = ({
   handleScreenshotEnabledChange,
   hasActiveLicense,
 }: UseSettingsReturn) => {
+  const { t } = useTranslation();
+  
   return (
     <div id="screenshot" className="space-y-3">
       <div className="space-y-3">
@@ -24,12 +27,8 @@ export const ScreenshotConfigs = ({
         <div className="space-y-2">
           <div className="flex flex-col">
             <Header
-              title="Capture Method"
-              description={
-                screenshotConfiguration.enabled
-                  ? "Screenshot Mode: Quickly capture the entire screen with one click."
-                  : "Selection Mode: Click and drag to select a specific area to capture."
-              }
+              title={t("screenshot.capture_method.title")}
+              description={t("screenshot.capture_method.capture_description")}
             />
           </div>
           <Select
@@ -47,7 +46,7 @@ export const ScreenshotConfigs = ({
                 )}
                 <div className="text-sm font-medium">
                   {screenshotConfiguration.enabled
-                    ? "Screenshot Mode"
+                    ? t("screenshot.capture_method.screenshot_mode")
                     : "Selection Mode"}
                 </div>
               </div>
@@ -66,7 +65,7 @@ export const ScreenshotConfigs = ({
               </SelectItem>
               <SelectItem value="screenshot" className="flex flex-row gap-2">
                 <LaptopMinimalIcon className="size-4" />
-                <div className="font-medium">Screenshot Mode</div>
+                <div className="font-medium">{t("screenshot.capture_method.screenshot_mode")}</div>
               </SelectItem>
             </SelectContent>
           </Select>
@@ -76,12 +75,8 @@ export const ScreenshotConfigs = ({
         <div className="space-y-2">
           <div className="flex flex-col">
             <Header
-              title="Processing Mode"
-              description={
-                screenshotConfiguration.mode === "manual"
-                  ? "Screenshots will be captured and automatically added to your attached files. You can then submit them with your own prompt. you can capture multiple screenshots and submit them later."
-                  : "Screenshots will be automatically submitted to AI using your custom prompt. No manual intervention required. only one screenshot can be submitted at a time."
-              }
+              title={t("screenshot.processing_mode.title")}
+              description={t("screenshot.processing_mode.processing_description")}
             />
           </div>
           <Select
@@ -98,7 +93,7 @@ export const ScreenshotConfigs = ({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="manual">
-                <div className="font-medium">Manual Mode</div>
+                <div className="font-medium">{t("screenshot.processing_mode.manual_mode")}</div>
               </SelectItem>
               <SelectItem value="auto">
                 <div className="font-medium">Auto Mode</div>
@@ -126,14 +121,7 @@ export const ScreenshotConfigs = ({
 
       {/* Tips */}
       <div className="text-xs text-muted-foreground/70">
-        <p>
-          💡 <strong>Tip:</strong>{" "}
-          {screenshotConfiguration.enabled
-            ? "Screenshot mode captures the full screen with one click."
-            : "Selection mode lets you choose specific areas to capture."}{" "}
-          Auto mode is great for quick analysis, manual mode gives you more
-          control.
-        </p>
+        <p>{t("screenshot.processing_mode.tip")}</p>
       </div>
     </div>
   );

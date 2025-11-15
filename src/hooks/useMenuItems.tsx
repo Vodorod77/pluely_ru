@@ -15,11 +15,12 @@ import {
   MessageSquareTextIcon,
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
-import { useApp } from "@/contexts";
+import { useApp, useTranslation } from "@/contexts";
 import { XIcon, GithubIcon } from "@/components";
 
 export const useMenuItems = () => {
   const { hasActiveLicense } = useApp();
+  const { t } = useTranslation();
 
   const menu: {
     icon: React.ElementType;
@@ -29,48 +30,48 @@ export const useMenuItems = () => {
   }[] = [
     {
       icon: HomeIcon,
-      label: "Dashboard",
+      label: t("sidebar.dashboard"),
       href: "/dashboard",
     },
     {
       icon: MessagesSquare,
-      label: "Chats",
+      label: t("sidebar.chats"),
       href: "/chats",
     },
     {
       icon: WandSparkles,
-      label: "System prompts",
+      label: t("sidebar.system_prompts"),
       href: "/system-prompts",
     },
     {
       icon: Settings,
-      label: "App Settings",
+      label: t("sidebar.app_settings"),
       href: "/settings",
     },
     {
       icon: MessageSquareTextIcon,
-      label: "Responses",
+      label: t("sidebar.responses"),
       href: "/responses",
     },
     {
       icon: MonitorIcon,
-      label: "Screenshot",
+      label: t("sidebar.screenshot"),
       href: "/screenshot",
     },
     {
       icon: AudioLinesIcon,
-      label: "Audio",
+      label: t("sidebar.audio"),
       href: "/audio",
     },
     {
       icon: SquareSlashIcon,
-      label: "Cursor & Shortcuts",
+      label: t("sidebar.cursor_shortcuts"),
       href: "/shortcuts",
     },
 
     {
       icon: Code,
-      label: "Dev space",
+      label: t("sidebar.dev_space"),
       href: "/dev-space",
     },
   ];
@@ -80,19 +81,19 @@ export const useMenuItems = () => {
       ? [
           {
             icon: MailIcon,
-            label: "Contact Support",
+            label: t("sidebar.contact_support"),
             href: "mailto:support@pluely.com",
           },
         ]
       : []),
     {
       icon: BugIcon,
-      label: "Report a bug",
+      label: t("sidebar.report_bug"),
       href: "https://github.com/iamsrikanthnani/pluely/issues/new?template=bug-report.yml",
     },
     {
       icon: PowerIcon,
-      label: "Quit pluely",
+      label: t("sidebar.quit"),
       action: async () => {
         await invoke("exit_app");
       },

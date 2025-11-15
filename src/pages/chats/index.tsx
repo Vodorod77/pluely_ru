@@ -4,8 +4,10 @@ import { PageLayout } from "@/layouts";
 import { MessageCircleIcon, Search } from "lucide-react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "@/contexts";
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const conversations = useHistory();
   const navigate = useNavigate();
   // Group conversations by date
@@ -28,16 +30,16 @@ const Dashboard = () => {
 
   return (
     <PageLayout
-      title="All conversations"
-      description="View all your conversations"
+      title={t("chats.title")}
+      description={t("chats.description")}
     >
       <>
         {conversations.conversations.length === 0 ? (
           <Empty
             isLoading={conversations.isLoading}
             icon={MessageCircleIcon}
-            title="No conversations found"
-            description="Start a new conversation to get started"
+            title={t("chats.no_conversations")}
+            description={t("chats.start_conversation")}
           />
         ) : (
           <div className="flex flex-col gap-6 pb-8">

@@ -4,8 +4,10 @@ import { EditIcon, TrashIcon } from "lucide-react";
 import { CreateEditProvider } from "./CreateEditProvider";
 import { useCustomAiProviders } from "@/hooks";
 import curl2Json from "@bany/curl-to-json";
+import { useTranslation } from "@/contexts";
 
 export const CustomProviders = ({ allAiProviders }: UseSettingsReturn) => {
+  const { t } = useTranslation();
   const customProviderHook = useCustomAiProviders();
   const {
     handleEdit,
@@ -18,8 +20,8 @@ export const CustomProviders = ({ allAiProviders }: UseSettingsReturn) => {
   return (
     <div className="space-y-2">
       <Header
-        title="Custom Providers"
-        description="Create and manage custom AI providers. Configure endpoints, authentication, and response formats."
+        title={t("dev_space.ai_providers.custom")}
+        description={t("dev_space.ai_providers.custom_description")}
       />
 
       <div className="space-y-2">
@@ -39,20 +41,20 @@ export const CustomProviders = ({ allAiProviders }: UseSettingsReturn) => {
                     <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-medium text-sm">
-                          {json?.url || "Invalid curl command"}
+                          {json?.url || t("dev_space.ai_providers.invalid_curl_command")}
                         </h4>
 
                         <div className="flex items-center gap-2 mt-1">
                           <p className="text-xs text-muted-foreground">
-                            {`Response Path: ${
-                              provider?.responseContentPath || "Not set"
+                            {`${t("dev_space.ai_providers.response_path_label")} ${
+                              provider?.responseContentPath || t("dev_space.ai_providers.not_set")
                             }`}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {" • "}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Streaming: {provider?.streaming ? "Yes" : "No"}
+                            {t("dev_space.ai_providers.streaming")}: {provider?.streaming ? t("dev_space.ai_providers.streaming_yes") : t("dev_space.ai_providers.streaming_no")}
                           </p>
                         </div>
                       </div>
@@ -63,7 +65,7 @@ export const CustomProviders = ({ allAiProviders }: UseSettingsReturn) => {
                           onClick={() =>
                             provider?.id && handleEdit(provider?.id)
                           }
-                          title="Edit Provider"
+                          title={t("dev_space.ai_providers.edit_provider_title")}
                         >
                           <EditIcon className="h-3 w-3" />
                         </Button>
@@ -73,7 +75,7 @@ export const CustomProviders = ({ allAiProviders }: UseSettingsReturn) => {
                           onClick={() =>
                             provider?.id && handleDelete(provider?.id)
                           }
-                          title="Delete Provider"
+                          title={t("dev_space.ai_providers.delete_provider_title")}
                           className="text-destructive hover:text-destructive"
                         >
                           <TrashIcon className="h-3 w-3" />
@@ -93,18 +95,17 @@ export const CustomProviders = ({ allAiProviders }: UseSettingsReturn) => {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-background border rounded-lg p-6 max-w-md mx-4">
             <h3 className="text-lg font-semibold mb-2">
-              Delete Custom Provider
+              {t("dev_space.ai_providers.delete_dialog_title")}
             </h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Are you sure you want to delete this custom provider? This action
-              cannot be undone.
+              {t("dev_space.ai_providers.delete_dialog_description")}
             </p>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={cancelDelete}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button variant="destructive" onClick={confirmDelete}>
-                Delete
+                {t("common.delete")}
               </Button>
             </div>
           </div>
