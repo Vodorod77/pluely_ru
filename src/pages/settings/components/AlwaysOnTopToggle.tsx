@@ -1,5 +1,5 @@
 import { Switch, Label, Header } from "@/components";
-import { useApp } from "@/contexts";
+import { useApp, useTranslation } from "@/contexts";
 
 interface AlwaysOnTopToggleProps {
   className?: string;
@@ -7,6 +7,7 @@ interface AlwaysOnTopToggleProps {
 
 export const AlwaysOnTopToggle = ({ className }: AlwaysOnTopToggleProps) => {
   const { customizable, toggleAlwaysOnTop } = useApp();
+  const { t } = useTranslation();
 
   const handleSwitchChange = async (checked: boolean) => {
     await toggleAlwaysOnTop(checked);
@@ -15,8 +16,8 @@ export const AlwaysOnTopToggle = ({ className }: AlwaysOnTopToggleProps) => {
   return (
     <div id="always-on-top" className={`space-y-2 ${className}`}>
       <Header
-        title="Always On Top Mode"
-        description="Control whether the window stays above all other applications"
+        title={t("settings.always_on_top.title")}
+        description={t("settings.always_on_top.description")}
         isMainTitle
       />
       <div className="flex items-center justify-between">

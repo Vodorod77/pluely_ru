@@ -1,5 +1,5 @@
 import { Switch, Label, Header } from "@/components";
-import { useApp } from "@/contexts";
+import { useApp, useTranslation } from "@/contexts";
 
 interface AppIconToggleProps {
   className?: string;
@@ -7,6 +7,7 @@ interface AppIconToggleProps {
 
 export const AppIconToggle = ({ className }: AppIconToggleProps) => {
   const { customizable, toggleAppIconVisibility } = useApp();
+  const { t } = useTranslation();
 
   const handleSwitchChange = async (checked: boolean) => {
     await toggleAppIconVisibility(checked);
@@ -15,22 +16,20 @@ export const AppIconToggle = ({ className }: AppIconToggleProps) => {
   return (
     <div id="app-icon" className={`space-y-2 ${className}`}>
       <Header
-        title="App Icon Stealth Mode"
-        description="Control dock/taskbar icon visibility when window is hidden for maximum discretion"
+        title={t("settings.app_icon.title")}
+        description={t("settings.app_icon.description")}
         isMainTitle
       />
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div>
             <Label className="text-sm font-medium">
-              {!customizable.appIcon.isVisible
-                ? "Show Icon in Dock/Taskbar"
-                : "Hide Icon from Dock/Taskbar"}
+              {t("settings.app_icon.label")}
             </Label>
             <p className="text-xs text-muted-foreground mt-1">
-              {`Toggle to make App Icon ${
-                !customizable.appIcon.isVisible ? "Visible" : "Hidden"
-              }`}
+              {!customizable.appIcon.isVisible 
+                ? t("settings.app_icon.will_be_visible")
+                : t("settings.app_icon.will_be_hidden")}
             </p>
           </div>
         </div>

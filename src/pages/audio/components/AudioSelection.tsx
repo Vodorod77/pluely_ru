@@ -8,12 +8,13 @@ import {
 } from "@/components";
 import { MicIcon, RefreshCwIcon, HeadphonesIcon } from "lucide-react";
 import { useState } from "react";
-import { useApp } from "@/contexts";
+import { useApp, useTranslation } from "@/contexts";
 import { STORAGE_KEYS } from "@/config/constants";
 import { safeLocalStorage } from "@/lib/storage";
 
 export const AudioSelection = () => {
   const { selectedAudioDevices, setSelectedAudioDevices } = useApp();
+  const { t } = useTranslation();
 
   const [devices, setDevices] = useState<{
     input: MediaDeviceInfo[];
@@ -119,8 +120,8 @@ export const AudioSelection = () => {
       {/* Microphone Input Section */}
       <div className="space-y-3">
         <Header
-          title="Microphone"
-          description="Select your microphone for voice input and speech-to-text. If issues occur, adjust your system's default microphone in OS settings."
+          title={t("audio.microphone.title")}
+          description={t("audio.microphone.mic_description")}
         />
 
         <div className="space-y-3">
@@ -137,9 +138,9 @@ export const AudioSelection = () => {
                     <MicIcon className="size-4" />
                     <div className="text-sm font-medium truncate">
                       {isLoadingDevices
-                        ? "Loading microphones..."
+                        ? t("common.loading")
                         : devices.input.length === 0
-                        ? "No microphones found"
+                        ? t("audio.microphone.no_microphones_found")
                         : devices.input.find(
                             (mic) => mic.deviceId === selectedAudioDevices.input
                           )?.label || "Select a microphone"}
@@ -192,31 +193,23 @@ export const AudioSelection = () => {
           {/* Permission Notice */}
           {devices.input.length === 0 && !isLoadingDevices && (
             <div className="text-xs text-amber-500 bg-amber-500/10 p-3 rounded-md">
-              <strong>
-                ⚠️ Click the refresh button to load your microphone devices.
-              </strong>{" "}
-              If this doesn't work, try changing your default microphone in your
-              system settings.
+              <strong>{t("audio.microphone.click_refresh_full")}</strong>{" "}
+              {t("audio.microphone.click_refresh_description")}
             </div>
           )}
         </div>
 
         {/* Tips */}
         <div className="text-xs text-muted-foreground/70">
-          <p>
-            💡 <strong>Tip:</strong> When you select a microphone, the app will
-            immediately switch to that device. You can verify by hovering over
-            the microphone button in the main interface - it will show the
-            active device name.
-          </p>
+          <p>{t("audio.microphone.tip")}</p>
         </div>
       </div>
 
       {/* System Audio Output Section */}
       <div className="space-y-3">
         <Header
-          title="System Audio"
-          description="Select the output device to capture system sounds and application audio. If issues occur, set the correct default output in OS settings."
+          title={t("audio.system_audio.title")}
+          description={t("audio.system_audio.audio_description")}
         />
 
         <div className="space-y-3">
@@ -233,9 +226,9 @@ export const AudioSelection = () => {
                     <HeadphonesIcon className="size-4" />
                     <div className="text-sm font-medium truncate">
                       {isLoadingDevices
-                        ? "Loading output devices..."
+                        ? t("common.loading")
                         : devices.output.length === 0
-                        ? "No output devices found"
+                        ? t("audio.system_audio.no_output_devices_found")
                         : devices.output.find(
                             (output) =>
                               output.deviceId === selectedAudioDevices.output
@@ -288,23 +281,15 @@ export const AudioSelection = () => {
           {/* Permission Notice */}
           {devices.output.length === 0 && !isLoadingDevices && (
             <div className="text-xs text-amber-500 bg-amber-500/10 p-3 rounded-md">
-              <strong>
-                ⚠️ Click the refresh button to load your system audio devices.
-              </strong>{" "}
-              If this doesn't work, try changing your default system audio
-              output in your system settings.
+              <strong>{t("audio.system_audio.click_refresh_full")}</strong>{" "}
+              {t("audio.system_audio.click_refresh_description")}
             </div>
           )}
         </div>
 
         {/* Tips */}
         <div className="text-xs text-muted-foreground/70">
-          <p>
-            💡 <strong>Tip:</strong> System audio capture allows you to record
-            audio playing through your speakers or headphones. This is useful
-            for capturing conversation audio or system sounds along with your
-            voice.
-          </p>
+          <p>{t("audio.system_audio.tip")}</p>
         </div>
       </div>
     </div>

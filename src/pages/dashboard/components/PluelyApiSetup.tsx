@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { KeyIcon, TrashIcon, LoaderIcon, ChevronDown } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
-import { useApp } from "@/contexts";
+import { useApp, useTranslation } from "@/contexts";
 import {
   Button,
   Header,
@@ -50,6 +50,7 @@ const INSTANCE_ID_STORAGE_KEY = "pluely_instance_id";
 const SELECTED_PLUELY_MODEL_STORAGE_KEY = "selected_pluely_model";
 
 export const PluelyApiSetup = () => {
+  const { t } = useTranslation();
   const {
     pluelyApiEnabled,
     setPluelyApiEnabled,
@@ -270,16 +271,14 @@ export const PluelyApiSetup = () => {
   }
 
   const title = isModelsLoading
-    ? "Loading Models..."
-    : `Pluely supports ${models?.length} model${
-        models?.length !== 1 ? "s" : ""
-      }`;
+    ? t("dashboard.pluely_api.title_loading")
+    : `${t("dashboard.pluely_api.title_loaded")} ${models?.length} ${models?.length === 1 ? t("dashboard.pluely_api.model_singular") : t("dashboard.pluely_api.model_plural")}`;
 
   const description = isModelsLoading
-    ? "Fetching the list of supported models..."
+    ? t("dashboard.pluely_api.description_loading")
     : providerList
-    ? `Access top models from providers like ${providerList}. and select smaller models for faster responses.`
-    : "Explore all the models Pluely supports.";
+    ? `${t("dashboard.pluely_api.description_loaded_prefix")} ${providerList}. ${t("dashboard.pluely_api.description_loaded_suffix")}`
+    : t("dashboard.pluely_api.description_no_providers");
 
   return (
     <div id="pluely-api" className="space-y-3 -mt-2">
@@ -314,7 +313,7 @@ export const PluelyApiSetup = () => {
               variant="outline"
               className="h-11 text-start shadow-none w-full"
             >
-              {selectedModel ? selectedModel.name : "Select pro models"}{" "}
+              {selectedModel ? selectedModel.name : t("dashboard.pluely_api.select_model")}{" "}
               <ChevronDown />
             </Button>
           </PopoverTrigger>
@@ -325,7 +324,7 @@ export const PluelyApiSetup = () => {
           >
             <Command shouldFilter={true}>
               <CommandInput
-                placeholder="Select model..."
+                placeholder={t("dashboard.pluely_api.select_placeholder")}
                 value={searchValue}
                 onValueChange={setSearchValue}
               />
@@ -334,7 +333,7 @@ export const PluelyApiSetup = () => {
                 className="rounded-xl h-full overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-muted [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-muted-foreground/20 [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground/30"
               >
                 <CommandEmpty>
-                  No models found. Please try again later.
+                  {t("dashboard.pluely_api.no_models")}
                 </CommandEmpty>
                 <CommandGroup className="h-full rounded-xl">
                   {models.map((model, index) => (
@@ -356,7 +355,7 @@ export const PluelyApiSetup = () => {
                             </div>
                           ) : (
                             <div className="text-xs text-red-600 bg-white rounded-full px-2">
-                              Not Available
+                              {t("dashboard.pluely_api.not_available")}
                             </div>
                           )}
                         </div>
@@ -378,8 +377,8 @@ export const PluelyApiSetup = () => {
         {selectedModel && (
           <div className="text-xs text-amber-500 bg-amber-500/10 p-3 rounded-md">
             {selectedModel.modality?.includes("image")
-              ? "This model accepts both text and images as input and generates text responses."
-              : "⚠️ This model ONLY accepts text input. Do NOT upload images - they will not work with this model. Use a text+image→text model if you need image support."}
+              ? t("dashboard.pluely_api.modality_text_image")
+              : t("dashboard.pluely_api.modality_text_only")}
           </div>
         )}
         {/* License Key Input or Display */}
@@ -387,16 +386,15 @@ export const PluelyApiSetup = () => {
           {!storedLicenseKey ? (
             <>
               <div className="space-y-1">
-                <label className="text-sm font-medium">License Key</label>
+                <label className="text-sm font-medium">{t("dashboard.pluely_api.license_key")}</label>
                 <p className="text-sm font-medium text-muted-foreground">
-                  After completing your purchase, you'll receive a license key
-                  via email. Paste it below to activate.
+                  {t("dashboard.pluely_api.license_description")}
                 </p>
               </div>
               <div className="flex gap-2">
                 <Input
                   type="password"
-                  placeholder="Enter your license key (e.g., 38b1460a-5104-4067-a91d-77b872934d51)"
+                  placeholder={t("dashboard.pluely_api.license_placeholder")}
                   value={licenseKey}
                   onChange={(value) => {
                     setLicenseKey(
@@ -414,7 +412,7 @@ export const PluelyApiSetup = () => {
                   disabled={isLoading || !licenseKey.trim()}
                   size="icon"
                   className="shrink-0 h-11 w-11"
-                  title="Activate License"
+                  title={t("dashboard.pluely_api.activate_license")}
                 >
                   {isLoading ? (
                     <LoaderIcon className="h-4 w-4 animate-spin" />
@@ -427,7 +425,7 @@ export const PluelyApiSetup = () => {
           ) : (
             <>
               <label className="text-xs lg:text-sm font-medium">
-                Current License
+                {t("dashboard.pluely_api.current_license")}
               </label>
               <div className="flex gap-2">
                 <Input
@@ -442,7 +440,7 @@ export const PluelyApiSetup = () => {
                   size="icon"
                   variant="destructive"
                   className="shrink-0 h-11 w-11"
-                  title="Remove License"
+                  title={t("dashboard.pluely_api.remove_license")}
                 >
                   {isLoading ? (
                     <LoaderIcon className="h-4 w-4 animate-spin" />
@@ -454,8 +452,7 @@ export const PluelyApiSetup = () => {
               {storedLicenseKey ? (
                 <div className="-mt-1">
                   <p className="text-sm font-medium text-muted-foreground select-auto">
-                    If you need any help or any assistance, contact
-                    support@pluely.com
+                    {t("dashboard.pluely_api.contact_support")}
                   </p>
                 </div>
               ) : null}
@@ -465,13 +462,13 @@ export const PluelyApiSetup = () => {
       </div>
       <div className="flex justify-between items-center">
         <Header
-          title={`${pluelyApiEnabled ? "Disable" : "Enable"} Pluely API`}
+          title={pluelyApiEnabled ? t("dashboard.pluely_api.disable_api") : t("dashboard.pluely_api.enable_api")}
           description={
             storedLicenseKey
               ? pluelyApiEnabled
-                ? "Using all pluely APIs for audio, and chat."
-                : "Using all your own AI Providers for audio, and chat."
-              : "A valid license is required to enable Pluely API or you can use your own AI Providers and STT Providers."
+                ? t("dashboard.pluely_api.api_enabled_description")
+                : t("dashboard.pluely_api.api_disabled_description")
+              : t("dashboard.pluely_api.api_no_license_description")
           }
         />
         <Switch

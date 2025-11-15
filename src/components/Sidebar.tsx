@@ -4,10 +4,12 @@ import { cn } from "@/lib/utils";
 import { useLocation, useNavigate } from "react-router-dom";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useMenuItems, useVersion } from "@/hooks";
+import { useTranslation } from "@/contexts";
 
 export const Sidebar = () => {
   const { version, isLoading } = useVersion();
   const { menu, footerLinks, footerItems } = useMenuItems();
+  const { t } = useTranslation();
 
   const navigate = useNavigate();
   const activeRoute = useLocation().pathname;
@@ -26,7 +28,7 @@ export const Sidebar = () => {
             Pluely
           </h1>
           <span className="text-[8px] lg:text-[10px] text-muted-foreground -mt-1 block">
-            {isLoading ? "Loading..." : `(v${version})`}
+            {isLoading ? t("sidebar.loading") : `(v${version})`}
           </span>
         </div>
       </div>

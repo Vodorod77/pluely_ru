@@ -1,4 +1,4 @@
-import { useApp, useTheme } from "@/contexts";
+import { useApp, useTheme, useTranslation } from "@/contexts";
 import { Header, Label, Slider, Button } from "@/components";
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
 import {
@@ -11,16 +11,17 @@ import {
 export const Theme = () => {
   const { theme, transparency, setTheme, onSetTransparency } = useTheme();
   const { hasActiveLicense } = useApp();
+  const { t } = useTranslation();
 
   return (
     <div id="theme" className="relative space-y-3">
       <Header
-        title={`Theme Customization ${
+        title={`${t("settings.theme.title")} ${
           hasActiveLicense
             ? ""
-            : " (You need an active license to use this feature)"
+            : ` (${t("settings.theme_customization_license_required")})`
         }`}
-        description="Personalize your experience with custom theme and transparency settings"
+        description={t("settings.theme.description")}
         isMainTitle
       />
 
@@ -54,7 +55,7 @@ export const Theme = () => {
               <p className="text-xs text-muted-foreground mt-1">
                 {theme === "light"
                   ? "Using light theme for better visibility in bright environments"
-                  : "Using dark theme for comfortable viewing in low light"}
+                  : t("settings.theme.system_description")}
               </p>
             </div>
           </div>
@@ -93,8 +94,8 @@ export const Theme = () => {
         }`}
       >
         <Header
-          title="Window Transparency"
-          description="Adjust the transparency level of the application window"
+          title={t("settings.window_transparency.title")}
+          description={t("settings.window_transparency.description")}
         />
         <div className="space-y-3">
           <div className="flex items-center gap-4 mt-4">
@@ -109,8 +110,7 @@ export const Theme = () => {
           </div>
 
           <p className="text-xs text-muted-foreground/70">
-            💡 Tip: Higher transparency lets you see through the window, perfect
-            for dark overlay. Changes apply immediately.
+            {t("settings.window_transparency.tip")}
           </p>
         </div>
       </div>

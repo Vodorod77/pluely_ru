@@ -11,6 +11,7 @@ import {
 } from "@/components";
 import { GenerateSystemPrompt } from "./Generate";
 import { SparklesIcon } from "lucide-react";
+import { useTranslation } from "@/contexts";
 
 interface CreateEditDialogProps {
   isOpen: boolean;
@@ -43,6 +44,7 @@ export const CreateEditDialog = ({
   isEditing = false,
   isSaving = false,
 }: CreateEditDialogProps) => {
+  const { t } = useTranslation();
   const isFormValid = form.name.trim() && form.prompt.trim();
 
   const handleSave = () => {
@@ -56,12 +58,12 @@ export const CreateEditDialog = ({
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle>
-                {isEditing ? "Edit System Prompt" : "Create System Prompt"}
+                {isEditing ? t("system_prompts.create_dialog.title_edit") : t("system_prompts.create_dialog.title_create")}
               </DialogTitle>
               <DialogDescription className="mt-1">
                 {isEditing
-                  ? "Update your system prompt details below."
-                  : "Define a new AI behavior and personality."}
+                  ? t("system_prompts.create_dialog.description_edit")
+                  : t("system_prompts.create_dialog.description_create")}
               </DialogDescription>
             </div>
             <GenerateSystemPrompt onGenerate={onGenerate} />
@@ -70,10 +72,10 @@ export const CreateEditDialog = ({
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              Name
+              {t("system_prompts.create_dialog.name_label")}
             </label>
             <Input
-              placeholder="e.g., Code Review Expert, Creative Writer..."
+              placeholder={t("system_prompts.create_dialog.name_placeholder")}
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               disabled={isSaving}
@@ -82,18 +84,17 @@ export const CreateEditDialog = ({
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              System Prompt
+              {t("system_prompts.create_dialog.prompt_label")}
             </label>
             <Textarea
-              placeholder="You are a helpful AI assistant. Be concise, accurate, and friendly in your responses..."
+              placeholder={t("system_prompts.create_dialog.prompt_placeholder")}
               className="min-h-[200px] resize-none"
               value={form.prompt}
               onChange={(e) => setForm({ ...form, prompt: e.target.value })}
               disabled={isSaving}
             />
             <p className="text-xs text-muted-foreground/70">
-              💡 Tip: Be specific about tone, expertise level, and response
-              format
+              {t("system_prompts.create_dialog.tip")}
             </p>
           </div>
         </div>
@@ -103,18 +104,18 @@ export const CreateEditDialog = ({
             onClick={() => onOpenChange(false)}
             disabled={isSaving}
           >
-            Cancel
+            {t("system_prompts.create_dialog.cancel")}
           </Button>
           <Button onClick={handleSave} disabled={!isFormValid || isSaving}>
             {isSaving ? (
               <>
                 <SparklesIcon className="h-4 w-4 animate-pulse" />
-                {isEditing ? "Updating..." : "Creating..."}
+                {isEditing ? t("system_prompts.create_dialog.updating") : t("system_prompts.create_dialog.creating")}
               </>
             ) : isEditing ? (
-              "Update"
+              t("system_prompts.create_dialog.update")
             ) : (
-              "Create"
+              t("system_prompts.create_dialog.create")
             )}
           </Button>
         </DialogFooter>

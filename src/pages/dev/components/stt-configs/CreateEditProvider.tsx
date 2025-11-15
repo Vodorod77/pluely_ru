@@ -9,7 +9,7 @@ import {
 } from "@/components";
 import { PlusIcon, SaveIcon } from "lucide-react";
 import { useCustomSttProviders } from "@/hooks";
-import { useApp } from "@/contexts";
+import { useApp, useTranslation } from "@/contexts";
 import { cn } from "@/lib/utils";
 
 interface CreateEditProviderProps {
@@ -19,6 +19,7 @@ interface CreateEditProviderProps {
 export const CreateEditProvider = ({
   customProviderHook,
 }: CreateEditProviderProps) => {
+  const { t } = useTranslation();
   const { allSttProviders } = useApp();
   // Use the provided hook instance or create a new one
   const hookInstance = customProviderHook || useCustomSttProviders();
@@ -47,7 +48,7 @@ export const CreateEditProvider = ({
           className="w-full h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
         >
           <PlusIcon className="h-4 w-4 mr-2" />
-          Add Custom STT Provider
+          {t("dev_space.stt_providers.add_custom")}
         </Button>
       ) : (
         <Card className="p-4 border border-input/50 bg-transparent">
@@ -55,10 +56,10 @@ export const CreateEditProvider = ({
             <Header
               title={
                 editingProvider
-                  ? `Edit STT Provider`
-                  : "Add Custom STT Provider"
+                  ? t("dev_space.stt_providers.edit_title")
+                  : t("dev_space.stt_providers.add_title")
               }
-              description="Create a custom STT provider to use with your STT-powered applications."
+              description={t("dev_space.stt_providers.add_description")}
             />
             <div className="w-[120px]">
               <Selection
@@ -70,7 +71,7 @@ export const CreateEditProvider = ({
                       value: provider?.id || "STT Provider",
                     };
                   })}
-                placeholder={"Auto-fill"}
+                placeholder={t("dev_space.stt_providers.auto_fill")}
                 onChange={(value) => {
                   handleAutoFill(value);
                 }}
@@ -82,8 +83,8 @@ export const CreateEditProvider = ({
             {/* Basic Configuration */}
             <div className="space-y-1">
               <Header
-                title="Curl Command *"
-                description="The curl command to use with the STT provider."
+                title={t("dev_space.stt_providers.curl_command")}
+                description={t("dev_space.stt_providers.curl_description")}
               />
               <Textarea
                 className={cn(
@@ -107,22 +108,19 @@ export const CreateEditProvider = ({
               <div className="bg-muted/50 p-4 rounded-lg space-y-4">
                 <div className="bg-card border p-3 rounded-lg">
                   <p className="text-sm font-medium text-primary mb-2">
-                    💡 Important: You can add custom variables or directly
-                    include your API keys/values
+                    {t("dev_space.stt_providers.important_note")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    No need to enter variables separately when selecting the
-                    provider - you can embed them directly in the curl command
-                    (e.g., replace YOUR_API_KEY with your actual key or use{" "}
+                    {t("dev_space.stt_providers.important_description")}{" "}
                     <code className="bg-muted px-1 rounded text-xs">
                       {"{{MODEL}}"}
                     </code>{" "}
-                    for model name).
+                    {t("dev_space.stt_providers.important_description_2")}
                   </p>
                 </div>
 
                 <h4 className="text-sm font-semibold text-foreground">
-                  ⚠️ Required Variables for STT Providers:
+                  {t("dev_space.stt_providers.required_variables")}
                 </h4>
                 <div className="grid grid-cols-1 gap-3 text-sm">
                   <div className="flex items-center gap-3 p-3 bg-card border rounded-lg">
@@ -130,40 +128,36 @@ export const CreateEditProvider = ({
                       {"{{AUDIO}}"}
                     </code>
                     <span className="text-foreground font-medium">
-                      → REQUIRED: Base64 encoded audio data or audio file as wav
-                      file if you are using multipart/form-data (using -F or
-                      --form)
+                      {t("dev_space.stt_providers.audio_variable")}
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <p className="text-sm text-muted-foreground">
-                    <strong className="text-foreground">Quick Setup:</strong>{" "}
-                    Replace{" "}
+                    <strong className="text-foreground">{t("dev_space.stt_providers.quick_setup")}</strong>{" "}
+                    {t("dev_space.stt_providers.quick_setup_description")}{" "}
                     <code className="bg-muted px-1 rounded text-xs">
                       YOUR_API_KEY
                     </code>{" "}
-                    with your actual API key directly in the curl command.
+                    {t("dev_space.stt_providers.quick_setup_description_2")}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     <strong className="text-foreground">
-                      Custom Variables:
+                      {t("dev_space.stt_providers.custom_variables")}
                     </strong>{" "}
-                    You can add your own variables using the same{" "}
+                    {t("dev_space.stt_providers.custom_variables_description")}{" "}
                     <code className="bg-muted px-1 rounded text-xs">
                       {"{{VARIABLE_NAME}}"}
                     </code>{" "}
-                    format and they'll be available for configuration when you
-                    select this provider.
+                    {t("dev_space.stt_providers.custom_variables_description_2")}
                   </p>
                   <p className="text-xs text-muted-foreground italic">
-                    💡 Tip: The{" "}
+                    {t("dev_space.stt_providers.tip_message")}{" "}
                     <code className="bg-muted px-1 rounded text-xs">
                       {"{{AUDIO}}"}
                     </code>{" "}
-                    variable is essential for STT functionality - make sure it's
-                    properly included in your curl command.
+                    {t("dev_space.stt_providers.tip_message_2")}
                   </p>
                 </div>
               </div>
@@ -173,8 +167,8 @@ export const CreateEditProvider = ({
           <div className="space-y-0">
             <div className="flex justify-between items-center space-x-2">
               <Header
-                title="Streaming"
-                description="streaming is used to stream the response from the AI provider."
+                title={t("dev_space.stt_providers.streaming")}
+                description={t("dev_space.stt_providers.streaming_description")}
               />
               <Switch
                 checked={formData.streaming}
@@ -188,19 +182,18 @@ export const CreateEditProvider = ({
               />
             </div>
             <span className="text-xs italic text-red-500">
-              Streaming is not supported for STT providers. it will be fixed in
-              the future.
+              {t("dev_space.stt_providers.streaming_not_supported")}
             </span>
           </div>
           {/* Response Configuration */}
           <div className="space-y-2">
             <Header
-              title="Response Content Path *"
-              description="The path to extract content from the API response."
+              title={t("dev_space.stt_providers.response_path")}
+              description={t("dev_space.stt_providers.response_path_description")}
             />
 
             <TextInput
-              placeholder="text"
+              placeholder={t("dev_space.stt_providers.response_path_placeholder")}
               value={formData.responseContentPath || ""}
               onChange={(value) =>
                 setFormData((prev) => ({
@@ -209,7 +202,7 @@ export const CreateEditProvider = ({
                 }))
               }
               error={errors.responseContentPath}
-              notes="The path to extract content from the API response. Examples: text, transcript, results[0].alternatives[0].transcript"
+              notes={t("dev_space.stt_providers.response_path_notes")}
             />
           </div>
 
@@ -219,7 +212,7 @@ export const CreateEditProvider = ({
               onClick={() => setShowForm(!showForm)}
               className="h-11 border-1 border-input/50 focus:border-primary/50 transition-colors"
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={handleSave}
@@ -230,11 +223,11 @@ export const CreateEditProvider = ({
               )}
             >
               {errors.curl ? (
-                "Invalid cURL, try again"
+                t("dev_space.stt_providers.invalid_curl")
               ) : (
                 <>
                   <SaveIcon className="h-4 w-4 mr-2" />
-                  {editingProvider ? "Update" : "Save"} Provider
+                  {editingProvider ? t("dev_space.stt_providers.update_provider") : t("dev_space.stt_providers.save_provider")}
                 </>
               )}
             </Button>

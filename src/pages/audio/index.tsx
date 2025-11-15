@@ -1,11 +1,13 @@
 import { AudioSelection } from "./components";
 import { PageLayout } from "@/layouts";
+import { useTranslation } from "@/contexts";
 
 const Audio = () => {
+  const { t } = useTranslation();
   return (
     <PageLayout
-      title="Audio Settings"
-      description="Configure your audio input and output devices for voice interaction and system audio capture."
+      title={t("audio.title")}
+      description={t("audio.description")}
     >
       <AudioSelection />
     </PageLayout>

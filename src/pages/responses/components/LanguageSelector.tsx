@@ -1,11 +1,12 @@
 import { Header, Selection } from "@/components";
 import { LANGUAGES } from "@/lib";
-import { useApp } from "@/contexts";
+import { useApp, useTranslation } from "@/contexts";
 import { updateLanguage } from "@/lib/storage/response-settings.storage";
 import { useState, useEffect, useMemo } from "react";
 import { getResponseSettings } from "@/lib";
 
 export const LanguageSelector = () => {
+  const { t } = useTranslation();
   const { hasActiveLicense } = useApp();
   const [selectedLanguage, setSelectedLanguage] = useState<string>("english");
 
@@ -32,8 +33,8 @@ export const LanguageSelector = () => {
   return (
     <div className="space-y-4">
       <Header
-        title="Response Language"
-        description="Select the language for AI responses. Setting applies globally to all providers and conversations. Language support may vary depending on your selected LLM provider"
+        title={t("responses.response_language.title")}
+        description={t("responses.response_language.description")}
         isMainTitle
       />
 

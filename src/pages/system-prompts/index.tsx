@@ -25,8 +25,10 @@ import { DeleteSystemPrompt } from "./Delete";
 import { CreateEditDialog } from "./CreateEditDialog";
 import { useState } from "react";
 import { PageLayout } from "@/layouts";
+import { useTranslation } from "@/contexts";
 
 const SystemPrompts = () => {
+  const { t } = useTranslation();
   const {
     prompts,
     isLoading,
@@ -164,8 +166,8 @@ const SystemPrompts = () => {
 
   return (
     <PageLayout
-      title="System Prompts"
-      description="Manage your AI behavior profiles and create new ones"
+      title={t("system_prompts.title")}
+      description={t("system_prompts.description")}
     >
       {/* Error Display */}
       {error && (
@@ -179,7 +181,7 @@ const SystemPrompts = () => {
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search system prompts..."
+            placeholder={t("system_prompts.search_placeholder")}
             className="pl-9 focus-visible:ring-0 focus-visible:ring-offset-0"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -187,15 +189,15 @@ const SystemPrompts = () => {
         </div>
         <Button variant="default" size="default" onClick={handleCreateClick}>
           <PlusIcon className="size-4" />
-          Create New
+          {t("system_prompts.create_new")}
         </Button>
       </div>
       {filteredPrompts.length === 0 ? (
         <Empty
           isLoading={isLoading}
           icon={WandSparklesIcon}
-          title="No prompts found"
-          description="Create a new prompt to get started"
+          title={t("system_prompts.no_prompts")}
+          description={t("system_prompts.create_prompt")}
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 pb-4">
