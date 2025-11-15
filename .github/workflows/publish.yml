@@ -58,6 +58,34 @@ jobs:
       - name: Install frontend deps
         run: npm ci
 
+      - name: Fetch LLM models list
+        run: |
+          node -e "
+          const https = require('https');
+          const fs = require('fs');
+          
+          const options = {
+            hostname: 'api.pluely.com',
+            path: '/pluely/v2/models',
+            method: 'GET',
+            headers: {
+              'Authorization': 'Bearer ${{ secrets.API_ACCESS_KEY }}'
+            }
+          };
+          
+          https.get(options, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+              fs.writeFileSync('src/data/models.json', data);
+              console.log('✅ Models list downloaded successfully');
+            });
+          }).on('error', (e) => {
+            console.error('❌ Failed to fetch models:', e.message);
+            process.exit(1);
+          });
+          "
+
       - name: Build & publish
         uses: tauri-apps/tauri-action@v0.5.16
         env:
