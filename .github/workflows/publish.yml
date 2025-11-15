@@ -1,10 +1,7 @@
 name: "publish"
 
 on:
-  push:
-    branches:
-      - master
-  workflow_dispatch:  # Позволяет запускать вручную
+  workflow_dispatch:  # Только ручной запуск
 
 jobs:
   publish-tauri:
