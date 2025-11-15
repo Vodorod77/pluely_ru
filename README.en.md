@@ -41,11 +41,21 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 <div align="center">
 
-### 🚀 **Get the Latest Release**
+### 🌍 **Original Version (English Build)**
 
-[![Download for macOS](https://img.shields.io/badge/Download%20for-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://pluely.com/download/macos) &nbsp; [![Download for Linux](https://img.shields.io/badge/Download%20for-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://pluely.com/download/linux) &nbsp; [![Download for Windows](https://img.shields.io/badge/Download%20for-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://pluely.com/download/windows)
+[![Download for macOS](https://img.shields.io/badge/Download%20for-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/iamsrikanthnani/pluely/releases) &nbsp; [![Download for Linux](https://img.shields.io/badge/Download%20for-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/iamsrikanthnani/pluely/releases) &nbsp; [![Download for Windows](https://img.shields.io/badge/Download%20for-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/iamsrikanthnani/pluely/releases)
 
-[![GitHub Release](https://img.shields.io/github/v/release/iamsrikanthnani/pluely?style=for-the-badge&logo=github&label=Latest%20Version)](https://pluely.com/releases) &nbsp; [![GitHub Downloads](https://img.shields.io/github/downloads/iamsrikanthnani/pluely/total?style=for-the-badge&logo=github&label=Total%20Downloads)](https://pluely.com/downloads)
+[![GitHub Release](https://img.shields.io/github/v/release/iamsrikanthnani/pluely?style=for-the-badge&logo=github&label=Latest%20Version)](https://github.com/iamsrikanthnani/pluely/releases) &nbsp; [![GitHub Downloads](https://img.shields.io/github/downloads/iamsrikanthnani/pluely/total?style=for-the-badge&logo=github&label=Total%20Downloads)](https://github.com/iamsrikanthnani/pluely/releases)
+
+**Original Repository:** [iamsrikanthnani/pluely](https://github.com/iamsrikanthnani/pluely)
+
+---
+
+### 🚀 **Russian Version (Русская сборка)**
+
+[![Скачать для macOS](https://img.shields.io/badge/Скачать%20для-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![Скачать для Linux](https://img.shields.io/badge/Скачать%20для-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![Скачать для Windows](https://img.shields.io/badge/Скачать%20для-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Vodorod77/pluely_ru/releases)
+
+**Репозиторий с русским переводом:** [Vodorod77/pluely_ru](https://github.com/Vodorod77/pluely_ru)
 
 **Available formats:** `.dmg` (macOS) • `.msi` (Windows) • `.exe` (Windows) • `.deb` (Linux) • `.rpm` (Linux) • `.AppImage` (Linux)
 
