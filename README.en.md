@@ -23,14 +23,24 @@
 
 ### 💝 **Support Russian Translation**
 
-**Cryptocurrency (Russia 🇷🇺):**
-- **Bitcoin (BTC):** `bc1qv9f7py7vquzppy639ukq82q0fzaxax26j92aj8`
-- **Ethereum (ETH):** `0xd2b22C9Dabde7Fa3812120f951a3D290180DD8e3`
-- **USDT (TRC20):** `TWzMD2KV51VbZY1GFZWCa83GEawqjaEXu7`
-- **TRX (Tron):** `TWzMD2KV51VbZY1GFZWCa83GEawqjaEXu7`
-- **TON:** `UQCHisahwOLO3xnIBX0Kxr0-IEYgVJtsZHCrzJsR_IgGLE-6`
+**Cryptocurrency:**
 
-**Social:**
+<details>
+<summary>📋 Show wallet addresses</summary>
+
+| Cryptocurrency | Address |
+|----------------|----------|
+| **Bitcoin (BTC)** | `bc1qv9f7py7vquzppy639ukq82q0fzaxax26j92aj8` |
+| **Ethereum (ETH)** | `0xd2b22C9Dabde7Fa3812120f951a3D290180DD8e3` |
+| **USDT (TRC20)** | `TWzMD2KV51VbZY1GFZWCa83GEawqjaEXu7` |
+| **TRX (Tron)** | `TWzMD2KV51VbZY1GFZWCa83GEawqjaEXu7` |
+| **TON** | `UQCHisahwOLO3xnIBX0Kxr0-IEYgVJtsZHCrzJsR_IgGLE-6` |
+
+</details>
+
+> 💡 **Thank you for your support!** Your donations help maintain and improve the Russian translation.
+
+**Contact:**
 [![GitHub](https://img.shields.io/badge/GitHub-Vodorod77-black?style=flat&logo=github)](https://github.com/Vodorod77)
 
 ---
