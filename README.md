@@ -1,8 +1,12 @@
 # Pluely 🚀
 
-<div align="right">
+<div align="center">
 
-**Language / Язык:** [🇬🇧 English](README.md) | [🇷🇺 Русский](README.ru.md)
+### 🌐 Language / Язык
+
+[🇷🇺 Русский](README.ru.md) | **[🇬🇧 English](README.md)**
+
+---
 
 </div>
 
