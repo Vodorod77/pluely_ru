@@ -37,13 +37,21 @@
 
 <div align="center">
 
-### 🚀 **Получить последний релиз**
+### 🚀 **Русская версия (Russian Build)**
 
 [![Скачать для macOS](https://img.shields.io/badge/Скачать%20для-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![Скачать для Linux](https://img.shields.io/badge/Скачать%20для-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![Скачать для Windows](https://img.shields.io/badge/Скачать%20для-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/Vodorod77/pluely_ru/releases)
 
 [![GitHub Release](https://img.shields.io/github/v/release/Vodorod77/pluely_ru?style=for-the-badge&logo=github&label=Последняя%20версия)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![GitHub Downloads](https://img.shields.io/github/downloads/Vodorod77/pluely_ru/total?style=for-the-badge&logo=github&label=Всего%20загрузок)](https://github.com/Vodorod77/pluely_ru/releases)
 
 **Доступные форматы:** `.dmg` (macOS) • `.msi` (Windows) • `.exe` (Windows) • `.deb` (Linux) • `.rpm` (Linux) • `.AppImage` (Linux)
+
+---
+
+### 🌍 **Оригинальная версия (Original English Build)**
+
+[![Download for macOS](https://img.shields.io/badge/Download%20for-macOS-000000?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/iamsrikanthnani/pluely/releases) &nbsp; [![Download for Linux](https://img.shields.io/badge/Download%20for-Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://github.com/iamsrikanthnani/pluely/releases) &nbsp; [![Download for Windows](https://img.shields.io/badge/Download%20for-Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/iamsrikanthnani/pluely/releases)
+
+**Оригинальный репозиторий:** [iamsrikanthnani/pluely](https://github.com/iamsrikanthnani/pluely)
 
 </div>
 
