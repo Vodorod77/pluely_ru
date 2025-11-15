@@ -79,13 +79,11 @@ This is the **open source version** of the $15M company [Cluely](https://cluely.
 
 | 💻 **Windows (EXE)** | 🐧 **Linux (AppImage)** |
 |:---:|:---:|
-| <a href="https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely-RU_0.1.8_x64-setup.exe"><img src="https://img.shields.io/badge/💻_Windows-EXE-0078D4?style=for-the-badge&logo=windows&logoColor=white" /></a><br>**~8-12MB** — experimental build | <a href="https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely-RU_0.1.8_amd64.AppImage"><img src="https://img.shields.io/badge/🐧_Linux-AppImage-FCC624?style=for-the-badge&logo=linux&logoColor=black" /></a><br>**~100MB** — full version with models |
+| <a href="https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely-RU_0.1.8_x64-setup.exe"><img src="https://img.shields.io/badge/💻_Windows-EXE-0078D4?style=for-the-badge&logo=windows&logoColor=white" /></a> | <a href="https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely-RU_0.1.8_amd64.AppImage"><img src="https://img.shields.io/badge/🐧_Linux-AppImage-FCC624?style=for-the-badge&logo=linux&logoColor=black" /></a> |
 
 [![LATEST RELEASE](https://img.shields.io/github/v/release/Vodorod77/pluely_ru?style=for-the-badge&logo=github&label=LATEST%20RELEASE)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![TOTAL DOWNLOADS](https://img.shields.io/github/downloads/Vodorod77/pluely_ru/total?style=for-the-badge&logo=github&label=TOTAL%20DOWNLOADS)](https://github.com/Vodorod77/pluely_ru/releases)
 
-> ⚠️ **Note:** Windows version is experimental and may be unstable. Linux AppImage is recommended.
-
-> 🍎 **macOS:** Unfortunately, we cannot build a macOS version due to lack of hardware. Please use the original version above.
+> 🍎 **macOS:** Unfortunately, we cannot build a macOS version due to lack of hardware. Please use the original version above. *(MacBook donations accepted! 😄)*
 
 </div>
 

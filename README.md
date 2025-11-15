@@ -64,13 +64,11 @@
 
 | 💻 **Windows (EXE)** | 🐧 **Linux (AppImage)** |
 |:---:|:---:|
-| <a href="https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely-RU_0.1.8_x64-setup.exe"><img src="https://img.shields.io/badge/💻_Windows-EXE-0078D4?style=for-the-badge&logo=windows&logoColor=white" /></a><br>**~8-12MB** — экспериментальная версия | <a href="https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely-RU_0.1.8_amd64.AppImage"><img src="https://img.shields.io/badge/🐧_Linux-AppImage-FCC624?style=for-the-badge&logo=linux&logoColor=black" /></a><br>**~100MB** — полная версия с моделями |
+| <a href="https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely-RU_0.1.8_x64-setup.exe"><img src="https://img.shields.io/badge/💻_Windows-EXE-0078D4?style=for-the-badge&logo=windows&logoColor=white" /></a> | <a href="https://github.com/Vodorod77/pluely_ru/releases/latest/download/Pluely-RU_0.1.8_amd64.AppImage"><img src="https://img.shields.io/badge/🐧_Linux-AppImage-FCC624?style=for-the-badge&logo=linux&logoColor=black" /></a> |
 
 [![ПОСЛЕДНЯЯ ВЕРСИЯ](https://img.shields.io/github/v/release/Vodorod77/pluely_ru?style=for-the-badge&logo=github&label=ПОСЛЕДНЯЯ%20ВЕРСИЯ)](https://github.com/Vodorod77/pluely_ru/releases) &nbsp; [![ВСЕГО ЗАГРУЗОК](https://img.shields.io/github/downloads/Vodorod77/pluely_ru/total?style=for-the-badge&logo=github&label=ВСЕГО%20ЗАГРУЗОК)](https://github.com/Vodorod77/pluely_ru/releases)
 
-> ⚠️ **Примечание:** Windows версия - экспериментальная, может работать нестабильно. Рекомендуется Linux AppImage.
-
-> 🍎 **macOS:** К сожалению, у нас нет возможности собрать версию для macOS из-за отсутствия техники. Используйте оригинальную версию ниже.
+> 🍎 **macOS:** К сожалению, у нас нет возможности собрать версию для macOS из-за отсутствия техники. Используйте оригинальную версию ниже. *(Донаты на MacBook принимаются! 😄)*
 
 ---
 
