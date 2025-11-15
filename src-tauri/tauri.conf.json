@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Pluely",
+  "productName": "Pluely-RU",
   "version": "0.1.8",
   "identifier": "com.srikanthnani.pluely",
   "build": {

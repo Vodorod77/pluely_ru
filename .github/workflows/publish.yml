@@ -52,8 +52,8 @@ jobs:
 
       - name: Create environment file
         run: |
-          echo "API_ACCESS_KEY=${{ secrets.API_ACCESS_KEY }}" > src-tauri/.env
-          echo "APP_ENDPOINT=${{ secrets.APP_ENDPOINT }}" >> src-tauri/.env
+          echo "API_ACCESS_KEY=${{ secrets.API_ACCESS_KEY }}" > .env
+          echo "APP_ENDPOINT=${{ secrets.APP_ENDPOINT }}" >> .env
 
       - name: Install frontend deps
         run: npm ci
@@ -65,9 +65,9 @@ jobs:
           API_ACCESS_KEY: ${{ secrets.API_ACCESS_KEY }}
           APP_ENDPOINT: ${{ secrets.APP_ENDPOINT }}
         with:
-          tagName: app-v__VERSION__
-          releaseName: "Pluely v__VERSION__ (Windows + iOS/macOS)"
-          releaseBody: "📦 Скачайте установщик для вашей ОС:\n- Windows: .msi или .exe\n- macOS (Intel): x86_64\n- macOS/iOS (Apple Silicon): aarch64\n\n⚠️ macOS: При блокировке откройте System Settings > Privacy & Security > Security, найдите 'pluely was blocked' и нажмите 'Allow Anyway'."
+          tagName: app-v__VERSION__-multilang
+          releaseName: "🌐 Pluely v__VERSION__ [EN+RU] - Multilingual"
+          releaseBody: "🌍 **Multilingual Release** | Мультиязычный релиз\n\n📦 **Download** | Скачать:\n- 💻 Windows: `.msi` `.exe` (EN+RU)\n- 🍎 macOS Intel: `x64.dmg` (EN+RU)\n- 🍎 macOS Apple Silicon: `aarch64.dmg` (EN+RU)\n\n✨ **Features** | Возможности:\n- English + Русский interface\n- 118 AI models\n- Privacy-first design\n\n⚠️ macOS: System Settings > Privacy & Security > 'Allow Anyway'"
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
