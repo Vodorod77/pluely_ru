@@ -21,7 +21,21 @@
 [![React](https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript-blue)](https://reactjs.org/)
 [![License](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](LICENSE)
 
-### 💝 **Support the Project & Connect**
+### 💝 **Support Russian Translation**
+
+**Cryptocurrency (Russia 🇷🇺):**
+- **Bitcoin (BTC):** `bc1qv9f7py7vquzppy639ukq82q0fzaxax26j92aj8`
+- **Ethereum (ETH):** `0xd2b22C9Dabde7Fa3812120f951a3D290180DD8e3`
+- **USDT (TRC20):** `TWzMD2KV51VbZY1GFZWCa83GEawqjaEXu7`
+- **TRX (Tron):** `TWzMD2KV51VbZY1GFZWCa83GEawqjaEXu7`
+- **TON:** `UQCHisahwOLO3xnIBX0Kxr0-IEYgVJtsZHCrzJsR_IgGLE-6`
+
+**Social:**
+[![GitHub](https://img.shields.io/badge/GitHub-Vodorod77-black?style=flat&logo=github)](https://github.com/Vodorod77)
+
+---
+
+### 💝 **Support Original Author**
 
 [![Buy Me a Coffee](https://img.shields.io/badge/☕%20Buy%20Me%20a%20Coffee-Support%20Project-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://www.buymeacoffee.com/srikanthnani) &nbsp; [![Hire Me](https://img.shields.io/badge/💼%20Hire%20Me-Let's%20Connect-6366f1?style=for-the-badge&logo=gmail&logoColor=white)](mailto:srikanthnani1202@gmail.com?subject=Hiring%20Inquiry%20-%20Let's%20Connect&body=Hi%20Srikanth,%0D%0A%0D%0AI%20discovered%20your%20project%20Pluely%20I'm%20reaching%20out%20to%20discuss%20potential%20opportunities.%0D%0A%0D%0ABest%20regards,%0D%0A[Your%20Name]) &nbsp; [![Join Pluely](https://img.shields.io/badge/🤝%20Join%20Pluely-Let's%20connect-1e88e5?style=for-the-badge)](mailto:support@pluely.com?subject=Joining%20Pluely%20Inquiry&body=%5Badd%20your%20text%20here%5D%0D%0A%0D%0A---%0D%0APlease%20include%20links%20to%20your%20work%20or%20portfolio%2C%20and%20why%20are%20you%20intrested%20to%20join%20pluely.%20%20%0D%0AWe%20are%20primarily%20looking%20for%20marketing%20professionals%2C%20content%20writers%2C%20interns%2C%20and%20creative%20collaborators%20-%20but%20are%20open%20to%20all%20areas%20of%20expertise.%20%20%0D%0AWe%27ll%20be%20in%20touch%20if%20your%20profile%20is%20a%20good%20fit.)
 

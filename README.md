@@ -21,12 +21,25 @@
 [![React](https://img.shields.io/badge/Frontend-React%20%2B%20TypeScript-blue)](https://reactjs.org/)
 [![License](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](LICENSE)
 
-### 💝 **Поддержите проект и свяжитесь с нами**
+### 💝 **Поддержать русский перевод**
+
+**Криптовалюты (Россия 🇷🇺):**
+- **Bitcoin (BTC):** `bc1qv9f7py7vquzppy639ukq82q0fzaxax26j92aj8`
+- **Ethereum (ETH):** `0xd2b22C9Dabde7Fa3812120f951a3D290180DD8e3`
+- **USDT (TRC20):** `TWzMD2KV51VbZY1GFZWCa83GEawqjaEXu7`
+- **TRX (Tron):** `TWzMD2KV51VbZY1GFZWCa83GEawqjaEXu7`
+- **TON:** `UQCHisahwOLO3xnIBX0Kxr0-IEYgVJtsZHCrzJsR_IgGLE-6`
+
+**Социальные сети:**
+[![GitHub](https://img.shields.io/badge/GitHub-Vodorod77-black?style=flat&logo=github)](https://github.com/Vodorod77)
+
+---
+
+### 💝 **Поддержать оригинального автора**
 
 [![Купить кофе](https://img.shields.io/badge/☕%20Купить%20кофе-Поддержать%20проект-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://www.buymeacoffee.com/srikanthnani) &nbsp; [![Нанять меня](https://img.shields.io/badge/💼%20Нанять%20меня-Давайте%20работать-6366f1?style=for-the-badge&logo=gmail&logoColor=white)](mailto:srikanthnani1202@gmail.com) &nbsp; [![Присоединиться к Pluely](https://img.shields.io/badge/🤝%20Присоединиться-Давайте%20работать-1e88e5?style=for-the-badge)](mailto:support@pluely.com)
 
 **Социальные сети:**
-[![GitHub](https://img.shields.io/badge/GitHub-Vodorod77-black?style=flat&logo=github)](https://github.com/Vodorod77)
 [![Original Author](https://img.shields.io/badge/Original-iamsrikanthnani-black?style=flat&logo=github)](https://github.com/iamsrikanthnani)
 
 > **Open Source альтернатива Cluely** — молниеносный, конфиденциальный AI-ассистент, который работает незаметно во время встреч, собеседований и разговоров.
